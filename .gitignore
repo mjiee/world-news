@@ -1,0 +1,7 @@
+build/bin
+node_modules
+frontend/dist
+
+go.sum
+frontend/package-lock.json
+*.md5
