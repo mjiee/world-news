@@ -1,0 +1,13 @@
+html {
+    background-color: white;
+    text-align: center;
+}
+
+body {
+    margin: 0;
+}
+
+#app {
+    height: 100vh;
+    text-align: center;
+}
