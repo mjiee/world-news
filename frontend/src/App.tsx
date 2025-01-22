@@ -1,7 +1,9 @@
+import { Button } from "@mantine/core";
+
 function App() {
   return (
     <div>
-      <p>hello world</p>
+      <Button variant="filled">Button</Button>;
     </div>
   );
 }
