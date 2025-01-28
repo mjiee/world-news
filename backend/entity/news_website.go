@@ -10,10 +10,6 @@ type NewsWebsite struct {
 	CreatedAt   time.Time
 }
 
-func (n *NewsWebsite) TableName() string {
-	return "news_websites"
-}
-
 // WebsiteType represents the type of a news website.
 type WebsiteType string
 

@@ -1,4 +1,4 @@
-package entity
+package model
 
 import "time"
 
@@ -8,8 +8,12 @@ type NewsDetail struct {
 	RecordId    uint `gorm:"index;not null"` // crawling record id
 	Title       string
 	Link        string
-	Contents    []string
-	Images      []string
+	Contents    string
+	Images      string
 	PublishedAt time.Time
 	CreatedAt   time.Time
+}
+
+func (n *NewsDetail) TableName() string {
+	return "news_details"
 }

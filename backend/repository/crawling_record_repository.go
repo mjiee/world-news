@@ -1,6 +1,8 @@
 package repository
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 // CrawlingRecordRepository is interface for crawling record.
 type CrawlingRecordRepository interface {
