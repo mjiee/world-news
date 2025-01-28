@@ -2,8 +2,6 @@ package errorx
 
 import (
 	"fmt"
-
-	"github.com/mjiee/world-news/backend/pkg/httpx"
 )
 
 // BasicError is a basic error type
@@ -61,9 +59,4 @@ func (e *BasicError) GetCode() uint32 {
 // GetMessage return the error message.
 func (e *BasicError) GetMessage() string {
 	return e.message
-}
-
-// ToResponse converts the error information into httpx.Response.
-func (e *BasicError) ToResponse() *httpx.Response {
-	return httpx.NewResponse(e.GetCode(), e.GetMessage(), nil)
 }

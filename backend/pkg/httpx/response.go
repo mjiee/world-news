@@ -1,22 +1,27 @@
 package httpx
 
+import "github.com/mjiee/world-news/backend/pkg/errorx"
+
 // Response is a public response struct.
 type Response struct {
 	Code    uint32 `json:"code"`
 	Message string `json:"message"`
-	Result  any    `json:"result"`
 }
 
 // NewResponse creates and returns a new Response object
-func NewResponse(code uint32, message string, result any) *Response {
+func NewResponse(code uint32, message string) *Response {
 	return &Response{
 		Code:    code,
 		Message: message,
-		Result:  result,
 	}
 }
 
-// OK is a convenience function used to create a response object with a successful status (code 0 and no message).
-func OK(result any) *Response {
-	return NewResponse(0, "", result)
+// Fail is a convenience function used to create a response object with a failed status (code 1 and no message).
+func Fail(err error) *Response {
+	basicErr, ok := err.(*errorx.BasicError)
+	if ok {
+		return NewResponse(basicErr.GetCode(), basicErr.GetMessage())
+	}
+
+	return NewResponse(errorx.InternalError.GetCode(), errorx.InternalError.GetMessage())
 }

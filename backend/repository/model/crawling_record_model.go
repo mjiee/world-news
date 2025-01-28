@@ -1,4 +1,4 @@
-package entity
+package model
 
 import "time"
 
@@ -9,4 +9,8 @@ type CrawlingRecord struct {
 	Quantity  int64
 	Status    string
 	CreatedAt time.Time
+}
+
+func (c *CrawlingRecord) TableName() string {
+	return "crawling_records"
 }
