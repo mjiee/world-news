@@ -3,17 +3,29 @@ package entity
 import (
 	"time"
 
+	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/repository/model"
 )
 
 // CrawlingRecord represents a crawling record.
 type CrawlingRecord struct {
-	Id        uint
-	Date      string
-	Quantity  int64
-	Status    string
-	CreatedAt time.Time
+	Id         uint
+	RecordType valueobject.CrawlingRecordType
+	Date       time.Time
+	Quantity   int64
+	Status     valueobject.CrawlingRecordStatus
+	CreatedAt  time.Time
+}
+
+// NewCrawlingRecord creates a new CrawlingRecord entity.
+func NewCrawlingRecord(recordType valueobject.CrawlingRecordType) *CrawlingRecord {
+	return &CrawlingRecord{
+		RecordType: recordType,
+		Date:       time.Now(),
+		Quantity:   0,
+		Status:     valueobject.ProcessingCrawlingRecord,
+	}
 }
 
 // NewCrawlingRecordFromModel converts a CrawlingRecordModel to a CrawlingRecord entity.
@@ -22,11 +34,12 @@ func NewCrawlingRecordFromModel(m *model.CrawlingRecord) (*CrawlingRecord, error
 		return nil, errorx.CrawlingRecordNotFound
 	}
 	return &CrawlingRecord{
-		Id:        m.Id,
-		Date:      m.Date,
-		Quantity:  m.Quantity,
-		Status:    m.Status,
-		CreatedAt: m.CreatedAt,
+		Id:         m.Id,
+		RecordType: valueobject.CrawlingRecordType(m.RecordType),
+		Date:       m.Date,
+		Quantity:   m.Quantity,
+		Status:     valueobject.CrawlingRecordStatus(m.Status),
+		CreatedAt:  m.CreatedAt,
 	}, nil
 }
 
@@ -37,10 +50,11 @@ func (c *CrawlingRecord) ToModel() (*model.CrawlingRecord, error) {
 	}
 
 	return &model.CrawlingRecord{
-		Id:        c.Id,
-		Date:      c.Date,
-		Quantity:  c.Quantity,
-		Status:    c.Status,
-		CreatedAt: c.CreatedAt,
+		Id:         c.Id,
+		RecordType: string(c.RecordType),
+		Date:       c.Date,
+		Quantity:   c.Quantity,
+		Status:     string(c.Status),
+		CreatedAt:  c.CreatedAt,
 	}, nil
 }

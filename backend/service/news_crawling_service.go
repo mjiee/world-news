@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mjiee/world-news/backend/entity"
+	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
 	"github.com/mjiee/world-news/backend/repository"
 
@@ -12,6 +13,9 @@ import (
 )
 
 type NewsCrawlingService interface {
+	GetCollector() *colly.Collector
+	CreateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error
+	UpdateCrawlingRecordStatus(ctx context.Context, id uint, status valueobject.CrawlingRecordStatus) error
 	QueryCrawlingRecords(ctx context.Context, page *httpx.Pagination) ([]*entity.CrawlingRecord, int64, error)
 	DeleteCrawlingRecord(ctx context.Context, id uint) error
 }
@@ -24,14 +28,33 @@ func NewNewsCrawlingService(c *colly.Collector) NewsCrawlingService {
 	return &newsCrawlingService{collector: c}
 }
 
-// getCollector get a new collector
-func (s *newsCrawlingService) getCollector() *colly.Collector {
+// GetCollector get a new collector
+func (s *newsCrawlingService) GetCollector() *colly.Collector {
 	return s.collector.Clone()
 }
 
-// collectorIgnoreErr ignore the error
-func collectorIgnoreErr(err error) bool {
-	return errors.Is(err, colly.ErrAlreadyVisited) || errors.Is(err, context.DeadlineExceeded)
+// CreateCrawlingRecord create crawling record
+func (s *newsCrawlingService) CreateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error {
+	data, err := record.ToModel()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	if err := repository.Q.CrawlingRecord.WithContext(ctx).Create(data); err != nil {
+		return errors.WithStack(err)
+	}
+
+	record.Id = data.Id
+
+	return nil
+}
+
+// UpdateCrawlingRecordStatus update crawling record status
+func (s *newsCrawlingService) UpdateCrawlingRecordStatus(ctx context.Context, id uint, status valueobject.CrawlingRecordStatus) error {
+	repo := repository.Q.CrawlingRecord
+	_, err := repo.WithContext(ctx).Where(repo.Id.Eq(id)).Update(repo.Status, status)
+
+	return errors.WithStack(err)
 }
 
 // QueryCrawlingRecords get crawling records
