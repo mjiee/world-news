@@ -9,3 +9,7 @@ check_dependency:
 # run app
 run-app: check_dependency
 	@wails dev
+
+# generate db
+db:
+	@go run backend/repository/generator/main.go

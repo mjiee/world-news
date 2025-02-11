@@ -5,25 +5,17 @@ import (
 	"errors"
 
 	"github.com/gocolly/colly/v2"
-	"gorm.io/gorm"
-
-	"github.com/mjiee/world-news/backend/repository"
 )
 
 type NewsCrawlingService interface {
 }
 
 type newsCrawlingService struct {
-	collector          *colly.Collector
-	newsDetailRepo     repository.NewsDetailRepository
-	crawlingRecordRepo repository.CrawlingRecordRepository
+	collector *colly.Collector
 }
 
-func NewNewsCrawlingService(c *colly.Collector, db *gorm.DB) NewsCrawlingService {
-	return &newsCrawlingService{collector: c,
-		newsDetailRepo:     repository.NewNewsDetailRepository(db),
-		crawlingRecordRepo: repository.NewCrawlingRecordRepository(db),
-	}
+func NewNewsCrawlingService(c *colly.Collector) NewsCrawlingService {
+	return &newsCrawlingService{collector: c}
 }
 
 // getCollector 获取Collector

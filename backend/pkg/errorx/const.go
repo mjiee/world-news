@@ -6,3 +6,5 @@ import "net/http"
 var (
 	InternalError = NewBasicError(http.StatusInternalServerError, "internal server error")
 )
+
+// system config error
