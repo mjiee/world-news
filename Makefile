@@ -11,5 +11,6 @@ run-app: check_dependency
 	@wails dev
 
 # generate db
+.PHONY: db
 db:
 	@go run backend/repository/generator/main.go

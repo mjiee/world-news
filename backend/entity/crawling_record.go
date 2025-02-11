@@ -19,7 +19,7 @@ type CrawlingRecord struct {
 // NewCrawlingRecordFromModel converts a CrawlingRecordModel to a CrawlingRecord entity.
 func NewCrawlingRecordFromModel(m *model.CrawlingRecord) (*CrawlingRecord, error) {
 	if m == nil {
-		return nil, errorx.InternalError
+		return nil, errorx.CrawlingRecordNotFound
 	}
 	return &CrawlingRecord{
 		Id:        m.Id,
@@ -33,7 +33,7 @@ func NewCrawlingRecordFromModel(m *model.CrawlingRecord) (*CrawlingRecord, error
 // ToModel converts the CrawlingRecord entity to a CrawlingRecordModel.
 func (c *CrawlingRecord) ToModel() (*model.CrawlingRecord, error) {
 	if c == nil {
-		return nil, errorx.InternalError
+		return nil, errorx.CrawlingRecordNotFound
 	}
 
 	return &model.CrawlingRecord{

@@ -1,23 +1,42 @@
 package dto
 
-import "github.com/mjiee/world-news/backend/pkg/httpx"
+import (
+	"time"
 
-// GetNewsListRequest get news detail list request
-type GetNewsListRequest struct {
+	"github.com/mjiee/world-news/backend/entity"
+	"github.com/mjiee/world-news/backend/pkg/httpx"
+)
+
+// QueryNewsRequest get news detail list request
+type QueryNewsRequest struct {
 	RecordId   uint              `json:"recordId"`
 	Pagination *httpx.Pagination `json:"pagination"`
 }
 
-// GetNewsListResult get news detail list result
-type GetNewsListResult struct {
+// QueryNewsResult get news detail list result
+type QueryNewsResult struct {
 	Data  []*NewsDetail `json:"data"`
 	Total int64         `json:"total"`
 }
 
-// GetNewsListResponse get news detail list response
-type GetNewsListResponse struct {
+// NewQueryNewsResult news detail list result
+func NewQueryNewsResult(data []*entity.NewsDetail, total int64) *QueryNewsResult {
+	res := make([]*NewsDetail, len(data))
+
+	for i, v := range data {
+		res[i] = NewNewsDetailFromEntity(v)
+	}
+
+	return &QueryNewsResult{
+		Data:  res,
+		Total: total,
+	}
+}
+
+// QueryNewsResponse get news detail list response
+type QueryNewsResponse struct {
 	*httpx.Response
-	Result *GetNewsListResult `json:"result"`
+	Result *QueryNewsResult `json:"result"`
 }
 
 // NewsDetail news detail
@@ -28,6 +47,18 @@ type NewsDetail struct {
 	Contents    []string `json:"contents"`
 	Images      []string `json:"images"`
 	PublishedAt string   `json:"publishedAt"`
+}
+
+// NewNewsDetailFromEntity news detail
+func NewNewsDetailFromEntity(data *entity.NewsDetail) *NewsDetail {
+	return &NewsDetail{
+		Id:          data.Id,
+		Title:       data.Title,
+		Link:        data.Link,
+		Contents:    data.Contents,
+		Images:      data.Images,
+		PublishedAt: data.PublishedAt.Format(time.DateTime),
+	}
 }
 
 // GetNewsDetailRequest get news detail request

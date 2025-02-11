@@ -12,7 +12,7 @@ import (
 
 // NewsDetail represents the detailed information about a news item.
 type NewsDetail struct {
-	ID          uint
+	Id          uint
 	RecordId    uint // crawling record id
 	Title       string
 	Link        string
@@ -25,7 +25,7 @@ type NewsDetail struct {
 // NewNewsDetailFromModel converts a NewsDetailModel to a NewsDetail entity.
 func NewNewsDetailFromModel(m *model.NewsDetail) (*NewsDetail, error) {
 	if m == nil {
-		return nil, errorx.InternalError
+		return nil, errorx.NewsNotFound
 	}
 
 	var (
@@ -42,7 +42,7 @@ func NewNewsDetailFromModel(m *model.NewsDetail) (*NewsDetail, error) {
 	}
 
 	return &NewsDetail{
-		ID:          m.ID,
+		Id:          m.ID,
 		RecordId:    m.RecordId,
 		Title:       m.Title,
 		Link:        m.Link,
@@ -56,7 +56,7 @@ func NewNewsDetailFromModel(m *model.NewsDetail) (*NewsDetail, error) {
 // ToModel converts the NewsDetail entity to a NewsDetailModel.
 func (n *NewsDetail) ToModel() (*model.NewsDetail, error) {
 	if n == nil {
-		return nil, errorx.InternalError
+		return nil, errorx.NewsNotFound
 	}
 
 	contents, err := json.Marshal(n.Contents)
@@ -70,7 +70,7 @@ func (n *NewsDetail) ToModel() (*model.NewsDetail, error) {
 	}
 
 	return &model.NewsDetail{
-		ID:          n.ID,
+		ID:          n.Id,
 		RecordId:    n.RecordId,
 		Title:       n.Title,
 		Link:        n.Link,

@@ -3,26 +3,18 @@
 import {dto} from '../models';
 import {httpx} from '../models';
 
-export function AddNewsKeyword(arg1:dto.AddNewsKeywordRequest):Promise<httpx.Response>;
-
-export function AddNewsWebsite(arg1:dto.AddNewsWebsiteRequest):Promise<httpx.Response>;
-
 export function CrawlingNews(arg1:dto.CrawlingNewsRequest):Promise<httpx.Response>;
 
 export function DeleteCrawlingRecord(arg1:dto.DeleteCrawlingRecordRequest):Promise<httpx.Response>;
 
 export function DeleteNewsDetail(arg1:dto.DeleteNewsRequest):Promise<httpx.Response>;
 
-export function DeleteNewsKeyword(arg1:dto.DeleteNewsKeywordRequest):Promise<httpx.Response>;
-
-export function DeleteNewsWebsite(arg1:dto.DeleteNewsWebsiteRequest):Promise<httpx.Response>;
-
-export function GetCrawlingRecords(arg1:dto.GetCrawlingRecordsRequest):Promise<dto.GetCrawlingRecordsResponse>;
-
 export function GetNewsDetail(arg1:dto.GetNewsDetailRequest):Promise<dto.GetNewsDetailResponse>;
 
-export function GetNewsKeywords():Promise<dto.GetNewsKeywordsResponse>;
+export function GetSystemConfig(arg1:dto.GetSystemConfigRequest):Promise<dto.GetSystemConfigResponse>;
 
-export function GetNewsList(arg1:dto.GetNewsListRequest):Promise<dto.GetNewsListResponse>;
+export function QueryCrawlingRecords(arg1:dto.QueryCrawlingRecordsRequest):Promise<dto.QueryCrawlingRecordsResponse>;
 
-export function GetNewsWebsites(arg1:dto.GetNewsWebsitesRequest):Promise<dto.GetNewsWebsitesResponse>;
+export function QueryNews(arg1:dto.QueryNewsRequest):Promise<dto.QueryNewsResponse>;
+
+export function SaveSystemConfig(arg1:dto.SystemConfig):Promise<httpx.Response>;

@@ -25,3 +25,12 @@ func Fail(err error) *Response {
 
 	return NewResponse(errorx.InternalError.GetCode(), errorx.InternalError.GetMessage())
 }
+
+// Result is a convenience function used to create a response object based on the provided error.
+func Result(err error) *Response {
+	if err == nil {
+		return NewResponse(0, "")
+	} else {
+		return Fail(err)
+	}
+}
