@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/pkg/errors"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -14,7 +15,7 @@ import (
 func NewAppDB(appName string) (*gorm.DB, error) {
 	dbPath, err := getDbPath(appName)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return gorm.Open(sqlite.Open(dbPath), &gorm.Config{})

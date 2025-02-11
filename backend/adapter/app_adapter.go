@@ -8,17 +8,16 @@ import (
 	"github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/databasex"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
+	"github.com/mjiee/world-news/backend/repository"
 	"github.com/mjiee/world-news/backend/repository/model"
 	"github.com/mjiee/world-news/backend/service"
 
 	"github.com/wailsapp/wails/v2/pkg/logger"
-	"gorm.io/gorm"
 )
 
 // App struct
 type App struct {
 	ctx  context.Context
-	db   *gorm.DB
 	logx logger.Logger
 
 	newsCrawlingSvc   service.NewsCrawlingService
@@ -42,7 +41,7 @@ func (a *App) init() {
 		return
 	}
 
-	a.db = db
+	repository.SetDefault(db)
 
 	// auto migrate
 	if err := model.AutoMigrate(db); err != nil {
@@ -51,9 +50,9 @@ func (a *App) init() {
 		return
 	}
 
-	a.newsCrawlingSvc = service.NewNewsCrawlingService(collector.NewCollector(), db)
-	a.newsDetailSvc = service.NewNewsDetailService(db)
-	a.systemSettingsSvc = service.NewSystemSettingsService(db)
+	a.newsCrawlingSvc = service.NewNewsCrawlingService(collector.NewCollector())
+	a.newsDetailSvc = service.NewNewsDetailService()
+	a.systemSettingsSvc = service.NewSystemSettingsService()
 }
 
 // startup is called when the app starts.

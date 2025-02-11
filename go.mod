@@ -4,8 +4,10 @@ go 1.23
 
 require (
 	github.com/gocolly/colly/v2 v2.1.0
+	github.com/pkg/errors v0.9.1
 	github.com/wailsapp/wails/v2 v2.9.2
 	gorm.io/driver/sqlite v1.5.7
+	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.12
 )
 
@@ -17,6 +19,7 @@ require (
 	github.com/antchfx/xpath v1.1.8 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
+	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -36,7 +39,6 @@ require (
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/samber/lo v1.38.1 // indirect
@@ -48,11 +50,17 @@ require (
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
+	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/tools v0.17.0 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.24.0 // indirect
+	gorm.io/datatypes v1.1.1-0.20230130040222-c43177d3cf8c // indirect
+	gorm.io/driver/mysql v1.5.7 // indirect
+	gorm.io/hints v1.1.0 // indirect
+	gorm.io/plugin/dbresolver v1.5.3 // indirect
 )
 
 // replace github.com/wailsapp/wails/v2 v2.9.2 => /home/mjiee/.go/pkg/mod
