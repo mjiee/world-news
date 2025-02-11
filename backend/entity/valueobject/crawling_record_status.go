@@ -6,4 +6,5 @@ type CrawlingRecordStatus string
 const (
 	ProcessingCrawlingRecord CrawlingRecordStatus = "processing"
 	CompletedCrawlingRecord  CrawlingRecordStatus = "completed"
+	FailedCrawlingRecord     CrawlingRecordStatus = "failed"
 )

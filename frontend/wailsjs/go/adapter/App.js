@@ -6,6 +6,10 @@ export function CrawlingNews(arg1) {
   return window['go']['adapter']['App']['CrawlingNews'](arg1);
 }
 
+export function CrawlingWebsite() {
+  return window['go']['adapter']['App']['CrawlingWebsite']();
+}
+
 export function DeleteCrawlingRecord(arg1) {
   return window['go']['adapter']['App']['DeleteCrawlingRecord'](arg1);
 }
