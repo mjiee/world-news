@@ -118,7 +118,7 @@ export namespace dto {
 	}
 	export class SystemConfig {
 	    key: string;
-	    value: string;
+	    value: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new SystemConfig(source);
@@ -167,6 +167,7 @@ export namespace dto {
 	
 	export class CrawlingRecord {
 	    id: number;
+	    recordType: string;
 	    date: string;
 	    quantity: number;
 	    status: string;
@@ -178,6 +179,7 @@ export namespace dto {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
+	        this.recordType = source["recordType"];
 	        this.date = source["date"];
 	        this.quantity = source["quantity"];
 	        this.status = source["status"];

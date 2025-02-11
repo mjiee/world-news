@@ -80,3 +80,20 @@ func (n *NewsDetail) ToModel() (*model.NewsDetail, error) {
 		CreatedAt:   n.CreatedAt,
 	}, nil
 }
+
+// Validate validates the NewsDetail entity.
+func (n *NewsDetail) Validate() error {
+	if n == nil {
+		return errorx.NewsNotFound
+	}
+
+	if n.Title == "" { // title is required
+		return errorx.NewsNotFound
+	}
+
+	if len(n.Contents) == 0 { // contents is required
+		return errorx.NewsNotFound
+	}
+
+	return nil
+}

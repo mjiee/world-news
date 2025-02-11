@@ -84,7 +84,9 @@ func (a *App) SaveSystemConfig(req *dto.SystemConfig) *httpx.Response {
 
 // CrawlingNews handles the request to crawl news.
 func (a *App) CrawlingNews(req *dto.CrawlingNewsRequest) *httpx.Response {
-	return nil
+	cmd := command.NewCrawlingNewsCommand(a.newsCrawlingSvc, a.newsDetailSvc, a.systemSettingsSvc)
+
+	return httpx.Result(cmd.Execute(a.ctx))
 }
 
 // CrawlingWebsite handles the request to crawl a news website.

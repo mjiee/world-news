@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/mjiee/world-news/backend/entity"
-	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
 	"github.com/mjiee/world-news/backend/repository"
 
@@ -15,7 +14,7 @@ import (
 type NewsCrawlingService interface {
 	GetCollector() *colly.Collector
 	CreateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error
-	UpdateCrawlingRecordStatus(ctx context.Context, id uint, status valueobject.CrawlingRecordStatus) error
+	UpdateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error
 	QueryCrawlingRecords(ctx context.Context, page *httpx.Pagination) ([]*entity.CrawlingRecord, int64, error)
 	DeleteCrawlingRecord(ctx context.Context, id uint) error
 }
@@ -49,10 +48,14 @@ func (s *newsCrawlingService) CreateCrawlingRecord(ctx context.Context, record *
 	return nil
 }
 
-// UpdateCrawlingRecordStatus update crawling record status
-func (s *newsCrawlingService) UpdateCrawlingRecordStatus(ctx context.Context, id uint, status valueobject.CrawlingRecordStatus) error {
-	repo := repository.Q.CrawlingRecord
-	_, err := repo.WithContext(ctx).Where(repo.Id.Eq(id)).Update(repo.Status, status)
+// UpdateCrawlingRecord update crawling record status
+func (s *newsCrawlingService) UpdateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error {
+	data, err := record.ToModel()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	_, err = repository.Q.CrawlingRecord.WithContext(ctx).Updates(data)
 
 	return errors.WithStack(err)
 }

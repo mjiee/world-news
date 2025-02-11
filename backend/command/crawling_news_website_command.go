@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	"encoding/json"
 	"slices"
 	"strings"
 
@@ -41,7 +40,7 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 		return errorx.InternalError
 	}
 
-	newsWebsiteCollections := valueobject.NewNewsWebsites(config.Value)
+	newsWebsiteCollections := config.Value.([]*valueobject.NewsWebsite)
 
 	// create crawling record
 	record := entity.NewCrawlingRecord(valueobject.CrawlingWebsite)
@@ -51,13 +50,14 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 	}
 
 	// crawling news website
-	go c.crawlingNewsWebsite(record.Id, newsWebsiteCollections)
+	go c.crawlingNewsWebsite(record, newsWebsiteCollections)
 
 	return nil
 }
 
 // crawlingNewsWebsite crawling news website
-func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(recordId uint, data []*valueobject.NewsWebsite) {
+func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(record *entity.CrawlingRecord,
+	data []*valueobject.NewsWebsite) {
 	newsWebsites := make([]string, 0)
 
 	for _, item := range data {
@@ -81,24 +81,22 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(recordId uint, data []*
 	data = make([]*valueobject.NewsWebsite, len(newsWebsites))
 
 	for i, item := range newsWebsites {
-		data[i] = &valueobject.NewsWebsite{
-			Url: item,
-		}
+		data[i] = &valueobject.NewsWebsite{Url: item}
 	}
-
-	value, _ := json.Marshal(data)
 
 	// save news website
 	if err := c.systemSettingsSvc.SaveSystemConfig(context.Background(),
-		entity.NewSystemConfig(valueobject.NewsWebsiteKey, string(value))); err != nil {
+		entity.NewSystemConfig(valueobject.NewsWebsiteKey, data)); err != nil {
 		// TODO: logging
 
 		return
 	}
 
 	// update crawling record
-	if err := c.newsCrawlingSvc.UpdateCrawlingRecordStatus(context.Background(), recordId,
-		valueobject.CompletedCrawlingRecord); err != nil {
+	record.Status = valueobject.CompletedCrawlingRecord
+	record.Quantity = int64(len(newsWebsites))
+
+	if err := c.newsCrawlingSvc.UpdateCrawlingRecord(context.Background(), record); err != nil {
 		// TODO: logging
 		return
 	}

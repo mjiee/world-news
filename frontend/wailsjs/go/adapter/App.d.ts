@@ -5,6 +5,8 @@ import {httpx} from '../models';
 
 export function CrawlingNews(arg1:dto.CrawlingNewsRequest):Promise<httpx.Response>;
 
+export function CrawlingWebsite():Promise<httpx.Response>;
+
 export function DeleteCrawlingRecord(arg1:dto.DeleteCrawlingRecordRequest):Promise<httpx.Response>;
 
 export function DeleteNewsDetail(arg1:dto.DeleteNewsRequest):Promise<httpx.Response>;
