@@ -1,33 +1,5 @@
 export namespace dto {
 	
-	export class AddNewsKeywordRequest {
-	    keyword: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new AddNewsKeywordRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.keyword = source["keyword"];
-	    }
-	}
-	export class AddNewsWebsiteRequest {
-	    websiteType: string;
-	    url: string;
-	    config: string[];
-	
-	    static createFrom(source: any = {}) {
-	        return new AddNewsWebsiteRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.websiteType = source["websiteType"];
-	        this.url = source["url"];
-	        this.config = source["config"];
-	    }
-	}
 	export class CrawlingNewsRequest {
 	    startTime: string;
 	
@@ -52,18 +24,6 @@ export namespace dto {
 	        this.id = source["id"];
 	    }
 	}
-	export class DeleteNewsKeywordRequest {
-	    keyword: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new DeleteNewsKeywordRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.keyword = source["keyword"];
-	    }
-	}
 	export class DeleteNewsRequest {
 	    id: number;
 	
@@ -75,142 +35,6 @@ export namespace dto {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	    }
-	}
-	export class DeleteNewsWebsiteRequest {
-	    id: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new DeleteNewsWebsiteRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	    }
-	}
-	export class CrawlingRecord {
-	    id: number;
-	    date: string;
-	    quantity: number;
-	    status: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new CrawlingRecord(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.date = source["date"];
-	        this.quantity = source["quantity"];
-	        this.status = source["status"];
-	    }
-	}
-	export class GetCrawlingRecordResult {
-	    data: CrawlingRecord[];
-	    total: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new GetCrawlingRecordResult(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.data = this.convertValues(source["data"], CrawlingRecord);
-	        this.total = source["total"];
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
-	export class GetCrawlingRecordsRequest {
-	    page?: number;
-	    limit?: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new GetCrawlingRecordsRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.page = source["page"];
-	        this.limit = source["limit"];
-	    }
-	}
-	export class GetCrawlingRecordsResponse {
-	    Status: string;
-	    StatusCode: number;
-	    Proto: string;
-	    ProtoMajor: number;
-	    ProtoMinor: number;
-	    Header: {[key: string]: string[]};
-	    Body: any;
-	    ContentLength: number;
-	    TransferEncoding: string[];
-	    Close: boolean;
-	    Uncompressed: boolean;
-	    Trailer: {[key: string]: string[]};
-	    // Go type: http
-	    Request?: any;
-	    // Go type: tls
-	    TLS?: any;
-	    result?: GetCrawlingRecordResult;
-	
-	    static createFrom(source: any = {}) {
-	        return new GetCrawlingRecordsResponse(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Status = source["Status"];
-	        this.StatusCode = source["StatusCode"];
-	        this.Proto = source["Proto"];
-	        this.ProtoMajor = source["ProtoMajor"];
-	        this.ProtoMinor = source["ProtoMinor"];
-	        this.Header = source["Header"];
-	        this.Body = source["Body"];
-	        this.ContentLength = source["ContentLength"];
-	        this.TransferEncoding = source["TransferEncoding"];
-	        this.Close = source["Close"];
-	        this.Uncompressed = source["Uncompressed"];
-	        this.Trailer = source["Trailer"];
-	        this.Request = this.convertValues(source["Request"], null);
-	        this.TLS = this.convertValues(source["TLS"], null);
-	        this.result = this.convertValues(source["result"], GetCrawlingRecordResult);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
 	}
 	export class GetNewsDetailRequest {
 	    id: number;
@@ -280,28 +104,171 @@ export namespace dto {
 		    return a;
 		}
 	}
-	export class GetNewsKeywordsResponse {
-	    code: number;
-	    message: string;
-	    result: string[];
+	export class GetSystemConfigRequest {
+	    key: string;
 	
 	    static createFrom(source: any = {}) {
-	        return new GetNewsKeywordsResponse(source);
+	        return new GetSystemConfigRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.key = source["key"];
+	    }
+	}
+	export class SystemConfig {
+	    key: string;
+	    value: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SystemConfig(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.key = source["key"];
+	        this.value = source["value"];
+	    }
+	}
+	export class GetSystemConfigResponse {
+	    code: number;
+	    message: string;
+	    result?: SystemConfig;
+	
+	    static createFrom(source: any = {}) {
+	        return new GetSystemConfigResponse(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.code = source["code"];
 	        this.message = source["message"];
-	        this.result = source["result"];
+	        this.result = this.convertValues(source["result"], SystemConfig);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	
+	export class CrawlingRecord {
+	    id: number;
+	    date: string;
+	    quantity: number;
+	    status: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CrawlingRecord(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.date = source["date"];
+	        this.quantity = source["quantity"];
+	        this.status = source["status"];
 	    }
 	}
-	export class GetNewsListRequest {
+	export class QueryCrawlingRecordResult {
+	    data: CrawlingRecord[];
+	    total: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new QueryCrawlingRecordResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.data = this.convertValues(source["data"], CrawlingRecord);
+	        this.total = source["total"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class QueryCrawlingRecordsRequest {
+	    page?: number;
+	    limit?: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new QueryCrawlingRecordsRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.page = source["page"];
+	        this.limit = source["limit"];
+	    }
+	}
+	export class QueryCrawlingRecordsResponse {
+	    code: number;
+	    message: string;
+	    result?: QueryCrawlingRecordResult;
+	
+	    static createFrom(source: any = {}) {
+	        return new QueryCrawlingRecordsResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.code = source["code"];
+	        this.message = source["message"];
+	        this.result = this.convertValues(source["result"], QueryCrawlingRecordResult);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class QueryNewsRequest {
 	    recordId: number;
 	    pagination?: httpx.Pagination;
 	
 	    static createFrom(source: any = {}) {
-	        return new GetNewsListRequest(source);
+	        return new QueryNewsRequest(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -328,12 +295,12 @@ export namespace dto {
 		    return a;
 		}
 	}
-	export class GetNewsListResult {
+	export class QueryNewsResult {
 	    data: NewsDetail[];
 	    total: number;
 	
 	    static createFrom(source: any = {}) {
-	        return new GetNewsListResult(source);
+	        return new QueryNewsResult(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -360,137 +327,20 @@ export namespace dto {
 		    return a;
 		}
 	}
-	export class GetNewsListResponse {
+	export class QueryNewsResponse {
 	    code: number;
 	    message: string;
-	    result?: GetNewsListResult;
+	    result?: QueryNewsResult;
 	
 	    static createFrom(source: any = {}) {
-	        return new GetNewsListResponse(source);
+	        return new QueryNewsResponse(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.code = source["code"];
 	        this.message = source["message"];
-	        this.result = this.convertValues(source["result"], GetNewsListResult);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
-	
-	export class GetNewsWebsitesRequest {
-	    websiteType: string;
-	    pagination?: httpx.Pagination;
-	
-	    static createFrom(source: any = {}) {
-	        return new GetNewsWebsitesRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.websiteType = source["websiteType"];
-	        this.pagination = this.convertValues(source["pagination"], httpx.Pagination);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
-	export class NewsWebsite {
-	    id: number;
-	    websiteType: string;
-	    url: string;
-	    config: string[];
-	
-	    static createFrom(source: any = {}) {
-	        return new NewsWebsite(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.websiteType = source["websiteType"];
-	        this.url = source["url"];
-	        this.config = source["config"];
-	    }
-	}
-	export class GetNewsWebsitesResult {
-	    data: NewsWebsite[];
-	    total: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new GetNewsWebsitesResult(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.data = this.convertValues(source["data"], NewsWebsite);
-	        this.total = source["total"];
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
-	export class GetNewsWebsitesResponse {
-	    code: number;
-	    message: string;
-	    result?: GetNewsWebsitesResult;
-	
-	    static createFrom(source: any = {}) {
-	        return new GetNewsWebsitesResponse(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.code = source["code"];
-	        this.message = source["message"];
-	        this.result = this.convertValues(source["result"], GetNewsWebsitesResult);
+	        this.result = this.convertValues(source["result"], QueryNewsResult);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

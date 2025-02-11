@@ -53,6 +53,10 @@ func (a *App) init() {
 	a.newsCrawlingSvc = service.NewNewsCrawlingService(collector.NewCollector())
 	a.newsDetailSvc = service.NewNewsDetailService()
 	a.systemSettingsSvc = service.NewSystemSettingsService()
+
+	if err := a.systemSettingsSvc.SystemConfigInit(a.ctx); err != nil {
+		a.logx.Fatal(fmt.Sprintf("Failed to init system config: %+v", err))
+	}
 }
 
 // startup is called when the app starts.
@@ -62,14 +66,19 @@ func (a *App) Startup(ctx context.Context) {
 	a.init()
 }
 
-// GettSystemConfig handles the request to retrieve system config.
-func (a *App) GetSystemSettings(req *dto.GetSystemConfigRequest) *dto.GetSystemConfigResponse {
-	return nil
+// GetSystemConfig handles the request to retrieve system config.
+func (a *App) GetSystemConfig(req *dto.GetSystemConfigRequest) *dto.GetSystemConfigResponse {
+	config, err := a.systemSettingsSvc.GetSystemConfig(a.ctx, req.Key)
+	if err != nil {
+		return &dto.GetSystemConfigResponse{Response: httpx.Fail(err)}
+	}
+
+	return &dto.GetSystemConfigResponse{Result: dto.NewSystemConfigFromEntity(config)}
 }
 
 // SaveSystemConfig handles the request to save system config.
-func (a *App) SaveSystemSettings(req *dto.SystemConfig) *httpx.Response {
-	return nil
+func (a *App) SaveSystemConfig(req *dto.SystemConfig) *httpx.Response {
+	return httpx.Result(a.systemSettingsSvc.SaveSystemConfig(a.ctx, req.ToEntity()))
 }
 
 // CrawlingNews handles the request to crawl news.
@@ -77,27 +86,42 @@ func (a *App) CrawlingNews(req *dto.CrawlingNewsRequest) *httpx.Response {
 	return nil
 }
 
-// GetCrawlingRecords handles the request to retrieve crawling records.
-func (a *App) GetCrawlingRecords(req *dto.GetCrawlingRecordsRequest) *dto.GetCrawlingRecordsResponse {
-	return nil
+// QueryCrawlingRecords handles the request to retrieve crawling records.
+func (a *App) QueryCrawlingRecords(req *dto.QueryCrawlingRecordsRequest) *dto.QueryCrawlingRecordsResponse {
+	data, total, err := a.newsCrawlingSvc.QueryCrawlingRecords(a.ctx, &httpx.Pagination{Page: req.Page, Limit: req.Limit})
+	if err != nil {
+		return &dto.QueryCrawlingRecordsResponse{Response: httpx.Fail(err)}
+	}
+
+	return &dto.QueryCrawlingRecordsResponse{Result: dto.NewQueryCrawlingRecordResult(data, total)}
 }
 
 // DeleteCrawlingRecord handles the request to delete a crawling record.
 func (a *App) DeleteCrawlingRecord(req *dto.DeleteCrawlingRecordRequest) *httpx.Response {
-	return nil
+	return httpx.Result(a.newsCrawlingSvc.DeleteCrawlingRecord(a.ctx, req.Id))
 }
 
-// GetNewsList handles the request to retrieve news detail list.
-func (a *App) GetNewsList(req *dto.GetNewsListRequest) *dto.GetNewsListResponse {
-	return nil
+// QueryNews handles the request to retrieve news detail list.
+func (a *App) QueryNews(req *dto.QueryNewsRequest) *dto.QueryNewsResponse {
+	data, total, err := a.newsDetailSvc.QueryNews(a.ctx, req.RecordId, req.Pagination)
+	if err != nil {
+		return &dto.QueryNewsResponse{Response: httpx.Fail(err)}
+	}
+
+	return &dto.QueryNewsResponse{Result: dto.NewQueryNewsResult(data, total)}
 }
 
 // GetNewsDetail handles the request to retrieve a news detail.
 func (a *App) GetNewsDetail(req *dto.GetNewsDetailRequest) *dto.GetNewsDetailResponse {
-	return nil
+	news, err := a.newsDetailSvc.GetNewsDetail(a.ctx, req.Id)
+	if err != nil {
+		return &dto.GetNewsDetailResponse{Response: httpx.Fail(err)}
+	}
+
+	return &dto.GetNewsDetailResponse{Result: dto.NewNewsDetailFromEntity(news)}
 }
 
 // DeleteNewsDetail handles the request to delete a news detail.
 func (a *App) DeleteNewsDetail(req *dto.DeleteNewsRequest) *httpx.Response {
-	return nil
+	return httpx.Result(a.newsDetailSvc.DeleteNews(a.ctx, req.Id))
 }

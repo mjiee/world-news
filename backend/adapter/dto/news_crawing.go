@@ -1,28 +1,45 @@
 package dto
 
-import "net/http"
+import (
+	"github.com/mjiee/world-news/backend/entity"
+	"github.com/mjiee/world-news/backend/pkg/httpx"
+)
 
 // CrawlingNewsRequest is a struct for requesting news crawling tasks.
 type CrawlingNewsRequest struct {
 	StartTime string `json:"startTime"`
 }
 
-// GetCrawlingRecordsRequest is a struct for requesting crawling records.
-type GetCrawlingRecordsRequest struct {
-	Page  uint `json:"page,omitempty"`
-	Limit uint `json:"limit,omitempty"`
+// QueryCrawlingRecordsRequest is a struct for requesting crawling records.
+type QueryCrawlingRecordsRequest struct {
+	Page  int `json:"page,omitempty"`
+	Limit int `json:"limit,omitempty"`
 }
 
-// GetCrawlingRecordResult is the result struct for crawling records.
-type GetCrawlingRecordResult struct {
+// QueryCrawlingRecordResult is the result struct for crawling records.
+type QueryCrawlingRecordResult struct {
 	Data  []*CrawlingRecord `json:"data"`
 	Total int64             `json:"total"`
 }
 
-// GetCrawlingRecordsResponse is the response struct for crawling records.
-type GetCrawlingRecordsResponse struct {
-	*http.Response
-	Result *GetCrawlingRecordResult `json:"result"`
+// NewQueryCrawlingRecordResult creates a new GetCrawlingRecordResult instance.
+func NewQueryCrawlingRecordResult(data []*entity.CrawlingRecord, total int64) *QueryCrawlingRecordResult {
+	records := make([]*CrawlingRecord, len(data))
+
+	for i, record := range data {
+		records[i] = NewCrawlingRecordFromEntity(record)
+	}
+
+	return &QueryCrawlingRecordResult{
+		Data:  records,
+		Total: total,
+	}
+}
+
+// QueryCrawlingRecordsResponse is the response struct for crawling records.
+type QueryCrawlingRecordsResponse struct {
+	*httpx.Response
+	Result *QueryCrawlingRecordResult `json:"result"`
 }
 
 // CrawlingRecord represents a single crawling record.
@@ -31,6 +48,16 @@ type CrawlingRecord struct {
 	Date     string `json:"date"`
 	Quantity int64  `json:"quantity"`
 	Status   string `json:"status"`
+}
+
+// NewCrawlingRecordFromEntity creates a new CrawlingRecord instance.
+func NewCrawlingRecordFromEntity(record *entity.CrawlingRecord) *CrawlingRecord {
+	return &CrawlingRecord{
+		Id:       record.Id,
+		Date:     record.Date,
+		Quantity: record.Quantity,
+		Status:   record.Status,
+	}
 }
 
 // DeleteCrawlingRecordRequest is a struct for deleting a crawling record.

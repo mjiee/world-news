@@ -16,10 +16,18 @@ type SystemConfig struct {
 	UpdatedAt time.Time
 }
 
+// NewSystemConfig creates a new SystemConfig entity.
+func NewSystemConfig(key, value string) *SystemConfig {
+	return &SystemConfig{
+		Key:   key,
+		Value: value,
+	}
+}
+
 // NewSystemConfigFromModel converts a SystemConfigModel to a SystemConfig entity.
 func NewSystemConfigFromModel(m *model.SystemConfig) (*SystemConfig, error) {
 	if m == nil {
-		return nil, errorx.InternalError
+		return nil, errorx.SystemConfigNotFound
 	}
 
 	return &SystemConfig{
@@ -34,7 +42,7 @@ func NewSystemConfigFromModel(m *model.SystemConfig) (*SystemConfig, error) {
 // ToModel converts the SystemConfig entity to a SystemConfigModel.
 func (s *SystemConfig) ToModel() (*model.SystemConfig, error) {
 	if s == nil {
-		return nil, errorx.InternalError
+		return nil, errorx.SystemConfigNotFound
 	}
 
 	return &model.SystemConfig{
