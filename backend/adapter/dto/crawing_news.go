@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"time"
+
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
 )
@@ -44,19 +46,21 @@ type QueryCrawlingRecordsResponse struct {
 
 // CrawlingRecord represents a single crawling record.
 type CrawlingRecord struct {
-	Id       uint   `json:"id"`
-	Date     string `json:"date"`
-	Quantity int64  `json:"quantity"`
-	Status   string `json:"status"`
+	Id         uint   `json:"id"`
+	RecordType string `json:"recordType"`
+	Date       string `json:"date"`
+	Quantity   int64  `json:"quantity"`
+	Status     string `json:"status"`
 }
 
 // NewCrawlingRecordFromEntity creates a new CrawlingRecord instance.
 func NewCrawlingRecordFromEntity(record *entity.CrawlingRecord) *CrawlingRecord {
 	return &CrawlingRecord{
-		Id:       record.Id,
-		Date:     record.Date,
-		Quantity: record.Quantity,
-		Status:   record.Status,
+		Id:         record.Id,
+		RecordType: string(record.RecordType),
+		Date:       record.Date.Format(time.DateTime),
+		Quantity:   record.Quantity,
+		Status:     string(record.Status),
 	}
 }
 

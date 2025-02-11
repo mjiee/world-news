@@ -28,6 +28,7 @@ func newCrawlingRecord(db *gorm.DB, opts ...gen.DOOption) crawlingRecord {
 	tableName := _crawlingRecord.crawlingRecordDo.TableName()
 	_crawlingRecord.ALL = field.NewAsterisk(tableName)
 	_crawlingRecord.Id = field.NewUint(tableName, "id")
+	_crawlingRecord.RecordType = field.NewString(tableName, "record_type")
 	_crawlingRecord.Date = field.NewString(tableName, "date")
 	_crawlingRecord.Quantity = field.NewInt64(tableName, "quantity")
 	_crawlingRecord.Status = field.NewString(tableName, "status")
@@ -41,12 +42,13 @@ func newCrawlingRecord(db *gorm.DB, opts ...gen.DOOption) crawlingRecord {
 type crawlingRecord struct {
 	crawlingRecordDo crawlingRecordDo
 
-	ALL       field.Asterisk
-	Id        field.Uint
-	Date      field.String
-	Quantity  field.Int64
-	Status    field.String
-	CreatedAt field.Time
+	ALL        field.Asterisk
+	Id         field.Uint
+	RecordType field.String
+	Date       field.String
+	Quantity   field.Int64
+	Status     field.String
+	CreatedAt  field.Time
 
 	fieldMap map[string]field.Expr
 }
@@ -64,6 +66,7 @@ func (c crawlingRecord) As(alias string) *crawlingRecord {
 func (c *crawlingRecord) updateTableName(table string) *crawlingRecord {
 	c.ALL = field.NewAsterisk(table)
 	c.Id = field.NewUint(table, "id")
+	c.RecordType = field.NewString(table, "record_type")
 	c.Date = field.NewString(table, "date")
 	c.Quantity = field.NewInt64(table, "quantity")
 	c.Status = field.NewString(table, "status")
@@ -96,8 +99,9 @@ func (c *crawlingRecord) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (c *crawlingRecord) fillFieldMap() {
-	c.fieldMap = make(map[string]field.Expr, 5)
+	c.fieldMap = make(map[string]field.Expr, 6)
 	c.fieldMap["id"] = c.Id
+	c.fieldMap["record_type"] = c.RecordType
 	c.fieldMap["date"] = c.Date
 	c.fieldMap["quantity"] = c.Quantity
 	c.fieldMap["status"] = c.Status

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mjiee/world-news/backend/adapter/dto"
+	"github.com/mjiee/world-news/backend/command"
 	"github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/databasex"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
@@ -84,6 +85,13 @@ func (a *App) SaveSystemConfig(req *dto.SystemConfig) *httpx.Response {
 // CrawlingNews handles the request to crawl news.
 func (a *App) CrawlingNews(req *dto.CrawlingNewsRequest) *httpx.Response {
 	return nil
+}
+
+// CrawlingWebsite handles the request to crawl a news website.
+func (a *App) CrawlingWebsite() *httpx.Response {
+	cmd := command.NewCrawlingNewsWebsiteCommand(a.newsCrawlingSvc, a.systemSettingsSvc)
+
+	return httpx.Result(cmd.Execute(a.ctx))
 }
 
 // QueryCrawlingRecords handles the request to retrieve crawling records.

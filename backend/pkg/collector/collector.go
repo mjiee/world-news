@@ -1,6 +1,8 @@
 package collector
 
 import (
+	"context"
+	"errors"
 	"net"
 	"net/http"
 	"time"
@@ -37,4 +39,9 @@ func NewCollector() *colly.Collector {
 	extensions.Referer(c)
 
 	return c
+}
+
+// IgnorableError ignore the error
+func IgnorableError(err error) bool {
+	return errors.Is(err, colly.ErrAlreadyVisited) || errors.Is(err, context.DeadlineExceeded)
 }

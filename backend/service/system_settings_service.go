@@ -25,11 +25,6 @@ func NewSystemSettingsService() SystemSettingsService {
 	return &systemSettingsService{}
 }
 
-const (
-	NewsWebsiteCollectionKey = "news_website_collection" // news website collection
-	NewsWebsiteKey           = "news_website"            // news website
-)
-
 // SystemConfigInit initializes the system configuration.
 func (s *systemSettingsService) SystemConfigInit(ctx context.Context) error {
 	repo := repository.Q.SystemConfig
@@ -44,7 +39,7 @@ func (s *systemSettingsService) SystemConfigInit(ctx context.Context) error {
 	}
 
 	collectionValue, _ := json.Marshal(valueobject.NewsWebsiteCollection)
-	sysConfig, _ := entity.NewSystemConfig(NewsWebsiteCollectionKey, string(collectionValue)).ToModel()
+	sysConfig, _ := entity.NewSystemConfig(valueobject.NewsWebsiteCollectionKey, string(collectionValue)).ToModel()
 
 	return errors.WithStack(repository.Q.SystemConfig.WithContext(ctx).Create(sysConfig))
 }
