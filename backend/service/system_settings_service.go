@@ -9,13 +9,11 @@ type SystemSettingsService interface {
 }
 
 type systemSettingsService struct {
-	newsWebsiteRepo repository.NewsWebsiteRepository
-	keywordsRepo    repository.NewsKeywordsRepository
+	systemConfigRepo repository.SystemConfigRepository
 }
 
 func NewSystemSettingsService(db *gorm.DB) SystemSettingsService {
 	return &systemSettingsService{
-		newsWebsiteRepo: repository.NewNewsWebsiteRepository(db),
-		keywordsRepo:    repository.NewNewsKeywordsRepository(db),
+		systemConfigRepo: repository.NewSystemConfigRepository(db),
 	}
 }

@@ -63,33 +63,13 @@ func (a *App) Startup(ctx context.Context) {
 	a.init()
 }
 
-// GetNewsWebsites handles the request to retrieve news websites.
-func (a *App) GetNewsWebsites(req *dto.GetNewsWebsitesRequest) *dto.GetNewsWebsitesResponse {
+// GettSystemConfig handles the request to retrieve system config.
+func (a *App) GetSystemSettings(req *dto.GetSystemConfigRequest) *dto.GetSystemConfigResponse {
 	return nil
 }
 
-// AddNewsWebsite handles the request to add a new news website.
-func (a *App) AddNewsWebsite(req *dto.AddNewsWebsiteRequest) *httpx.Response {
-	return nil
-}
-
-// DeleteNewsWebsite handles the request to delete a news website.
-func (a *App) DeleteNewsWebsite(req *dto.DeleteNewsWebsiteRequest) *httpx.Response {
-	return nil
-}
-
-// GetNewsKeywords handles the request to retrieve news keywords.
-func (a *App) GetNewsKeywords() *dto.GetNewsKeywordsResponse {
-	return nil
-}
-
-// DeleteNewsKeyword handles the request to delete a news keyword.
-func (a *App) DeleteNewsKeyword(req *dto.DeleteNewsKeywordRequest) *httpx.Response {
-	return nil
-}
-
-// AddNewsKeyword handles the request to add a new news keyword.
-func (a *App) AddNewsKeyword(req *dto.AddNewsKeywordRequest) *httpx.Response {
+// SaveSystemConfig handles the request to save system config.
+func (a *App) SaveSystemSettings(req *dto.SystemConfig) *httpx.Response {
 	return nil
 }
 
