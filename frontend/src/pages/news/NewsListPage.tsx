@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
-import { Container, Table, Button } from "@mantine/core";
+import { Container, Table, Button, Modal, Group } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { HeaderMenu } from "@/components/HeaderMenu";
 
 // News list page
@@ -58,13 +59,36 @@ function NewsTableBody() {
           <Button variant="default" size="xs" onClick={() => navigate("/news/detail/" + item.id)}>
             view
           </Button>
-          <Button variant="default" size="xs">
-            delete
-          </Button>
+          <DeleteNewsButton newsId={item.id} />
         </Button.Group>
       </Table.Td>
     </Table.Tr>
   ));
 
   return <>{rows}</>;
+}
+
+interface DeleteNewsButtonProps {
+  newsId: number;
+}
+
+function DeleteNewsButton({ newsId }: DeleteNewsButtonProps) {
+  const [opened, { open, close }] = useDisclosure(false);
+
+  return (
+    <>
+      <Modal opened={opened} onClose={close} withCloseButton={false}>
+        <p>Are you sure you want to delete this news?</p>
+        <Group justify="flex-end">
+          <Button onClick={close}>OK</Button>
+          <Button onClick={close} variant="default">
+            Cancel
+          </Button>
+        </Group>
+      </Modal>
+      <Button variant="default" size="xs" onClick={open}>
+        delete
+      </Button>
+    </>
+  );
 }
