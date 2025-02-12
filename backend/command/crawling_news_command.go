@@ -47,7 +47,7 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	newsWebsites := websiteConfig.Value.([]*valueobject.NewsWebsite)
 
 	// get news keywords
-	keywordConfig, err := c.systemSettingsSvc.GetSystemConfig(ctx, valueobject.NewsKeywordKey)
+	topicConfig, err := c.systemSettingsSvc.GetSystemConfig(ctx, valueobject.NewsTopicKey)
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 		return errorx.InternalError
 	}
 
-	newsKeywords := keywordConfig.Value.([]string)
+	newsKeywords := topicConfig.Value.([]string)
 
 	// create crawling record
 	record := entity.NewCrawlingRecord(valueobject.CrawlingNews)
@@ -72,11 +72,11 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 }
 
 // crawlingNewsHandle crawling news
-func (c *CrawlingNewsCommand) crawlingNewsHandle(record *entity.CrawlingRecord, newsKeywords []string,
+func (c *CrawlingNewsCommand) crawlingNewsHandle(record *entity.CrawlingRecord, newsTopics []string,
 	newsWebsites []*valueobject.NewsWebsite) {
 	for _, website := range newsWebsites {
 		// crawling news topic page
-		topicPageUrls, err := c.crawlingNewsTopicPage(website.Url, newsKeywords)
+		topicPageUrls, err := c.crawlingNewsTopicPage(website.Url, newsTopics)
 		if err != nil {
 			// TODO: logging
 

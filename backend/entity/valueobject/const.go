@@ -4,7 +4,7 @@ package valueobject
 const (
 	NewsWebsiteCollectionKey = "newsWebsiteCollection" // news website collection
 	NewsWebsiteKey           = "newsWebsite"           // news website
-	NewsKeywordKey           = "newsKeyword"           // news keyword
+	NewsTopicKey             = "newsTopic"             // news topic
 )
 
 // html element
