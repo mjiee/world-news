@@ -1,83 +1,178 @@
-import { useNavigate } from "react-router";
-import { Container, Text, Flex, Space, Stack, Button, Title, Table, ActionIcon, Group, Pill } from "@mantine/core";
-import { IconPencil, IconTrash } from "@tabler/icons-react";
+import {
+  Button,
+  Container,
+  Accordion,
+  Text,
+  Table,
+  Space,
+  Switch,
+  Avatar,
+  Group,
+  Pill,
+  ActionIcon,
+  Flex,
+  Stack,
+} from "@mantine/core";
+import { IconPencil, IconPlus } from "@tabler/icons-react";
+import { HeaderMenu } from "@/components/HeaderMenu";
+
+const settingsItems = [
+  {
+    id: "topic",
+    image: "https://img.icons8.com/?size=100&id=46893&format=png&color=000000",
+    label: "News Topic",
+    description: "Configure the news topics you are interested in to filter news.",
+    content: <NewsTopics />,
+  },
+  {
+    id: "collection",
+    image: "https://img.icons8.com/?size=100&id=IwtVX5J92E9k&format=png&color=000000",
+    label: "News Website Collection",
+    description: "The news website collection is used to access global news websites.",
+    content: <NewsWebsiteCollection />,
+  },
+  {
+    id: "website",
+    image: "https://img.icons8.com/?size=100&id=42835&format=png&color=000000",
+    label: "News Website",
+    description: "The URLs of global news websites obtained from the news website collection.",
+    content: <NewsWebsite />,
+  },
+  {
+    id: "service",
+    image: "https://img.icons8.com/?size=100&id=104308&format=png&color=000000",
+    label: "Remote service",
+    description: "Enable cloud-deployed services for global news crawling, and use this feature when the local network is poor.",
+    content: <RemoteService />,
+  },
+];
 
 // Application settings page
 export function SettingsPage() {
-  let navigate = useNavigate();
-
-  return (
-    <Stack h={300} bg="var(--mantine-color-body)" align="flex-start" justify="flex-start" gap="md">
-      <Button onClick={() => navigate(-1)}>Return</Button>
-      <AggregationWebsites />
-      <NewsKeywords />
-      <GlobalNewsWebsites />
-    </Stack>
-  );
-}
-
-const data = [
-  { id: 1, url: "www.baidu.com" },
-  { id: 2, url: "www.typescript.com" },
-];
-
-function AggregationWebsites() {
-  return <WebsiteData title="News Website Aggregation" websiteType="AggregationWebsit" data={data} />;
-}
-
-function GlobalNewsWebsites() {
-  return <WebsiteData title="Global News Websites" websiteType="NewsWebsite" data={data} />;
-}
-
-interface WebsiteDataProps {
-  title: string;
-  websiteType: string;
-  data: {
-    id: number;
-    url: string;
-  }[];
-}
-
-function WebsiteData(props: WebsiteDataProps) {
-  const rows = props.data.map((item) => (
-    <Flex key={item.id} gap="xl" justify="flex-start" align="center" direction="row" wrap="wrap">
-      <Text>{item.url}</Text>
-      <Space w="md" />
-      <Group gap={0} justify="flex-end">
-        <ActionIcon variant="subtle" color="gray">
-          <IconPencil size={16} stroke={1.5} />
-        </ActionIcon>
-        <ActionIcon variant="subtle" color="red">
-          <IconTrash size={16} stroke={1.5} />
-        </ActionIcon>
-      </Group>
-    </Flex>
+  const items = settingsItems.map((item) => (
+    <Accordion.Item value={item.id} key={item.label}>
+      <Accordion.Control>
+        <SettingsLabel {...item} />
+      </Accordion.Control>
+      <Accordion.Panel>
+        <Group wrap="nowrap">
+          <Space w="54px" />
+          {item.content}
+        </Group>
+      </Accordion.Panel>
+    </Accordion.Item>
   ));
 
   return (
     <>
-      <Title order={2}>{props.title}</Title>
-      <Stack>{rows}</Stack>
+      <HeaderMenu />
+      <Container size="md">
+        <Accordion chevronPosition="right" variant="contained">
+          {items}
+        </Accordion>
+      </Container>
     </>
   );
 }
 
-const keys = [
-  { id: 1, key: "key1" },
-  { id: 2, key: "key2" },
-];
+interface SettingsLabelProps {
+  label: string;
+  image: string;
+  description: string;
+}
 
-function NewsKeywords() {
+function SettingsLabel({ label, image, description }: SettingsLabelProps) {
+  return (
+    <Group wrap="nowrap">
+      <Avatar src={image} radius="xl" size="lg" />
+      <div>
+        <Text>{label}</Text>
+        <Text size="sm" c="dimmed" fw={400}>
+          {description}
+        </Text>
+      </div>
+    </Group>
+  );
+}
+
+const keys = [{ key: "key1" }, { key: "key2" }];
+
+function NewsTopics() {
   const pills = keys.map((keyData) => (
-    <Pill key={keyData.id} withRemoveButton>
+    <Pill key={keyData.key} withRemoveButton size="lg">
       {keyData.key}
     </Pill>
   ));
 
   return (
     <>
-      <Title order={2}>News Keywords</Title>
       <Pill.Group>{pills}</Pill.Group>
+      <ActionIcon variant="default" size="sm">
+        <IconPlus />
+      </ActionIcon>
     </>
+  );
+}
+
+const data = [
+  { url: "www.baidu.com", selectors: ["aa, cc", "bb"] },
+  { url: "www.typescript.com", selectors: ["cc", "dd"] },
+];
+
+function NewsWebsiteCollection() {
+  return <WebsiteTable />;
+}
+
+function NewsWebsite() {
+  return (
+    <Stack w={"100%"} align="stretch" justify="flex-start" gap="md">
+      <Button variant="default">Update news website</Button>
+      <WebsiteTable />
+    </Stack>
+  );
+}
+
+function WebsiteTable() {
+  const tableHeader = (
+    <Table.Tr>
+      <Table.Th>Website</Table.Th>
+      <Table.Th>Selector</Table.Th>
+    </Table.Tr>
+  );
+
+  const tableBody = data.map((item) => (
+    <Table.Tr key={item.url}>
+      <Table.Td>{item.url}</Table.Td>
+      <Table.Td>
+        <Pill.Group>
+          {item.selectors.map((value) => (
+            <Pill key={value}>{value}</Pill>
+          ))}
+        </Pill.Group>
+      </Table.Td>
+    </Table.Tr>
+  ));
+
+  return (
+    <Table>
+      <Table.Thead>{tableHeader}</Table.Thead>
+      <Table.Tbody>{tableBody}</Table.Tbody>
+    </Table>
+  );
+}
+
+function RemoteService() {
+  return (
+    <div>
+      <Switch defaultChecked label="Enable remote services." />
+      <Flex gap="lg" justify="flex-start" align="center" direction="row" wrap="wrap">
+        <ActionIcon variant="default">
+          <IconPencil />
+        </ActionIcon>
+        <p>
+          https://127.0.0.1:8080 <span style={{ color: "var(--mantine-color-gray-5)" }}>(service host)</span>
+        </p>
+      </Flex>
+    </div>
   );
 }
