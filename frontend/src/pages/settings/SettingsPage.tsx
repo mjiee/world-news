@@ -12,7 +12,10 @@ import {
   ActionIcon,
   Flex,
   Stack,
+  Modal,
+  TextInput,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { IconPencil, IconPlus } from "@tabler/icons-react";
 import { HeaderMenu } from "@/components/HeaderMenu";
 
@@ -107,9 +110,30 @@ function NewsTopics() {
   return (
     <>
       <Pill.Group>{pills}</Pill.Group>
-      <ActionIcon variant="default" size="sm">
+      <AddNewsTopicButton />
+    </>
+  );
+}
+
+function AddNewsTopicButton() {
+  const [opened, { open, close }] = useDisclosure(false);
+
+  return (
+    <>
+      <ActionIcon variant="default" size="sm" onClick={open}>
         <IconPlus />
       </ActionIcon>
+      <Modal title="News Topic" opened={opened} onClose={close} withCloseButton={false}>
+        <TextInput />
+        <Group justify="flex-end" mt="md">
+          <Button type="submit" onClick={close}>
+            OK
+          </Button>
+          <Button onClick={close} variant="default">
+            Cancel
+          </Button>
+        </Group>
+      </Modal>
     </>
   );
 }

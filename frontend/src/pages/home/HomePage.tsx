@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router";
-import { Button, Container, Avatar, Group, Table } from "@mantine/core";
+import { Button, Container, Avatar, Group, Table, Modal, TextInput } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { useForm } from "@mantine/form";
 import styles from "@/styles/header.module.css";
 
 // Application homepage
@@ -20,7 +22,7 @@ function HomeHeader() {
       <Container size="md" className={styles.inner}>
         <Avatar size={28} name="World News" color="initials" />
         <Group gap={5}>
-          <Button>Fetch News</Button>
+          <FetchNewsButton />
           <Button onClick={() => navigate("/settings")}>Settings</Button>
         </Group>
       </Container>
@@ -28,9 +30,39 @@ function HomeHeader() {
   );
 }
 
+function FetchNewsButton() {
+  const [opened, { open, close }] = useDisclosure(false);
+
+  const form = useForm({
+    mode: "uncontrolled",
+    initialValues: {
+      startTime: "",
+    },
+  });
+
+  return (
+    <>
+      <Modal opened={opened} onClose={close} withCloseButton={false}>
+        <form onSubmit={form.onSubmit((values) => console.log(values))}>
+          <TextInput label="Start Time" key={form.key("startTime")} {...form.getInputProps("startTime")} />
+          <Group justify="flex-end" mt="md">
+            <Button type="submit" onClick={close}>
+              OK
+            </Button>
+            <Button onClick={close} variant="default">
+              Cancel
+            </Button>
+          </Group>
+        </form>
+      </Modal>
+      <Button onClick={open}>Fetch News</Button>
+    </>
+  );
+}
+
 const records = [
-  { id: 1, date: "2024.01.02", quantity: 123, status: "Pending" },
-  { id: 2, date: "2024.01.02", quantity: 333, status: "Completed" },
+  { id: 1, date: "2024.01.04", quantity: 123, status: "Pending" },
+  { id: 2, date: "2024.01.10", quantity: 333, status: "Completed" },
 ];
 
 function CrawlingRecords() {
@@ -47,7 +79,7 @@ function CrawlingRecords() {
   return (
     <Container size="md">
       <Table>
-        <Table.Thead>{tableHeader} </Table.Thead>
+        <Table.Thead>{tableHeader}</Table.Thead>
         <Table.Tbody>
           <RecordTableBody />
         </Table.Tbody>
@@ -70,13 +102,37 @@ function RecordTableBody() {
           <Button variant="default" size="xs" onClick={() => navigate("/news/list/" + item.id)}>
             view
           </Button>
-          <Button variant="default" size="xs">
-            delete
-          </Button>
+          <DeleteRecordButton recordId={item.id} date={item.date} />
         </Button.Group>
       </Table.Td>
     </Table.Tr>
   ));
 
   return <>{rows}</>;
+}
+
+interface DeleteRecordButtonProps {
+  recordId: number;
+  date: String;
+}
+
+function DeleteRecordButton({ recordId, date }: DeleteRecordButtonProps) {
+  const [opened, { open, close }] = useDisclosure(false);
+
+  return (
+    <>
+      <Modal opened={opened} onClose={close} withCloseButton={false}>
+        <p>Do you want to delete this record ({date})?</p>
+        <Group justify="flex-end">
+          <Button onClick={close}>OK</Button>
+          <Button onClick={close} variant="default">
+            Cancel
+          </Button>
+        </Group>
+      </Modal>
+      <Button variant="default" size="xs" onClick={open}>
+        delete
+      </Button>
+    </>
+  );
 }
