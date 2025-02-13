@@ -1,0 +1,12 @@
+{
+  "news_list": {
+    "news_table": {
+      "head": {
+        "date": "Date",
+        "title": "Title"
+      }
+    },
+    "delete_label": "Are you sure you want to delete this news?"
+  },
+  "news_detail": {}
+}

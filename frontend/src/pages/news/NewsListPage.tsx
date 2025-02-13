@@ -1,24 +1,27 @@
 import { useNavigate } from "react-router";
 import { Container, Table, Button, Modal, Group } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { HeaderMenu } from "@/components/HeaderMenu";
+import { useTranslation } from "react-i18next";
+import { BackHeader } from "@/components/BackHeader";
 
 // News list page
 export function NewsListPage() {
   return (
     <>
-      <HeaderMenu />
+      <BackHeader />
       <NewsTable />
     </>
   );
 }
 
 function NewsTable() {
+  const { t } = useTranslation("news");
+
   const tableHeader = (
     <Table.Tr>
       <Table.Th>ID</Table.Th>
-      <Table.Th>Date</Table.Th>
-      <Table.Th>Title</Table.Th>
+      <Table.Th>{t("news_list.news_table.head.date")}</Table.Th>
+      <Table.Th>{t("news_list.news_table.head.title")}</Table.Th>
       <Table.Th />
     </Table.Tr>
   );
@@ -48,6 +51,7 @@ const data = [
 
 function NewsTableBody() {
   let navigate = useNavigate();
+  const { t } = useTranslation();
 
   const rows = data.map((item) => (
     <Table.Tr key={item.id}>
@@ -57,7 +61,7 @@ function NewsTableBody() {
       <Table.Td>
         <Button.Group>
           <Button variant="default" size="xs" onClick={() => navigate("/news/detail/" + item.id)}>
-            view
+            {t("button.view")}
           </Button>
           <DeleteNewsButton newsId={item.id} />
         </Button.Group>
@@ -74,20 +78,21 @@ interface DeleteNewsButtonProps {
 
 function DeleteNewsButton({ newsId }: DeleteNewsButtonProps) {
   const [opened, { open, close }] = useDisclosure(false);
+  const { t } = useTranslation();
 
   return (
     <>
       <Modal opened={opened} onClose={close} withCloseButton={false}>
-        <p>Are you sure you want to delete this news?</p>
+        <p>{t("news_list.delete_label", { ns: "news" })}</p>
         <Group justify="flex-end">
-          <Button onClick={close}>OK</Button>
+          <Button onClick={close}>{t("button.ok")}</Button>
           <Button onClick={close} variant="default">
-            Cancel
+            {t("button.cancel")}
           </Button>
         </Group>
       </Modal>
       <Button variant="default" size="xs" onClick={open}>
-        delete
+        {t("button.delete")}
       </Button>
     </>
   );

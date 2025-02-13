@@ -1,5 +1,5 @@
 # app dependency check
-check_dependency:
+check-dependency:
 	@command -v wails >/dev/null 2>&1 || { \
 		echo "Error: wails is not installed. Installing..."; \
 		go install github.com/wailsapp/wails/v2/cmd/wails@latest; \
@@ -7,7 +7,7 @@ check_dependency:
 
 
 # run app
-run-app: check_dependency
+run-app: check-dependency
 	@wails dev
 
 # generate db

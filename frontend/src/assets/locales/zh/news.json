@@ -1,0 +1,12 @@
+{
+  "news_list": {
+    "news_table": {
+      "head": {
+        "date": "发布日期",
+        "title": "标题"
+      }
+    },
+    "delete_label": "是否想要删除该新闻？"
+  },
+  "news_detail": {}
+}
