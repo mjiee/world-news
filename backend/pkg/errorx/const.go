@@ -4,20 +4,20 @@ import "net/http"
 
 // basic error
 var (
-	InternalError = NewBasicError(http.StatusInternalServerError, "internal server error")
+	InternalError = NewBasicError(http.StatusInternalServerError, "Internal Server Error.")
 )
 
 // system config error
 var (
-	SystemConfigNotFound = NewBasicError(101011, "system config not found")
+	SystemConfigNotFound = NewBasicError(101011, "System config not found.")
 )
 
 // news error
 var (
-	NewsNotFound = NewBasicError(102011, "news not found")
+	NewsNotFound = NewBasicError(102011, "News not found.")
 )
 
 // crawling error
 var (
-	CrawlingRecordNotFound = NewBasicError(103011, "crawling record not found")
+	CrawlingRecordNotFound = NewBasicError(103011, "Crawling record not found.")
 )

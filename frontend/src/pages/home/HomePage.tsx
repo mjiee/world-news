@@ -25,6 +25,7 @@ function HomeHeader() {
       <Container size="md" className={styles.inner}>
         <Avatar size={28} name="World News" color="initials" />
         <Group>
+          {import.meta.env.VITE_PLATFORM}
           <FetchNewsButton />
           <Button onClick={() => navigate("/settings")}>{t("header.button.settings")}</Button>
           <LanguageSwitcher />

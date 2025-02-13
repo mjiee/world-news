@@ -48,62 +48,6 @@ export namespace dto {
 	        this.id = source["id"];
 	    }
 	}
-	export class NewsDetail {
-	    id: number;
-	    title: string;
-	    link: string;
-	    contents: string[];
-	    images: string[];
-	    publishedAt: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new NewsDetail(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.title = source["title"];
-	        this.link = source["link"];
-	        this.contents = source["contents"];
-	        this.images = source["images"];
-	        this.publishedAt = source["publishedAt"];
-	    }
-	}
-	export class GetNewsDetailResponse {
-	    code: number;
-	    message: string;
-	    result?: NewsDetail;
-	
-	    static createFrom(source: any = {}) {
-	        return new GetNewsDetailResponse(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.code = source["code"];
-	        this.message = source["message"];
-	        this.result = this.convertValues(source["result"], NewsDetail);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
 	export class GetSystemConfigRequest {
 	    key: string;
 	
@@ -115,107 +59,6 @@ export namespace dto {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.key = source["key"];
 	    }
-	}
-	export class SystemConfig {
-	    key: string;
-	    value: any;
-	
-	    static createFrom(source: any = {}) {
-	        return new SystemConfig(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.key = source["key"];
-	        this.value = source["value"];
-	    }
-	}
-	export class GetSystemConfigResponse {
-	    code: number;
-	    message: string;
-	    result?: SystemConfig;
-	
-	    static createFrom(source: any = {}) {
-	        return new GetSystemConfigResponse(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.code = source["code"];
-	        this.message = source["message"];
-	        this.result = this.convertValues(source["result"], SystemConfig);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
-	
-	export class CrawlingRecord {
-	    id: number;
-	    recordType: string;
-	    date: string;
-	    quantity: number;
-	    status: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new CrawlingRecord(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.recordType = source["recordType"];
-	        this.date = source["date"];
-	        this.quantity = source["quantity"];
-	        this.status = source["status"];
-	    }
-	}
-	export class QueryCrawlingRecordResult {
-	    data: CrawlingRecord[];
-	    total: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new QueryCrawlingRecordResult(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.data = this.convertValues(source["data"], CrawlingRecord);
-	        this.total = source["total"];
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
 	}
 	export class QueryCrawlingRecordsRequest {
 	    page?: number;
@@ -230,40 +73,6 @@ export namespace dto {
 	        this.page = source["page"];
 	        this.limit = source["limit"];
 	    }
-	}
-	export class QueryCrawlingRecordsResponse {
-	    code: number;
-	    message: string;
-	    result?: QueryCrawlingRecordResult;
-	
-	    static createFrom(source: any = {}) {
-	        return new QueryCrawlingRecordsResponse(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.code = source["code"];
-	        this.message = source["message"];
-	        this.result = this.convertValues(source["result"], QueryCrawlingRecordResult);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
 	}
 	export class QueryNewsRequest {
 	    recordId: number;
@@ -297,73 +106,20 @@ export namespace dto {
 		    return a;
 		}
 	}
-	export class QueryNewsResult {
-	    data: NewsDetail[];
-	    total: number;
+	export class SystemConfig {
+	    key: string;
+	    value: any;
 	
 	    static createFrom(source: any = {}) {
-	        return new QueryNewsResult(source);
+	        return new SystemConfig(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.data = this.convertValues(source["data"], NewsDetail);
-	        this.total = source["total"];
+	        this.key = source["key"];
+	        this.value = source["value"];
 	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
 	}
-	export class QueryNewsResponse {
-	    code: number;
-	    message: string;
-	    result?: QueryNewsResult;
-	
-	    static createFrom(source: any = {}) {
-	        return new QueryNewsResponse(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.code = source["code"];
-	        this.message = source["message"];
-	        this.result = this.convertValues(source["result"], QueryNewsResult);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
-	
 
 }
 
@@ -389,7 +145,8 @@ export namespace httpx {
 	}
 	export class Response {
 	    code: number;
-	    message: string;
+	    message?: string;
+	    result?: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new Response(source);
@@ -399,6 +156,7 @@ export namespace httpx {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.code = source["code"];
 	        this.message = source["message"];
+	        this.result = source["result"];
 	    }
 	}
 
