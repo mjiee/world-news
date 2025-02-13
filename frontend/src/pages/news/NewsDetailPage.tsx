@@ -1,5 +1,6 @@
-import { Container, Title, Image } from "@mantine/core";
-import { HeaderMenu } from "@/components/HeaderMenu";
+import { Container, Title, ActionIcon, CopyButton, Text, Flex } from "@mantine/core";
+import { IconCopy, IconCheck } from "@tabler/icons-react";
+import { BackHeader } from "@/components/BackHeader";
 
 const data = {
   title: "Example article.",
@@ -24,14 +25,33 @@ export function NewsDetailPage() {
 
   return (
     <>
-      <HeaderMenu />
+      <BackHeader />
       <Container size="md">
         <Title>{data.title}</Title>
         <p style={{ color: "var(--mantine-color-gray-5)" }}>{data.publishedAt}</p>
-        <a href={data.link}>{data.link}</a>
+        <NewsLink link={data.link} />
         {content}
         {image}
       </Container>
     </>
+  );
+}
+
+interface NewsLinkProps {
+  link: string;
+}
+
+function NewsLink({ link }: NewsLinkProps) {
+  return (
+    <Flex>
+      <Text c="blue">{link}</Text>
+      <CopyButton value={link} timeout={2000}>
+        {({ copied, copy }) => (
+          <ActionIcon color={copied ? "teal" : "gray"} variant="subtle" onClick={copy}>
+            {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+          </ActionIcon>
+        )}
+      </CopyButton>
+    </Flex>
   );
 }
