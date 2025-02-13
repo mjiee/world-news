@@ -1,0 +1,40 @@
+{
+  "settings_label": {
+    "topic": {
+      "label": "News Topic",
+      "description": "Configure the news topics you are interested in to filter news."
+    },
+    "collection": {
+      "label": "News Website Collection",
+      "description": "The news website collection is used to access global news websites."
+    },
+    "website": {
+      "label": "News Website",
+      "description": "The URLs of global news websites obtained from the news website collection."
+    },
+    "service": {
+      "label": "Remote service",
+      "description": "Enable cloud-deployed services for global news crawling, and use this feature when the local network is poor."
+    }
+  },
+  "news_website": {
+    "button": {
+      "update_news_website": "Update news website"
+    },
+    "table": {
+      "head": {
+        "website": "Website",
+        "selector": "Selector"
+      }
+    }
+  },
+  "remote_service": {
+    "lable": {
+      "enable_remote_service": "Enable remote service.",
+      "service_host": "Service host"
+    }
+  },
+  "news_topic": {
+    "title": "News Topic"
+  }
+}

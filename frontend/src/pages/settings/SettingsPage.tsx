@@ -17,35 +17,28 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconPencil, IconPlus } from "@tabler/icons-react";
-import { HeaderMenu } from "@/components/HeaderMenu";
+import { useTranslation } from "react-i18next";
+import { BackHeader } from "@/components/BackHeader";
 
 const settingsItems = [
   {
     id: "topic",
     image: "https://img.icons8.com/?size=100&id=46893&format=png&color=000000",
-    label: "News Topic",
-    description: "Configure the news topics you are interested in to filter news.",
     content: <NewsTopics />,
   },
   {
     id: "collection",
     image: "https://img.icons8.com/?size=100&id=IwtVX5J92E9k&format=png&color=000000",
-    label: "News Website Collection",
-    description: "The news website collection is used to access global news websites.",
     content: <NewsWebsiteCollection />,
   },
   {
     id: "website",
     image: "https://img.icons8.com/?size=100&id=42835&format=png&color=000000",
-    label: "News Website",
-    description: "The URLs of global news websites obtained from the news website collection.",
     content: <NewsWebsite />,
   },
   {
     id: "service",
     image: "https://img.icons8.com/?size=100&id=104308&format=png&color=000000",
-    label: "Remote service",
-    description: "Enable cloud-deployed services for global news crawling, and use this feature when the local network is poor.",
     content: <RemoteService />,
   },
 ];
@@ -53,7 +46,7 @@ const settingsItems = [
 // Application settings page
 export function SettingsPage() {
   const items = settingsItems.map((item) => (
-    <Accordion.Item value={item.id} key={item.label}>
+    <Accordion.Item key={item.id} value={item.id}>
       <Accordion.Control>
         <SettingsLabel {...item} />
       </Accordion.Control>
@@ -68,7 +61,7 @@ export function SettingsPage() {
 
   return (
     <>
-      <HeaderMenu />
+      <BackHeader />
       <Container size="md">
         <Accordion chevronPosition="right" variant="contained">
           {items}
@@ -79,19 +72,20 @@ export function SettingsPage() {
 }
 
 interface SettingsLabelProps {
-  label: string;
+  id: string;
   image: string;
-  description: string;
 }
 
-function SettingsLabel({ label, image, description }: SettingsLabelProps) {
+function SettingsLabel({ id, image }: SettingsLabelProps) {
+  const { t } = useTranslation("settings");
+
   return (
     <Group wrap="nowrap">
       <Avatar src={image} radius="xl" size="lg" />
       <div>
-        <Text>{label}</Text>
+        <Text>{t("settings_label." + id + ".label")}</Text>
         <Text size="sm" c="dimmed" fw={400}>
-          {description}
+          {t("settings_label." + id + ".description")}
         </Text>
       </div>
     </Group>
@@ -117,20 +111,21 @@ function NewsTopics() {
 
 function AddNewsTopicButton() {
   const [opened, { open, close }] = useDisclosure(false);
+  const { t } = useTranslation();
 
   return (
     <>
       <ActionIcon variant="default" size="sm" onClick={open}>
         <IconPlus />
       </ActionIcon>
-      <Modal title="News Topic" opened={opened} onClose={close} withCloseButton={false}>
+      <Modal title={t("news_topic.title", { ns: "settings" })} opened={opened} onClose={close} withCloseButton={false}>
         <TextInput />
         <Group justify="flex-end" mt="md">
           <Button type="submit" onClick={close}>
-            OK
+            {t("button.ok")}
           </Button>
           <Button onClick={close} variant="default">
-            Cancel
+            {t("button.cancel")}
           </Button>
         </Group>
       </Modal>
@@ -148,19 +143,23 @@ function NewsWebsiteCollection() {
 }
 
 function NewsWebsite() {
+  const { t } = useTranslation("settings");
+
   return (
     <Stack w={"100%"} align="stretch" justify="flex-start" gap="md">
-      <Button variant="default">Update news website</Button>
+      <Button variant="default">{t("news_website.button.update_news_website")}</Button>
       <WebsiteTable />
     </Stack>
   );
 }
 
 function WebsiteTable() {
+  const { t } = useTranslation("settings");
+
   const tableHeader = (
     <Table.Tr>
-      <Table.Th>Website</Table.Th>
-      <Table.Th>Selector</Table.Th>
+      <Table.Th>{t("news_website.table.head.website")}</Table.Th>
+      <Table.Th>{t("news_website.table.head.selector")}</Table.Th>
     </Table.Tr>
   );
 
@@ -186,15 +185,18 @@ function WebsiteTable() {
 }
 
 function RemoteService() {
+  const { t } = useTranslation("settings");
+
   return (
     <div>
-      <Switch defaultChecked label="Enable remote services." />
+      <Switch defaultChecked label={t("remote_service.lable.enable_remote_service")} />
       <Flex gap="lg" justify="flex-start" align="center" direction="row" wrap="wrap">
         <ActionIcon variant="default">
           <IconPencil />
         </ActionIcon>
         <p>
-          https://127.0.0.1:8080 <span style={{ color: "var(--mantine-color-gray-5)" }}>(service host)</span>
+          https://127.0.0.1:8080
+          <span style={{ color: "var(--mantine-color-gray-5)" }}>({t("remote_service.lable.service_host")})</span>
         </p>
       </Flex>
     </div>

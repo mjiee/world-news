@@ -1,0 +1,40 @@
+{
+  "settings_label": {
+    "topic": {
+      "label": "新闻主题",
+      "description": "配置你感兴趣的新闻主题以过滤新闻。"
+    },
+    "collection": {
+      "label": "新闻网站集",
+      "description": "新闻网站集用于获取全球新闻网站。"
+    },
+    "website": {
+      "label": "新闻网站",
+      "description": "从新闻网站集中获取的全球新闻网址。"
+    },
+    "service": {
+      "label": "远程服务",
+      "description": "启用云端部署的服务获取全球新闻，当本地网络无法使用时开启。"
+    }
+  },
+  "news_website": {
+    "button": {
+      "update_news_website": "更新新闻网站"
+    },
+    "table": {
+      "head": {
+        "website": "网址",
+        "selector": "选择器"
+      }
+    }
+  },
+  "remote_service": {
+    "lable": {
+      "enable_remote_service": "启用远程服务。",
+      "service_host": "服务地址"
+    }
+  },
+  "news_topic": {
+    "title": "新闻主题"
+  }
+}
