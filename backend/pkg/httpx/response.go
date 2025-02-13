@@ -5,7 +5,8 @@ import "github.com/mjiee/world-news/backend/pkg/errorx"
 // Response is a public response struct.
 type Response struct {
 	Code    uint32 `json:"code"`
-	Message string `json:"message"`
+	Message string `json:"message,omitempty"`
+	Result  any    `json:"result,omitempty"`
 }
 
 // NewResponse creates and returns a new Response object
@@ -14,6 +15,20 @@ func NewResponse(code uint32, message string) *Response {
 		Code:    code,
 		Message: message,
 	}
+}
+
+// Resp is a convenience function used to create a response object based on the provided result and error.
+func Resp(result any, err error) *Response {
+	if err == nil {
+		return Ok(result)
+	}
+
+	return Fail(err)
+}
+
+// Ok is a convenience function used to create a response object with a successful status (code 0 and no message).
+func Ok(result any) *Response {
+	return &Response{Result: result}
 }
 
 // Fail is a convenience function used to create a response object with a failed status (code 1 and no message).
@@ -26,8 +41,8 @@ func Fail(err error) *Response {
 	return NewResponse(errorx.InternalError.GetCode(), errorx.InternalError.GetMessage())
 }
 
-// Result is a convenience function used to create a response object based on the provided error.
-func Result(err error) *Response {
+// RespE is a convenience function used to create a response object based on the provided error.
+func RespE(err error) *Response {
 	if err == nil {
 		return NewResponse(0, "")
 	} else {
