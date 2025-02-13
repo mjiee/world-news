@@ -6,5 +6,8 @@
     "view": "View",
     "delete": "Delete",
     "submit": "Submit"
+  },
+  "message": {
+    "internal_error": "Internal Server Error"
   }
 }

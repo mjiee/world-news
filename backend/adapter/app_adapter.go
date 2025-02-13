@@ -68,70 +68,56 @@ func (a *App) Startup(ctx context.Context) {
 }
 
 // GetSystemConfig handles the request to retrieve system config.
-func (a *App) GetSystemConfig(req *dto.GetSystemConfigRequest) *dto.GetSystemConfigResponse {
-	config, err := a.systemSettingsSvc.GetSystemConfig(a.ctx, req.Key)
-	if err != nil {
-		return &dto.GetSystemConfigResponse{Response: httpx.Fail(err)}
-	}
-
-	return &dto.GetSystemConfigResponse{Result: dto.NewSystemConfigFromEntity(config)}
+func (a *App) GetSystemConfig(req *dto.GetSystemConfigRequest) *httpx.Response {
+	return httpx.Resp(a.systemSettingsSvc.GetSystemConfig(a.ctx, req.Key))
 }
 
 // SaveSystemConfig handles the request to save system config.
 func (a *App) SaveSystemConfig(req *dto.SystemConfig) *httpx.Response {
-	return httpx.Result(a.systemSettingsSvc.SaveSystemConfig(a.ctx, req.ToEntity()))
+	return httpx.RespE(a.systemSettingsSvc.SaveSystemConfig(a.ctx, req.ToEntity()))
 }
 
 // CrawlingNews handles the request to crawl news.
 func (a *App) CrawlingNews(req *dto.CrawlingNewsRequest) *httpx.Response {
 	cmd := command.NewCrawlingNewsCommand(a.newsCrawlingSvc, a.newsDetailSvc, a.systemSettingsSvc)
 
-	return httpx.Result(cmd.Execute(a.ctx))
+	return httpx.RespE(cmd.Execute(a.ctx))
 }
 
 // CrawlingWebsite handles the request to crawl a news website.
 func (a *App) CrawlingWebsite() *httpx.Response {
 	cmd := command.NewCrawlingNewsWebsiteCommand(a.newsCrawlingSvc, a.systemSettingsSvc)
 
-	return httpx.Result(cmd.Execute(a.ctx))
+	return httpx.RespE(cmd.Execute(a.ctx))
 }
 
 // QueryCrawlingRecords handles the request to retrieve crawling records.
-func (a *App) QueryCrawlingRecords(req *dto.QueryCrawlingRecordsRequest) *dto.QueryCrawlingRecordsResponse {
+func (a *App) QueryCrawlingRecords(req *dto.QueryCrawlingRecordsRequest) *httpx.Response {
 	data, total, err := a.newsCrawlingSvc.QueryCrawlingRecords(a.ctx, &httpx.Pagination{Page: req.Page, Limit: req.Limit})
-	if err != nil {
-		return &dto.QueryCrawlingRecordsResponse{Response: httpx.Fail(err)}
-	}
 
-	return &dto.QueryCrawlingRecordsResponse{Result: dto.NewQueryCrawlingRecordResult(data, total)}
+	return httpx.Resp(dto.NewQueryCrawlingRecordResult(data, total), err)
 }
 
 // DeleteCrawlingRecord handles the request to delete a crawling record.
 func (a *App) DeleteCrawlingRecord(req *dto.DeleteCrawlingRecordRequest) *httpx.Response {
-	return httpx.Result(a.newsCrawlingSvc.DeleteCrawlingRecord(a.ctx, req.Id))
+	return httpx.RespE(a.newsCrawlingSvc.DeleteCrawlingRecord(a.ctx, req.Id))
 }
 
 // QueryNews handles the request to retrieve news detail list.
-func (a *App) QueryNews(req *dto.QueryNewsRequest) *dto.QueryNewsResponse {
+func (a *App) QueryNews(req *dto.QueryNewsRequest) *httpx.Response {
 	data, total, err := a.newsDetailSvc.QueryNews(a.ctx, req.RecordId, req.Pagination)
-	if err != nil {
-		return &dto.QueryNewsResponse{Response: httpx.Fail(err)}
-	}
 
-	return &dto.QueryNewsResponse{Result: dto.NewQueryNewsResult(data, total)}
+	return httpx.Resp(dto.NewQueryNewsResult(data, total), err)
 }
 
 // GetNewsDetail handles the request to retrieve a news detail.
-func (a *App) GetNewsDetail(req *dto.GetNewsDetailRequest) *dto.GetNewsDetailResponse {
+func (a *App) GetNewsDetail(req *dto.GetNewsDetailRequest) *httpx.Response {
 	news, err := a.newsDetailSvc.GetNewsDetail(a.ctx, req.Id)
-	if err != nil {
-		return &dto.GetNewsDetailResponse{Response: httpx.Fail(err)}
-	}
 
-	return &dto.GetNewsDetailResponse{Result: dto.NewNewsDetailFromEntity(news)}
+	return httpx.Resp(dto.NewNewsDetailFromEntity(news), err)
 }
 
 // DeleteNewsDetail handles the request to delete a news detail.
 func (a *App) DeleteNewsDetail(req *dto.DeleteNewsRequest) *httpx.Response {
-	return httpx.Result(a.newsDetailSvc.DeleteNews(a.ctx, req.Id))
+	return httpx.RespE(a.newsDetailSvc.DeleteNews(a.ctx, req.Id))
 }
