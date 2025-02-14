@@ -14,3 +14,9 @@ run-app: check-dependency
 .PHONY: db
 db:
 	@go run backend/repository/generator/main.go
+
+
+# manually generate the wailsjs directory
+.PHONY: module
+module:
+	@wails generate module

@@ -29,12 +29,18 @@
     }
   },
   "remote_service": {
+    "web_not_support": "网页客户端不支持远程服务配置。",
     "lable": {
       "enable_remote_service": "启用远程服务。",
       "service_host": "服务地址"
     }
   },
   "news_topic": {
-    "title": "新闻主题"
+    "add_button": "添加",
+    "input_placeholder": "输入主题",
+    "topic_validate": {
+      "required": "请输入新闻主题。",
+      "duplicate": "该新闻主题已存在。"
+    }
   }
 }

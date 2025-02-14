@@ -17,21 +17,21 @@ import (
 
 // CrawlingNewsWebsiteCommand crawlling news website command
 type CrawlingNewsWebsiteCommand struct {
-	newsCrawlingSvc   service.NewsCrawlingService
-	systemSettingsSvc service.SystemSettingsService
+	crawlingSvc     service.CrawlingService
+	systemConfigSvc service.SystemConfigService
 }
 
-func NewCrawlingNewsWebsiteCommand(newsCrawlingSvc service.NewsCrawlingService,
-	systemSettingsSvc service.SystemSettingsService) *CrawlingNewsWebsiteCommand {
+func NewCrawlingNewsWebsiteCommand(crawlingSvc service.CrawlingService,
+	systemConfigSvc service.SystemConfigService) *CrawlingNewsWebsiteCommand {
 	return &CrawlingNewsWebsiteCommand{
-		newsCrawlingSvc:   newsCrawlingSvc,
-		systemSettingsSvc: systemSettingsSvc,
+		crawlingSvc:     crawlingSvc,
+		systemConfigSvc: systemConfigSvc,
 	}
 }
 
 func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 	// get news website collection
-	config, err := c.systemSettingsSvc.GetSystemConfig(ctx, valueobject.NewsWebsiteCollectionKey)
+	config, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsWebsiteCollectionKey)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 	// create crawling record
 	record := entity.NewCrawlingRecord(valueobject.CrawlingWebsite)
 
-	if err := c.newsCrawlingSvc.CreateCrawlingRecord(ctx, record); err != nil {
+	if err := c.crawlingSvc.CreateCrawlingRecord(ctx, record); err != nil {
 		return err
 	}
 
@@ -85,7 +85,7 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(record *entity.Crawling
 	}
 
 	// save news website
-	if err := c.systemSettingsSvc.SaveSystemConfig(context.Background(),
+	if err := c.systemConfigSvc.SaveSystemConfig(context.Background(),
 		entity.NewSystemConfig(valueobject.NewsWebsiteKey, data)); err != nil {
 		// TODO: logging
 
@@ -96,7 +96,7 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(record *entity.Crawling
 	record.Status = valueobject.CompletedCrawlingRecord
 	record.Quantity = int64(len(newsWebsites))
 
-	if err := c.newsCrawlingSvc.UpdateCrawlingRecord(context.Background(), record); err != nil {
+	if err := c.crawlingSvc.UpdateCrawlingRecord(context.Background(), record); err != nil {
 		// TODO: logging
 		return
 	}
@@ -111,7 +111,7 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(website string, selectors ..
 	// crawling website
 	var (
 		links     = make([]string, 0)
-		collector = c.newsCrawlingSvc.GetCollector()
+		collector = c.crawlingSvc.GetCollector()
 	)
 
 	collector.OnHTML(selectors[0], func(h *colly.HTMLElement) {

@@ -11,7 +11,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-type NewsCrawlingService interface {
+// CrawlingService news crawling service
+type CrawlingService interface {
 	GetCollector() *colly.Collector
 	CreateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error
 	UpdateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error
@@ -19,21 +20,21 @@ type NewsCrawlingService interface {
 	DeleteCrawlingRecord(ctx context.Context, id uint) error
 }
 
-type newsCrawlingService struct {
+type crawlingService struct {
 	collector *colly.Collector
 }
 
-func NewNewsCrawlingService(c *colly.Collector) NewsCrawlingService {
-	return &newsCrawlingService{collector: c}
+func NewCrawlingService(c *colly.Collector) CrawlingService {
+	return &crawlingService{collector: c}
 }
 
 // GetCollector get a new collector
-func (s *newsCrawlingService) GetCollector() *colly.Collector {
+func (s *crawlingService) GetCollector() *colly.Collector {
 	return s.collector.Clone()
 }
 
 // CreateCrawlingRecord create crawling record
-func (s *newsCrawlingService) CreateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error {
+func (s *crawlingService) CreateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error {
 	data, err := record.ToModel()
 	if err != nil {
 		return errors.WithStack(err)
@@ -49,7 +50,7 @@ func (s *newsCrawlingService) CreateCrawlingRecord(ctx context.Context, record *
 }
 
 // UpdateCrawlingRecord update crawling record status
-func (s *newsCrawlingService) UpdateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error {
+func (s *crawlingService) UpdateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error {
 	data, err := record.ToModel()
 	if err != nil {
 		return errors.WithStack(err)
@@ -61,7 +62,7 @@ func (s *newsCrawlingService) UpdateCrawlingRecord(ctx context.Context, record *
 }
 
 // QueryCrawlingRecords get crawling records
-func (s *newsCrawlingService) QueryCrawlingRecords(ctx context.Context, page *httpx.Pagination) ([]*entity.CrawlingRecord, int64, error) {
+func (s *crawlingService) QueryCrawlingRecords(ctx context.Context, page *httpx.Pagination) ([]*entity.CrawlingRecord, int64, error) {
 	data, total, err := repository.Q.CrawlingRecord.WithContext(ctx).FindByPage(page.GetOffset(), page.GetLimit())
 	if err != nil {
 		return nil, 0, errors.WithStack(err)
@@ -80,7 +81,7 @@ func (s *newsCrawlingService) QueryCrawlingRecords(ctx context.Context, page *ht
 }
 
 // DeleteCrawlingRecord delete crawling record
-func (s *newsCrawlingService) DeleteCrawlingRecord(ctx context.Context, id uint) error {
+func (s *crawlingService) DeleteCrawlingRecord(ctx context.Context, id uint) error {
 	err := repository.Q.Transaction(func(tx *repository.Query) error {
 		if _, err := tx.CrawlingRecord.WithContext(ctx).Where(tx.CrawlingRecord.Id.Eq(uint(id))).Delete(); err != nil {
 			return errors.WithStack(err)

@@ -4,16 +4,20 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "VITE_PLATFORM=web vite",
+    "dev": "vite",
+    "dev-web": "VITE_PLATFORM=web vite",
     "build": "tsc && vite build",
+    "build-web": "tsc && VITE_PLATFORM=web vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@mantine/core": "^7.16.1",
+    "@mantine/dates": "^7.16.3",
     "@mantine/form": "^7.16.3",
     "@mantine/hooks": "^7.16.1",
     "@tabler/icons-react": "^3.29.0",
     "axios": "^1.7.9",
+    "dayjs": "^1.11.13",
     "i18next": "^24.2.2",
     "i18next-browser-languagedetector": "^8.0.2",
     "react": "^18.2.0",

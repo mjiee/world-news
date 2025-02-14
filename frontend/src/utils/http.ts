@@ -4,10 +4,10 @@ import { useNotificationStore, useRemoteServiceStore } from "@/stores";
 import { httpx } from "wailsjs/go/models";
 import { isWeb } from "./platform";
 
-export interface Response<T> {
+export interface Response<R> {
   code?: number;
   message?: string;
-  result?: T;
+  result?: R;
 }
 
 // useRemoteService is used to check if the remote service is enabled
@@ -17,14 +17,33 @@ export function useRemoteService(): boolean {
   return isWeb() || (enable && host !== null && !!host);
 }
 
+// call is used to handle the results returned by wails.
+export async function call<R>(resp: Promise<httpx.Response>): Promise<R | undefined> {
+  let result = await resp
+    .then((resp) => {
+      if (resp.code !== 0) {
+        notificationError(resp?.message ?? undefined);
+
+        return;
+      }
+
+      return resp.result;
+    })
+    .catch((err) => {
+      notificationError();
+    });
+
+  return result ?? undefined;
+}
+
 // post http request
-export async function post<T, K>(url: string, params?: T): Promise<K | undefined> {
-  return await resultHandle(axios.post<Response<K>>(urlHandle(url), params));
+export async function post<P, R>(url: string, params?: P): Promise<R | undefined> {
+  return await httpResultHandle(axios.post<Response<R>>(urlHandle(url), params));
 }
 
 // get http request
-export async function get<T, K>(url: string, params?: T): Promise<K | undefined> {
-  return await resultHandle(axios.get<Response<K>>(urlHandle(url), { params: params }));
+export async function get<P, R>(url: string, params?: P): Promise<R | undefined> {
+  return await httpResultHandle(axios.get<Response<R>>(urlHandle(url), { params: params }));
 }
 
 // urlHandle is used to handle the url
@@ -36,37 +55,20 @@ function urlHandle(url: string): string {
   return new URL(url, host as string).href;
 }
 
-// call is used to handle the results returned by wails.
-export async function call<T>(resp: Promise<httpx.Response>): Promise<T | undefined> {
-  return await resultHandle(resp);
-}
-
-// resultHandle is used to handle the results returned by axios or wails.
-async function resultHandle<T>(resp: Promise<AxiosResponse<Response<T>, any>> | Promise<httpx.Response>): Promise<T | undefined> {
+// httpResultHandle is used to handle the results returned by http request
+async function httpResultHandle<R>(resp: Promise<AxiosResponse<Response<R>, any>>): Promise<R | undefined> {
   let data = await resp
     .then((resp) => {
-      if (resp instanceof httpx.Response) {
-        if (resp?.code !== 0) {
-          notificationError(resp.message);
+      if (resp?.status !== 200 && resp?.data?.code !== 0) {
+        notificationError(resp?.data?.message ?? undefined);
 
-          return undefined;
-        }
-
-        return resp.result;
-      } else {
-        if (resp?.status !== 200 && resp?.data?.code !== 0) {
-          notificationError(resp.data.message ?? undefined);
-
-          return undefined;
-        }
-
-        return resp.data.result;
+        return;
       }
+
+      return resp.data.result;
     })
     .catch((err) => {
       notificationError();
-
-      return undefined;
     });
 
   return data ?? undefined;
