@@ -19,23 +19,23 @@ import (
 
 // CrawlingNewsCommand is a command for crawling news.
 type CrawlingNewsCommand struct {
-	newsCrawlingSvc   service.NewsCrawlingService
-	newsDetailSvc     service.NewsDetailService
-	systemSettingsSvc service.SystemSettingsService
+	crawlingSvc     service.CrawlingService
+	newsSvc         service.NewsService
+	systemConfigSvc service.SystemConfigService
 }
 
-func NewCrawlingNewsCommand(newsCrawlingSvc service.NewsCrawlingService, newsDetailSvc service.NewsDetailService,
-	systemSettingsSvc service.SystemSettingsService) *CrawlingNewsCommand {
+func NewCrawlingNewsCommand(crawlingSvc service.CrawlingService, newsSvc service.NewsService,
+	systemConfigSvc service.SystemConfigService) *CrawlingNewsCommand {
 	return &CrawlingNewsCommand{
-		newsCrawlingSvc:   newsCrawlingSvc,
-		newsDetailSvc:     newsDetailSvc,
-		systemSettingsSvc: systemSettingsSvc,
+		crawlingSvc:     crawlingSvc,
+		newsSvc:         newsSvc,
+		systemConfigSvc: systemConfigSvc,
 	}
 }
 
 func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	// get news website
-	websiteConfig, err := c.systemSettingsSvc.GetSystemConfig(ctx, valueobject.NewsWebsiteKey)
+	websiteConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsWebsiteKey)
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	newsWebsites := websiteConfig.Value.([]*valueobject.NewsWebsite)
 
 	// get news keywords
-	topicConfig, err := c.systemSettingsSvc.GetSystemConfig(ctx, valueobject.NewsTopicKey)
+	topicConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsTopicKey)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	// create crawling record
 	record := entity.NewCrawlingRecord(valueobject.CrawlingNews)
 
-	if err := c.newsCrawlingSvc.CreateCrawlingRecord(ctx, record); err != nil {
+	if err := c.crawlingSvc.CreateCrawlingRecord(ctx, record); err != nil {
 		return err
 	}
 
@@ -116,7 +116,7 @@ func (c *CrawlingNewsCommand) crawlingNewsHandle(record *entity.CrawlingRecord, 
 		}
 
 		// save news
-		if err := c.newsDetailSvc.CreateNews(context.Background(), news...); err != nil {
+		if err := c.newsSvc.CreateNews(context.Background(), news...); err != nil {
 			// TODO: logging
 			continue
 		}
@@ -127,7 +127,7 @@ func (c *CrawlingNewsCommand) crawlingNewsHandle(record *entity.CrawlingRecord, 
 	// update crawling record status
 	record.Status = valueobject.CompletedCrawlingRecord
 
-	if err := c.newsCrawlingSvc.UpdateCrawlingRecord(context.Background(), record); err != nil {
+	if err := c.crawlingSvc.UpdateCrawlingRecord(context.Background(), record); err != nil {
 		// TODO: logging
 	}
 }
@@ -135,7 +135,7 @@ func (c *CrawlingNewsCommand) crawlingNewsHandle(record *entity.CrawlingRecord, 
 // crawlingNewsTopicPage crawling news topic page
 func (c *CrawlingNewsCommand) crawlingNewsTopicPage(websiteUrl string, topics []string) ([]string, error) {
 	var (
-		collector = c.newsCrawlingSvc.GetCollector()
+		collector = c.crawlingSvc.GetCollector()
 		pageUrls  = []string{}
 	)
 
@@ -169,7 +169,7 @@ func (c *CrawlingNewsCommand) crawlingNewsTopicPage(websiteUrl string, topics []
 // crawlingNewsLink crawling news link
 func (c *CrawlingNewsCommand) crawlingNewsLink(topicPageUrl string) ([]string, error) {
 	var (
-		collector = c.newsCrawlingSvc.GetCollector()
+		collector = c.crawlingSvc.GetCollector()
 		newsLinks = []string{}
 	)
 
@@ -209,7 +209,7 @@ func (c *CrawlingNewsCommand) crawlingNewsLink(topicPageUrl string) ([]string, e
 // crawlingNewsDetail crawling news detail
 func (c *CrawlingNewsCommand) crawlingNewsDetail(newsLink string) (*entity.NewsDetail, error) {
 	var (
-		collector = c.newsCrawlingSvc.GetCollector()
+		collector = c.crawlingSvc.GetCollector()
 		news      = &entity.NewsDetail{Link: newsLink}
 	)
 

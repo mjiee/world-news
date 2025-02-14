@@ -1,6 +1,8 @@
 package httpx
 
-import "github.com/mjiee/world-news/backend/pkg/errorx"
+import (
+	"github.com/mjiee/world-news/backend/pkg/errorx"
+)
 
 // Response is a public response struct.
 type Response struct {

@@ -12,21 +12,22 @@ import (
 	"gorm.io/gorm"
 )
 
-type SystemSettingsService interface {
+// SystemConfigService system config service
+type SystemConfigService interface {
 	SystemConfigInit(ctx context.Context) error
 	GetSystemConfig(ctx context.Context, key string) (*entity.SystemConfig, error)
 	SaveSystemConfig(ctx context.Context, config *entity.SystemConfig) error
 }
 
-type systemSettingsService struct {
+type systemConfigService struct {
 }
 
-func NewSystemSettingsService() SystemSettingsService {
-	return &systemSettingsService{}
+func NewSystemConfigService() SystemConfigService {
+	return &systemConfigService{}
 }
 
 // SystemConfigInit initializes the system configuration.
-func (s *systemSettingsService) SystemConfigInit(ctx context.Context) error {
+func (s *systemConfigService) SystemConfigInit(ctx context.Context) error {
 	repo := repository.Q.SystemConfig
 
 	total, err := repo.WithContext(ctx).Count()
@@ -45,7 +46,7 @@ func (s *systemSettingsService) SystemConfigInit(ctx context.Context) error {
 }
 
 // GetSystemConfig retrieves the system configuration based on the provided key.
-func (s *systemSettingsService) GetSystemConfig(ctx context.Context, key string) (*entity.SystemConfig, error) {
+func (s *systemConfigService) GetSystemConfig(ctx context.Context, key string) (*entity.SystemConfig, error) {
 	repo := repository.Q.SystemConfig
 
 	config, err := repo.WithContext(ctx).Where(repo.Key.Eq(key)).First()
@@ -61,7 +62,7 @@ func (s *systemSettingsService) GetSystemConfig(ctx context.Context, key string)
 }
 
 // SaveSystemConfig saves the provided system configuration.
-func (s *systemSettingsService) SaveSystemConfig(ctx context.Context, config *entity.SystemConfig) error {
+func (s *systemConfigService) SaveSystemConfig(ctx context.Context, config *entity.SystemConfig) error {
 	oldConfig, err := s.GetSystemConfig(ctx, config.Key)
 	if err != nil {
 		return errors.WithStack(err)

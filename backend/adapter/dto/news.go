@@ -51,6 +51,10 @@ type NewsDetail struct {
 
 // NewNewsDetailFromEntity news detail
 func NewNewsDetailFromEntity(data *entity.NewsDetail) *NewsDetail {
+	if data == nil {
+		return nil
+	}
+
 	return &NewsDetail{
 		Id:          data.Id,
 		Title:       data.Title,

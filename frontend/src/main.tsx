@@ -5,6 +5,7 @@ import { MantineProvider } from "@mantine/core";
 import App from "@/App";
 import "./i18n";
 import "@mantine/core/styles.css";
+import "@mantine/dates/styles.css";
 
 const container = document.getElementById("root");
 

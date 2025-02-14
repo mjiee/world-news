@@ -14,8 +14,8 @@ export function DeleteCrawlingRecord(arg1) {
   return window['go']['adapter']['App']['DeleteCrawlingRecord'](arg1);
 }
 
-export function DeleteNewsDetail(arg1) {
-  return window['go']['adapter']['App']['DeleteNewsDetail'](arg1);
+export function DeleteNews(arg1) {
+  return window['go']['adapter']['App']['DeleteNews'](arg1);
 }
 
 export function GetNewsDetail(arg1) {

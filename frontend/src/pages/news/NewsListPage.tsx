@@ -1,8 +1,10 @@
-import { useNavigate } from "react-router";
-import { Container, Table, Button, Modal, Group } from "@mantine/core";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router";
+import { Container, Table, Button, Modal, Group, Loader } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useTranslation } from "react-i18next";
 import { BackHeader } from "@/components/BackHeader";
+import { queryNews, deleteNews, NewsDetail } from "@/services";
 
 // News list page
 export function NewsListPage() {
@@ -40,52 +42,81 @@ function NewsTable() {
   );
 }
 
-const data = [
-  {
-    id: 1,
-    date: "2024.01.02",
-    title: "eftSection and rightSection allow adding icons or any other element to the left and right side of the button",
-  },
-  { id: 2, date: "2024.01.02", title: "Completed" },
-];
-
 function NewsTableBody() {
-  let navigate = useNavigate();
+  const { recordId } = useParams();
+  const navigate = useNavigate();
   const { t } = useTranslation();
+  const [newsList, setNewsList] = useState<NewsDetail[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const rows = data.map((item) => (
-    <Table.Tr key={item.id}>
-      <Table.Td>{item.id}</Table.Td>
-      <Table.Td>{item.date}</Table.Td>
-      <Table.Td>{item.title}</Table.Td>
-      <Table.Td>
-        <Button.Group>
-          <Button variant="default" size="xs" onClick={() => navigate("/news/detail/" + item.id)}>
-            {t("button.view")}
-          </Button>
-          <DeleteNewsButton newsId={item.id} />
-        </Button.Group>
-      </Table.Td>
-    </Table.Tr>
-  ));
+  // fetch news
+  const fetchNews = async () => {
+    if (!recordId || !loading) return;
 
-  return <>{rows}</>;
+    const resp = await queryNews({ recordId: Number(recordId), pagination: { page: page, limit: 25 } });
+
+    if (!resp || !resp.data) return;
+
+    setLoading(false);
+    setNewsList(resp.data);
+  };
+
+  useEffect(() => {
+    fetchNews();
+  }, [loading]);
+
+  // update page
+  const updatePageHandler = (page: number) => {
+    setPage(page);
+    setLoading(true);
+  };
+
+  return loading ? (
+    <Loader color="blue" />
+  ) : (
+    <>
+      {newsList.map((item) => (
+        <Table.Tr key={item.id}>
+          <Table.Td>{item.id}</Table.Td>
+          <Table.Td>{item.publishedAt}</Table.Td>
+          <Table.Td>{item.title}</Table.Td>
+          <Table.Td>
+            <Button.Group>
+              <Button variant="default" size="xs" onClick={() => navigate("/news/detail/" + item.id)}>
+                {t("button.view")}
+              </Button>
+              <DeleteNewsButton newsId={item.id} updatePage={updatePageHandler} />
+            </Button.Group>
+          </Table.Td>
+        </Table.Tr>
+      ))}
+    </>
+  );
 }
 
 interface DeleteNewsButtonProps {
   newsId: number;
+  updatePage: (page: number) => void;
 }
 
-function DeleteNewsButton({ newsId }: DeleteNewsButtonProps) {
+function DeleteNewsButton({ newsId, updatePage }: DeleteNewsButtonProps) {
   const [opened, { open, close }] = useDisclosure(false);
   const { t } = useTranslation();
+
+  // click ok handler
+  const clickOkHandler = async () => {
+    await deleteNews({ id: newsId });
+    close();
+    updatePage(1);
+  };
 
   return (
     <>
       <Modal opened={opened} onClose={close} withCloseButton={false}>
         <p>{t("news_list.delete_label", { ns: "news" })}</p>
         <Group justify="flex-end">
-          <Button onClick={close}>{t("button.ok")}</Button>
+          <Button onClick={clickOkHandler}>{t("button.ok")}</Button>
           <Button onClick={close} variant="default">
             {t("button.cancel")}
           </Button>

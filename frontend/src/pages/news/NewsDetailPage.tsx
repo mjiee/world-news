@@ -1,37 +1,43 @@
-import { Container, Title, ActionIcon, CopyButton, Text, Flex } from "@mantine/core";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router";
+import { Container, Title, ActionIcon, CopyButton, Text, Flex, Loader } from "@mantine/core";
 import { IconCopy, IconCheck } from "@tabler/icons-react";
 import { BackHeader } from "@/components/BackHeader";
-
-const data = {
-  title: "Example article.",
-  link: "https://mantine.dev/",
-  contents: [
-    "Let’s talk for a moment about how we talk about our teams.",
-    "There can be a perception that as a manager of an organization you are in control at all times. Part of that control can invariably be perceived as how you appear to be in charge, are competent, or how you personally perform.",
-    "function that should be called to copy given value to clipboard",
-  ],
-  publishedAt: "2024.01.02",
-  images: [
-    "https://images.unsplash.com/photo-1508193638397-1c4234db14d8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
-    "https://images.unsplash.com/photo-1559494007-9f5847c49d94?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
-    "https://images.unsplash.com/photo-1510798831971-661eb04b3739?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
-  ],
-};
+import { getNewsDetail, NewsDetail } from "@/services";
 
 // News detail page
 export function NewsDetailPage() {
-  const content = data.contents.map((item, idx) => <p key={idx}>{item}</p>);
-  const image = data.images.map((item, idx) => <img key={idx} src={item} alt="news" />);
+  const { newsId } = useParams();
+  const [newsDetail, setNewsDetail] = useState<NewsDetail>();
+  const [loading, setLoading] = useState<boolean>(true);
 
-  return (
+  // fetch news
+  const fetchNews = async () => {
+    if (!newsId) return;
+
+    const resp = await getNewsDetail({ id: Number(newsId) });
+
+    if (!resp) return;
+
+    setNewsDetail(resp);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  return loading || newsDetail === undefined ? (
+    <Loader color="blue" />
+  ) : (
     <>
       <BackHeader />
       <Container size="md">
-        <Title>{data.title}</Title>
-        <p style={{ color: "var(--mantine-color-gray-5)" }}>{data.publishedAt}</p>
-        <NewsLink link={data.link} />
-        {content}
-        {image}
+        <Title>{newsDetail?.title}</Title>
+        <p style={{ color: "var(--mantine-color-gray-5)" }}>{newsDetail?.publishedAt}</p>
+        <NewsLink link={newsDetail?.link} />
+        {newsDetail?.contents.map((item, idx) => <p key={idx}>{item}</p>)}
+        {newsDetail?.images.map((item, idx) => <img key={idx} src={item} alt="news" />)}
       </Container>
     </>
   );
