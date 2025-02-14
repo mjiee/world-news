@@ -13,22 +13,23 @@ import (
 	"gorm.io/gorm"
 )
 
-type NewsDetailService interface {
+// NewsService represents the interface for news-related operations.
+type NewsService interface {
 	CreateNews(ctx context.Context, news ...*entity.NewsDetail) error
 	QueryNews(ctx context.Context, recordId uint, page *httpx.Pagination) ([]*entity.NewsDetail, int64, error)
 	GetNewsDetail(ctx context.Context, id uint) (*entity.NewsDetail, error)
 	DeleteNews(ctx context.Context, id uint) error
 }
 
-type newsDetailService struct {
+type newsService struct {
 }
 
-func NewNewsDetailService() NewsDetailService {
-	return &newsDetailService{}
+func NewNewsService() NewsService {
+	return &newsService{}
 }
 
 // CreateNews creates a new news detail.
-func (s *newsDetailService) CreateNews(ctx context.Context, news ...*entity.NewsDetail) error {
+func (s *newsService) CreateNews(ctx context.Context, news ...*entity.NewsDetail) error {
 	if len(news) == 0 {
 		return nil
 	}
@@ -48,7 +49,7 @@ func (s *newsDetailService) CreateNews(ctx context.Context, news ...*entity.News
 }
 
 // QueryNews queries news details based on the provided record ID and pagination.
-func (s *newsDetailService) QueryNews(ctx context.Context, recordId uint, page *httpx.Pagination) ([]*entity.NewsDetail, int64, error) {
+func (s *newsService) QueryNews(ctx context.Context, recordId uint, page *httpx.Pagination) ([]*entity.NewsDetail, int64, error) {
 	repo := repository.Q.NewsDetail
 
 	data, total, err := repo.WithContext(ctx).Where(repo.RecordId.Eq(recordId)).FindByPage(page.GetOffset(), page.GetLimit())
@@ -69,7 +70,7 @@ func (s *newsDetailService) QueryNews(ctx context.Context, recordId uint, page *
 }
 
 // GetNewsDetail retrieves the news detail based on the provided ID.
-func (s *newsDetailService) GetNewsDetail(ctx context.Context, id uint) (*entity.NewsDetail, error) {
+func (s *newsService) GetNewsDetail(ctx context.Context, id uint) (*entity.NewsDetail, error) {
 	repo := repository.Q.NewsDetail
 
 	news, err := repo.WithContext(ctx).Where(repo.ID.Eq(id)).First()
@@ -85,7 +86,7 @@ func (s *newsDetailService) GetNewsDetail(ctx context.Context, id uint) (*entity
 }
 
 // DeleteNews deletes the news detail based on the provided ID.
-func (s *newsDetailService) DeleteNews(ctx context.Context, id uint) error {
+func (s *newsService) DeleteNews(ctx context.Context, id uint) error {
 	_, err := repository.Q.NewsDetail.WithContext(ctx).Where(repository.Q.NewsDetail.ID.Eq(id)).Delete()
 
 	return errors.WithStack(err)

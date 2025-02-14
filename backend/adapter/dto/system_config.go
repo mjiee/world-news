@@ -13,6 +13,10 @@ type SystemConfig struct {
 
 // NewSystemConfigFromEntity creates a new SystemConfig from the provided entity.
 func NewSystemConfigFromEntity(config *entity.SystemConfig) *SystemConfig {
+	if config == nil {
+		return nil
+	}
+
 	return &SystemConfig{
 		Key:   config.Key,
 		Value: config.Value,

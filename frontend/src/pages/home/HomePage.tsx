@@ -1,10 +1,15 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Button, ActionIcon, Container, Avatar, Group, Table, Modal, TextInput } from "@mantine/core";
+import { Button, Container, Avatar, Group, Table, Modal } from "@mantine/core";
+import { DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
-import { useForm } from "@mantine/form";
 import { useTranslation } from "react-i18next";
+import dayjs from "dayjs";
 import { LanguageSwitcher } from "@/components";
+import { crawlingNews, queryCrawlingRecords, deleteCrawlingRecord, CrawlingRecord } from "@/services";
 import styles from "@/assets/styles/header.module.css";
+import "dayjs/locale/en";
+import "dayjs/locale/zh";
 
 // Application homepage
 export function HomePage() {
@@ -25,7 +30,6 @@ function HomeHeader() {
       <Container size="md" className={styles.inner}>
         <Avatar size={28} name="World News" color="initials" />
         <Group>
-          {import.meta.env.VITE_PLATFORM}
           <FetchNewsButton />
           <Button onClick={() => navigate("/settings")}>{t("header.button.settings")}</Button>
           <LanguageSwitcher />
@@ -35,46 +39,51 @@ function HomeHeader() {
   );
 }
 
+// fetch news button
 function FetchNewsButton() {
+  const { t, i18n } = useTranslation();
   const [opened, { open, close }] = useDisclosure(false);
-  const { t } = useTranslation();
+  const [startTime, setStartTime] = useState<Date | null>(null);
 
-  const form = useForm({
-    mode: "uncontrolled",
-    initialValues: {
-      startTime: "",
-    },
-  });
+  // click ok handler
+  const clickOkHandler = () => {
+    crawlingNews({ startTime: startTime ? dayjs(startTime).format("YYYY-MM-DD HH:mm:ss") : "" });
+    setStartTime(null);
+    close();
+  };
+
+  // click cancel handler
+  const clickCancelHandler = () => {
+    setStartTime(null);
+    close();
+  };
 
   return (
     <>
       <Modal opened={opened} onClose={close} withCloseButton={false}>
-        <form onSubmit={form.onSubmit((values) => console.log(values))}>
-          <TextInput
-            label={t("header.label.start_time", { ns: "home" })}
-            key={form.key("startTime")}
-            {...form.getInputProps("startTime")}
-          />
-          <Group justify="flex-end" mt="md">
-            <Button type="submit" onClick={close}>
-              {t("button.ok")}
-            </Button>
-            <Button onClick={close} variant="default">
-              {t("button.cancel")}
-            </Button>
-          </Group>
-        </form>
+        <DateInput
+          maxDate={new Date()}
+          locale={i18n.language}
+          label={t("header.label.start_time", { ns: "home" })}
+          valueFormat="YYYY-MM-DD"
+          value={startTime}
+          onChange={setStartTime}
+        />
+        <Group justify="flex-end" mt="md">
+          <Button type="submit" onClick={clickOkHandler}>
+            {t("button.ok")}
+          </Button>
+          <Button onClick={clickCancelHandler} variant="default">
+            {t("button.cancel")}
+          </Button>
+        </Group>
       </Modal>
       <Button onClick={open}>{t("header.button.fetch_news", { ns: "home" })}</Button>
     </>
   );
 }
 
-const records = [
-  { id: 1, date: "2024.01.04", quantity: 123, status: "processing" },
-  { id: 2, date: "2024.01.10", quantity: 333, status: "completed" },
-];
-
+// crawling records
 function CrawlingRecords() {
   const { t } = useTranslation("home");
 
@@ -101,44 +110,79 @@ function CrawlingRecords() {
 }
 
 function RecordTableBody() {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   const { t } = useTranslation();
+  const [records, setRecords] = useState<CrawlingRecord[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const rows = records.map((item) => (
-    <Table.Tr key={item.id}>
-      <Table.Td>{item.id}</Table.Td>
-      <Table.Td>{item.date}</Table.Td>
-      <Table.Td>{item.quantity}</Table.Td>
-      <Table.Td>{t("crawling_records.table.body.status." + item.status, { ns: "home" })}</Table.Td>
-      <Table.Td>
-        <Button.Group>
-          <Button variant="default" size="xs" onClick={() => navigate("/news/list/" + item.id)}>
-            {t("button.view")}
-          </Button>
-          <DeleteRecordButton recordId={item.id} date={item.date} />
-        </Button.Group>
-      </Table.Td>
-    </Table.Tr>
-  ));
+  // fetch crawling records
+  const fetchCrawlingRecords = async () => {
+    if (!loading) return;
 
-  return <>{rows}</>;
+    const resp = await queryCrawlingRecords({ page: page, limit: 25 });
+
+    if (!resp || !resp.data) return;
+
+    setRecords(resp.data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchCrawlingRecords();
+  }, [loading]);
+
+  // update page
+  const updatePageHandler = (page: number) => {
+    setPage(page);
+    setLoading(true);
+  };
+
+  return (
+    <>
+      {records.map((item) => (
+        <Table.Tr key={item.id}>
+          <Table.Td>{item.id}</Table.Td>
+          <Table.Td>{item.date}</Table.Td>
+          <Table.Td>{item.quantity}</Table.Td>
+          <Table.Td>{t("crawling_records.table.body.status." + item.status, { ns: "home" })}</Table.Td>
+          <Table.Td>
+            <Button.Group>
+              <Button variant="default" size="xs" onClick={() => navigate("/news/list/" + item.id)}>
+                {t("button.view")}
+              </Button>
+              <DeleteRecordButton recordId={item.id} date={item.date} updatePage={updatePageHandler} />
+            </Button.Group>
+          </Table.Td>
+        </Table.Tr>
+      ))}
+    </>
+  );
 }
 
 interface DeleteRecordButtonProps {
   recordId: number;
   date: String;
+  updatePage: (page: number) => void;
 }
 
-function DeleteRecordButton({ recordId, date }: DeleteRecordButtonProps) {
+function DeleteRecordButton({ recordId, date, updatePage }: DeleteRecordButtonProps) {
   const [opened, { open, close }] = useDisclosure(false);
   const { t } = useTranslation();
+
+  // click ok handler
+  const clickOkHandler = async () => {
+    await deleteCrawlingRecord({ id: recordId });
+    close();
+    updatePage(1);
+  };
 
   return (
     <>
       <Modal opened={opened} onClose={close} withCloseButton={false}>
         <p>{t("crawling_records.button.delete_label", { date, ns: "home" })}</p>
         <Group justify="flex-end">
-          <Button onClick={close}>{t("button.ok")}</Button>
+          <Button onClick={clickOkHandler}>{t("button.ok")}</Button>
           <Button onClick={close} variant="default">
             {t("button.cancel")}
           </Button>

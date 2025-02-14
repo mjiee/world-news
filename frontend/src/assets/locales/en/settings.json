@@ -29,12 +29,18 @@
     }
   },
   "remote_service": {
+    "web_not_support": "The web client does not support remote service configuration.",
     "lable": {
       "enable_remote_service": "Enable remote service.",
       "service_host": "Service host"
     }
   },
   "news_topic": {
-    "title": "News Topic"
+    "add_button": "Add",
+    "input_placeholder": "Enter News Topic",
+    "topic_validate": {
+      "required": "Please enter a news topic.",
+      "duplicate": "The news topic already exists."
+    }
   }
 }

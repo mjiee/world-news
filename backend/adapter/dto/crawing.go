@@ -55,6 +55,10 @@ type CrawlingRecord struct {
 
 // NewCrawlingRecordFromEntity creates a new CrawlingRecord instance.
 func NewCrawlingRecordFromEntity(record *entity.CrawlingRecord) *CrawlingRecord {
+	if record == nil {
+		return nil
+	}
+
 	return &CrawlingRecord{
 		Id:         record.Id,
 		RecordType: string(record.RecordType),

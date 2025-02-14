@@ -9,7 +9,7 @@ export function CrawlingWebsite():Promise<httpx.Response>;
 
 export function DeleteCrawlingRecord(arg1:dto.DeleteCrawlingRecordRequest):Promise<httpx.Response>;
 
-export function DeleteNewsDetail(arg1:dto.DeleteNewsRequest):Promise<httpx.Response>;
+export function DeleteNews(arg1:dto.DeleteNewsRequest):Promise<httpx.Response>;
 
 export function GetNewsDetail(arg1:dto.GetNewsDetailRequest):Promise<httpx.Response>;
 
