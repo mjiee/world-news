@@ -54,7 +54,10 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 		return errorx.InternalError
 	}
 
-	newsWebsites := websiteConfig.Value.([]*valueobject.NewsWebsite)
+	newsWebsites, err := valueobject.NewsWebsitesFromAny(websiteConfig.Value)
+	if err != nil {
+		return err
+	}
 
 	// get news keywords
 	topicConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsTopicKey)
@@ -66,7 +69,10 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 		return errorx.InternalError
 	}
 
-	newsKeywords := topicConfig.Value.([]string)
+	newsKeywords, ok := topicConfig.Value.([]string)
+	if !ok {
+		return errorx.InternalError
+	}
 
 	// create crawling record
 	record := entity.NewCrawlingRecord(valueobject.CrawlingNews)

@@ -41,14 +41,14 @@ export function NewsWebsite() {
   const fetchNewsWebsite = async () => {
     const processingTask = await hasCrawlingTask();
 
+    if (!processingTask) setLoading(false);
+
     const resp = await getSystemConfig<NewsWebsiteValue[]>({ key: newsWebsiteKey });
 
     if (!resp || !resp.value) return;
     if (resp.value.length === 0) return;
 
     setData(resp.value);
-
-    if (!processingTask) setLoading(false);
   };
 
   useEffect(() => {
@@ -78,7 +78,12 @@ interface WebsiteTableProps {
 function WebsiteTable({ websites }: WebsiteTableProps) {
   const { t } = useTranslation("settings");
   const [page, setPage] = useState<number>(1);
-  const [data, setData] = useState<NewsWebsiteValue[]>(getPageData(websites, page, 25));
+  const [data, setData] = useState<NewsWebsiteValue[]>([]);
+
+  // update data
+  useEffect(() => {
+    setData(getPageData(websites, page, 25));
+  }, [websites, page]);
 
   // update page
   const updatePageHandle = (page: number) => {
@@ -86,6 +91,7 @@ function WebsiteTable({ websites }: WebsiteTableProps) {
     setData(getPageData(websites, page, 25));
   };
 
+  // table header
   const tableHeader = (
     <Table.Tr>
       <Table.Th>{t("news_website.table.head.website")}</Table.Th>
@@ -93,6 +99,7 @@ function WebsiteTable({ websites }: WebsiteTableProps) {
     </Table.Tr>
   );
 
+  // table body
   const tableBody = data.map((item) => (
     <Table.Tr key={item.url}>
       <Table.Td>{item.url}</Table.Td>
@@ -103,10 +110,12 @@ function WebsiteTable({ websites }: WebsiteTableProps) {
   ));
 
   return (
-    <Table>
-      <Table.Thead>{tableHeader}</Table.Thead>
-      <Table.Tbody>{tableBody}</Table.Tbody>
+    <Stack w={"100%"}>
+      <Table>
+        <Table.Thead>{tableHeader}</Table.Thead>
+        <Table.Tbody>{tableBody}</Table.Tbody>
+      </Table>
       <Pagination value={page} onChange={updatePageHandle} total={getPageNumber({ limit: 25, total: websites.length })} />
-    </Table>
+    </Stack>
   );
 }

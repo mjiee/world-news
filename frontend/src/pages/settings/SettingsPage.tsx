@@ -1,10 +1,10 @@
 import { Container, Accordion, Text, Space, Switch, Avatar, Group, ActionIcon, Flex } from "@mantine/core";
-import { IconPencil } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { BackHeader } from "@/components/BackHeader";
 import { NewsTopics } from "./NewsTopics";
 import { NewsWebsite, NewsWebsiteCollection } from "./NewsWebsite";
 import { isWeb } from "@/utils/platform";
+import IconPencil from "@/assets/icons/IconPencil.svg";
 
 const settingsItems = [
   {
@@ -91,7 +91,7 @@ function RemoteService() {
       <Switch defaultChecked label={t("remote_service.lable.enable_remote_service")} />
       <Flex gap="lg" justify="flex-start" align="center" direction="row" wrap="wrap">
         <ActionIcon variant="default">
-          <IconPencil />
+          <Avatar src={IconPencil} alt="eidt" variant="default" radius="sm" size="sm" />
         </ActionIcon>
         <p>
           https://127.0.0.1:8080

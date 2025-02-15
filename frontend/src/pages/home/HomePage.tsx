@@ -9,7 +9,6 @@ import { LanguageSwitcher } from "@/components";
 import { hasCrawlingTask, crawlingNews, queryCrawlingRecords, deleteCrawlingRecord, CrawlingRecord } from "@/services";
 import { httpx } from "wailsjs/go/models";
 import { getPageNumber } from "@/utils/pagination";
-
 import styles from "@/assets/styles/header.module.css";
 import "dayjs/locale/en";
 import "dayjs/locale/zh";
@@ -101,31 +100,6 @@ function FetchNewsButton() {
 
 // crawling records
 function CrawlingRecords() {
-  const { t } = useTranslation("home");
-
-  const tableHeader = (
-    <Table.Tr>
-      <Table.Th>ID</Table.Th>
-      <Table.Th>{t("crawling_records.table.head.date")}</Table.Th>
-      <Table.Th>{t("crawling_records.table.head.quantity")}</Table.Th>
-      <Table.Th>{t("crawling_records.table.head.status")}</Table.Th>
-      <Table.Th />
-    </Table.Tr>
-  );
-
-  return (
-    <Container size="md">
-      <Table>
-        <Table.Thead>{tableHeader}</Table.Thead>
-        <RecordTableBody />
-      </Table>
-    </Container>
-  );
-}
-
-function RecordTableBody() {
-  const navigate = useNavigate();
-  const { t } = useTranslation();
   const [records, setRecords] = useState<CrawlingRecord[]>([]);
   const [pagination, setPagination] = useState<httpx.Pagination>({ page: 1, limit: 25, total: 0 });
   const [loading, setLoading] = useState<boolean>(true);
@@ -154,28 +128,63 @@ function RecordTableBody() {
   };
 
   // record table body
-  const recordTableBody = records.map((item) => (
-    <Table.Tr key={item.id}>
-      <Table.Td>{item.id}</Table.Td>
-      <Table.Td>{item.date}</Table.Td>
-      <Table.Td>{item.quantity}</Table.Td>
-      <Table.Td>{t("crawling_records.table.body.status." + item.status, { ns: "home" })}</Table.Td>
+  const recordTableBody = records.map((item, idx) => <RecordTableBody key={idx} record={item} updatePage={updatePageHandler} />);
+
+  return (
+    <Container size="md">
+      {loading ? (
+        <LoadingOverlay visible={loading} />
+      ) : (
+        <Table>
+          <RecordTableHeader />
+          <Table.Tbody>{recordTableBody}</Table.Tbody>
+        </Table>
+      )}
+      <Pagination value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
+    </Container>
+  );
+}
+
+function RecordTableHeader() {
+  const { t } = useTranslation("home");
+
+  return (
+    <Table.Thead>
+      <Table.Tr>
+        <Table.Th>ID</Table.Th>
+        <Table.Th>{t("crawling_records.table.head.date")}</Table.Th>
+        <Table.Th>{t("crawling_records.table.head.quantity")}</Table.Th>
+        <Table.Th>{t("crawling_records.table.head.status")}</Table.Th>
+        <Table.Th />
+      </Table.Tr>
+    </Table.Thead>
+  );
+}
+
+interface RecordTableBodyProps {
+  record: CrawlingRecord;
+  updatePage: (page: number) => void;
+}
+
+function RecordTableBody({ record, updatePage }: RecordTableBodyProps) {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  return (
+    <Table.Tr key={record.id}>
+      <Table.Td>{record.id}</Table.Td>
+      <Table.Td>{record.date}</Table.Td>
+      <Table.Td>{record.quantity}</Table.Td>
+      <Table.Td>{t("crawling_records.table.body.status." + record.status, { ns: "home" })}</Table.Td>
       <Table.Td>
         <Button.Group>
-          <Button variant="default" size="xs" onClick={() => navigate("/news/list/" + item.id)}>
+          <Button variant="default" size="xs" onClick={() => navigate("/news/list/" + record.id)}>
             {t("button.view")}
           </Button>
-          <DeleteRecordButton recordId={item.id} date={item.date} updatePage={updatePageHandler} />
+          <DeleteRecordButton recordId={record.id} date={record.date} updatePage={updatePage} />
         </Button.Group>
       </Table.Td>
     </Table.Tr>
-  ));
-
-  return (
-    <>
-      {loading ? <LoadingOverlay visible={loading} /> : <Table.Tbody>{recordTableBody}</Table.Tbody>}
-      <Pagination value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
-    </>
   );
 }
 

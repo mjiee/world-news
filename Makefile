@@ -5,9 +5,9 @@ check-dependency:
 		go install github.com/wailsapp/wails/v2/cmd/wails@latest; \
 	}
 
-
 # run app
-run-app: check-dependency
+.PHONY: run
+run: check-dependency
 	@wails dev
 
 # generate db

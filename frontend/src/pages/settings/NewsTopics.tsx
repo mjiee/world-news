@@ -7,6 +7,11 @@ import { getSystemConfig, saveSystemConfig } from "@/services";
 // news topic settings
 const newsTopicKey = "newsTopic";
 
+// save news topics
+const saveNewsTopics = async (newTopics: string[]) => {
+  await saveSystemConfig({ key: newsTopicKey, value: newTopics });
+};
+
 export function NewsTopics() {
   const { t } = useTranslation("settings");
   const [topics, setTopics] = useState<string[]>([]);
@@ -22,11 +27,6 @@ export function NewsTopics() {
       return null;
     },
   });
-
-  // save news topics
-  const saveNewsTopics = async () => {
-    await saveSystemConfig({ key: newsTopicKey, value: topics });
-  };
 
   // fetch news topics
   const fetchNewsTopics = async () => {
@@ -48,21 +48,28 @@ export function NewsTopics() {
 
     if (value.length === 0) return;
 
-    if (topics.includes(value)) {
-      field.setValue("");
+    setTopics((prevTopics) => {
+      if (prevTopics.includes(value)) return prevTopics;
 
-      return;
-    }
+      const updatedTopics = [...prevTopics, value];
 
-    setTopics([...topics, value]);
-    saveNewsTopics();
+      saveNewsTopics(updatedTopics);
+
+      return updatedTopics;
+    });
+
     field.setValue("");
   };
 
   // remove news topic
   const removeNewsTopicHandle = (value: string) => {
-    setTopics(topics.filter((topic) => topic !== value));
-    saveNewsTopics();
+    setTopics((prevTopics) => {
+      const updatedTopics = prevTopics.filter((topic) => topic !== value);
+
+      saveNewsTopics(updatedTopics);
+
+      return updatedTopics;
+    });
   };
 
   return (
