@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Button, Container, Avatar, Group, Table, Modal } from "@mantine/core";
+import { Button, Container, Avatar, Group, Table, Modal, LoadingOverlay, Pagination } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { LanguageSwitcher } from "@/components";
-import { crawlingNews, queryCrawlingRecords, deleteCrawlingRecord, CrawlingRecord } from "@/services";
+import { hasCrawlingTask, crawlingNews, queryCrawlingRecords, deleteCrawlingRecord, CrawlingRecord } from "@/services";
+import { httpx } from "wailsjs/go/models";
+import { getPageNumber } from "@/utils/pagination";
+
 import styles from "@/assets/styles/header.module.css";
 import "dayjs/locale/en";
 import "dayjs/locale/zh";
@@ -44,6 +47,7 @@ function FetchNewsButton() {
   const { t, i18n } = useTranslation();
   const [opened, { open, close }] = useDisclosure(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
+  const [disabled, setDisabled] = useState<boolean>(false);
 
   // click ok handler
   const clickOkHandler = () => {
@@ -58,6 +62,18 @@ function FetchNewsButton() {
     close();
   };
 
+  // check can fetch news
+  const checkCanFetchNews = async () => {
+    const processingTask = await hasCrawlingTask();
+
+    if (processingTask) setDisabled(true);
+    else setDisabled(false);
+  };
+
+  useEffect(() => {
+    checkCanFetchNews();
+  }, [opened]);
+
   return (
     <>
       <Modal opened={opened} onClose={close} withCloseButton={false}>
@@ -70,7 +86,7 @@ function FetchNewsButton() {
           onChange={setStartTime}
         />
         <Group justify="flex-end" mt="md">
-          <Button type="submit" onClick={clickOkHandler}>
+          <Button disabled={disabled} type="submit" onClick={clickOkHandler}>
             {t("button.ok")}
           </Button>
           <Button onClick={clickCancelHandler} variant="default">
@@ -101,9 +117,7 @@ function CrawlingRecords() {
     <Container size="md">
       <Table>
         <Table.Thead>{tableHeader}</Table.Thead>
-        <Table.Tbody>
-          <RecordTableBody />
-        </Table.Tbody>
+        <RecordTableBody />
       </Table>
     </Container>
   );
@@ -113,19 +127,20 @@ function RecordTableBody() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [records, setRecords] = useState<CrawlingRecord[]>([]);
-  const [page, setPage] = useState<number>(1);
+  const [pagination, setPagination] = useState<httpx.Pagination>({ page: 1, limit: 25, total: 0 });
   const [loading, setLoading] = useState<boolean>(true);
 
   // fetch crawling records
   const fetchCrawlingRecords = async () => {
     if (!loading) return;
 
-    const resp = await queryCrawlingRecords({ page: page, limit: 25 });
+    const resp = await queryCrawlingRecords({ pagination: pagination });
+
+    setLoading(false);
 
     if (!resp || !resp.data) return;
 
     setRecords(resp.data);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -134,28 +149,32 @@ function RecordTableBody() {
 
   // update page
   const updatePageHandler = (page: number) => {
-    setPage(page);
+    setPagination({ ...pagination, page: page });
     setLoading(true);
   };
 
+  // record table body
+  const recordTableBody = records.map((item) => (
+    <Table.Tr key={item.id}>
+      <Table.Td>{item.id}</Table.Td>
+      <Table.Td>{item.date}</Table.Td>
+      <Table.Td>{item.quantity}</Table.Td>
+      <Table.Td>{t("crawling_records.table.body.status." + item.status, { ns: "home" })}</Table.Td>
+      <Table.Td>
+        <Button.Group>
+          <Button variant="default" size="xs" onClick={() => navigate("/news/list/" + item.id)}>
+            {t("button.view")}
+          </Button>
+          <DeleteRecordButton recordId={item.id} date={item.date} updatePage={updatePageHandler} />
+        </Button.Group>
+      </Table.Td>
+    </Table.Tr>
+  ));
+
   return (
     <>
-      {records.map((item) => (
-        <Table.Tr key={item.id}>
-          <Table.Td>{item.id}</Table.Td>
-          <Table.Td>{item.date}</Table.Td>
-          <Table.Td>{item.quantity}</Table.Td>
-          <Table.Td>{t("crawling_records.table.body.status." + item.status, { ns: "home" })}</Table.Td>
-          <Table.Td>
-            <Button.Group>
-              <Button variant="default" size="xs" onClick={() => navigate("/news/list/" + item.id)}>
-                {t("button.view")}
-              </Button>
-              <DeleteRecordButton recordId={item.id} date={item.date} updatePage={updatePageHandler} />
-            </Button.Group>
-          </Table.Td>
-        </Table.Tr>
-      ))}
+      {loading ? <LoadingOverlay visible={loading} /> : <Table.Tbody>{recordTableBody}</Table.Tbody>}
+      <Pagination value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
     </>
   );
 }

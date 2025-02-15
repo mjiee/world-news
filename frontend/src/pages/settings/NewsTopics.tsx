@@ -9,7 +9,7 @@ const newsTopicKey = "newsTopic";
 
 export function NewsTopics() {
   const { t } = useTranslation("settings");
-  const [topics, setTopics] = useState<string[]>(["1", "2"]);
+  const [topics, setTopics] = useState<string[]>([]);
 
   const field = useField({
     initialValue: "",
