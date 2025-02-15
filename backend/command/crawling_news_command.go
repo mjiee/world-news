@@ -34,6 +34,16 @@ func NewCrawlingNewsCommand(crawlingSvc service.CrawlingService, newsSvc service
 }
 
 func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
+	// check crawling record
+	hasProcessingTask, err := c.crawlingSvc.HasProcessingTasks(ctx)
+	if err != nil {
+		return err
+	}
+
+	if hasProcessingTask {
+		return errorx.HasProcessingTasks
+	}
+
 	// get news website
 	websiteConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsWebsiteKey)
 	if err != nil {
