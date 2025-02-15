@@ -50,7 +50,10 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 		return errorx.InternalError
 	}
 
-	newsWebsiteCollections := config.Value.([]*valueobject.NewsWebsite)
+	newsWebsiteCollections, err := valueobject.NewsWebsitesFromAny(config.Value)
+	if err != nil {
+		return err
+	}
 
 	// create crawling record
 	record := entity.NewCrawlingRecord(valueobject.CrawlingWebsite)

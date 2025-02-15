@@ -71,11 +71,8 @@ func (a *App) Startup(ctx context.Context) {
 // GetSystemConfig handles the request to retrieve system config.
 func (a *App) GetSystemConfig(req *dto.GetSystemConfigRequest) *httpx.Response {
 	data, err := a.systemConfigSvc.GetSystemConfig(a.ctx, req.Key)
-	if err != nil {
-		return httpx.Fail(err)
-	}
 
-	return httpx.Ok(dto.NewSystemConfigFromEntity(data))
+	return httpx.Resp(dto.NewSystemConfigFromEntity(data), err)
 }
 
 // SaveSystemConfig handles the request to save system config.

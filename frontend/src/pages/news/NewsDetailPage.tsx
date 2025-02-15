@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router";
-import { Container, Title, ActionIcon, CopyButton, Text, Flex, Loader } from "@mantine/core";
-import { IconCopy, IconCheck } from "@tabler/icons-react";
+import { Container, Title, ActionIcon, CopyButton, Text, Flex, Loader, Avatar } from "@mantine/core";
 import { BackHeader } from "@/components/BackHeader";
 import { getNewsDetail, NewsDetail } from "@/services";
+import IconCopy from "@/assets/icons/IconCopy.svg";
+import IconCheck from "@/assets/icons/IconCopy.svg";
 
 // News detail page
 export function NewsDetailPage() {
@@ -54,7 +55,11 @@ function NewsLink({ link }: NewsLinkProps) {
       <CopyButton value={link} timeout={2000}>
         {({ copied, copy }) => (
           <ActionIcon color={copied ? "teal" : "gray"} variant="subtle" onClick={copy}>
-            {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+            {copied ? (
+              <Avatar src={IconCheck} alt="check" variant="default" radius="sm" size="sm" />
+            ) : (
+              <Avatar src={IconCopy} alt="copy" variant="default" radius="sm" size="sm" />
+            )}
           </ActionIcon>
         )}
       </CopyButton>

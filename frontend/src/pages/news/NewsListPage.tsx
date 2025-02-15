@@ -19,31 +19,7 @@ export function NewsListPage() {
 }
 
 function NewsTable() {
-  const { t } = useTranslation("news");
-
-  const tableHeader = (
-    <Table.Tr>
-      <Table.Th>ID</Table.Th>
-      <Table.Th>{t("news_list.news_table.head.date")}</Table.Th>
-      <Table.Th>{t("news_list.news_table.head.title")}</Table.Th>
-      <Table.Th />
-    </Table.Tr>
-  );
-
-  return (
-    <Container size="md">
-      <Table>
-        <Table.Thead>{tableHeader}</Table.Thead>
-        <NewsTableBody />
-      </Table>
-    </Container>
-  );
-}
-
-function NewsTableBody() {
   const { recordId } = useParams();
-  const navigate = useNavigate();
-  const { t } = useTranslation();
   const [newsList, setNewsList] = useState<NewsDetail[]>([]);
   const [pagination, setPagination] = useState<httpx.Pagination>({ page: 1, limit: 25, total: 0 });
   const [loading, setLoading] = useState<boolean>(true);
@@ -72,27 +48,61 @@ function NewsTableBody() {
   };
 
   // news table body
-  const newsTableBody = newsList.map((item) => (
-    <Table.Tr key={item.id}>
-      <Table.Td>{item.id}</Table.Td>
-      <Table.Td>{item.publishedAt}</Table.Td>
-      <Table.Td>{item.title}</Table.Td>
+  const newsTableBody = newsList.map((news) => <NewsTableBody key={news.id} newsDetail={news} updatePage={updatePageHandler} />);
+
+  return (
+    <Container size="md">
+      {loading ? (
+        <LoadingOverlay visible={loading} />
+      ) : (
+        <Table>
+          <NewsTableHeader />
+          <Table.Tbody>{newsTableBody}</Table.Tbody>
+        </Table>
+      )}
+      <Pagination value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
+    </Container>
+  );
+}
+
+function NewsTableHeader() {
+  const { t } = useTranslation("news");
+
+  return (
+    <Table.Thead>
+      <Table.Tr>
+        <Table.Th>ID</Table.Th>
+        <Table.Th>{t("news_list.news_table.head.date")}</Table.Th>
+        <Table.Th>{t("news_list.news_table.head.title")}</Table.Th>
+        <Table.Th />
+      </Table.Tr>
+    </Table.Thead>
+  );
+}
+
+interface NewsTableBodyProps {
+  newsDetail: NewsDetail;
+  updatePage: (page: number) => void;
+}
+
+function NewsTableBody({ newsDetail, updatePage }: NewsTableBodyProps) {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  return (
+    <Table.Tr key={newsDetail.id}>
+      <Table.Td>{newsDetail.id}</Table.Td>
+      <Table.Td>{newsDetail.publishedAt}</Table.Td>
+      <Table.Td>{newsDetail.title}</Table.Td>
       <Table.Td>
         <Button.Group>
-          <Button variant="default" size="xs" onClick={() => navigate("/news/detail/" + item.id)}>
+          <Button variant="default" size="xs" onClick={() => navigate("/news/detail/" + newsDetail.id)}>
             {t("button.view")}
           </Button>
-          <DeleteNewsButton newsId={item.id} updatePage={updatePageHandler} />
+          <DeleteNewsButton newsId={newsDetail.id} updatePage={updatePage} />
         </Button.Group>
       </Table.Td>
     </Table.Tr>
-  ));
-
-  return (
-    <>
-      {loading ? <LoadingOverlay visible={loading} /> : <Table.Tbody>{newsTableBody}</Table.Tbody>}
-      <Pagination value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
-    </>
   );
 }
 
