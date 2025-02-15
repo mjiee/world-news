@@ -1,6 +1,10 @@
 package valueobject
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/pkg/errors"
+)
 
 // NewsWebsite represents a news website.
 type NewsWebsite struct {
@@ -18,15 +22,18 @@ var (
 	}
 )
 
-// NewNewsWebsites creates a new collection of news websites from the provided data.
-func NewNewsWebsites(data string) []*NewsWebsite {
-	if len(data) == 0 {
-		return nil
-	}
-
+// NewsWebsitesFromAny converts any to NewsWebsite.
+func NewsWebsitesFromAny(data any) ([]*NewsWebsite, error) {
 	var websites []*NewsWebsite
 
-	_ = json.Unmarshal([]byte(data), &websites)
+	dataStr, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 
-	return websites
+	if err := json.Unmarshal(dataStr, &websites); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return websites, nil
 }
