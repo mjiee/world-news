@@ -14,8 +14,9 @@ type CrawlingNewsRequest struct {
 
 // QueryCrawlingRecordsRequest is a struct for requesting crawling records.
 type QueryCrawlingRecordsRequest struct {
-	Page  int `json:"page,omitempty"`
-	Limit int `json:"limit,omitempty"`
+	RecordType string            `json:"recordType,omitempty"`
+	Status     string            `json:"status,omitempty"`
+	Pagination *httpx.Pagination `json:"pagination"`
 }
 
 // QueryCrawlingRecordResult is the result struct for crawling records.

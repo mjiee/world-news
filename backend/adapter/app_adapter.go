@@ -6,6 +6,7 @@ import (
 
 	"github.com/mjiee/world-news/backend/adapter/dto"
 	"github.com/mjiee/world-news/backend/command"
+	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/databasex"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
@@ -98,7 +99,8 @@ func (a *App) CrawlingWebsite() *httpx.Response {
 
 // QueryCrawlingRecords handles the request to retrieve crawling records.
 func (a *App) QueryCrawlingRecords(req *dto.QueryCrawlingRecordsRequest) *httpx.Response {
-	data, total, err := a.crawlingSvc.QueryCrawlingRecords(a.ctx, &httpx.Pagination{Page: req.Page, Limit: req.Limit})
+	data, total, err := a.crawlingSvc.QueryCrawlingRecords(a.ctx,
+		*valueobject.NewQueryRecordParams(req.RecordType, req.Status, req.Pagination))
 
 	return httpx.Resp(dto.NewQueryCrawlingRecordResult(data, total), err)
 }
@@ -108,9 +110,14 @@ func (a *App) DeleteCrawlingRecord(req *dto.DeleteCrawlingRecordRequest) *httpx.
 	return httpx.RespE(a.crawlingSvc.DeleteCrawlingRecord(a.ctx, req.Id))
 }
 
+// HasCrawlingTasks handles the request to confirm whether there are ongoing crawling tasks.
+func (a *App) HasCrawlingTasks() *httpx.Response {
+	return httpx.Resp(a.crawlingSvc.HasProcessingTasks(a.ctx))
+}
+
 // QueryNews handles the request to retrieve news detail list.
 func (a *App) QueryNews(req *dto.QueryNewsRequest) *httpx.Response {
-	data, total, err := a.newsSvc.QueryNews(a.ctx, req.RecordId, req.Pagination)
+	data, total, err := a.newsSvc.QueryNews(a.ctx, valueobject.NewQueryNewsParams(req.RecordId, req.Pagination))
 
 	return httpx.Resp(dto.NewQueryNewsResult(data, total), err)
 }

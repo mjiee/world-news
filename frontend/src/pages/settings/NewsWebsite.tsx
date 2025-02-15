@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Button, Table, Pill, Stack } from "@mantine/core";
+import { Button, Table, Pill, Stack, Pagination } from "@mantine/core";
 import { useTranslation } from "react-i18next";
-import { getSystemConfig, crawlingWebsite } from "@/services";
+import { getSystemConfig, crawlingWebsite, hasCrawlingTask } from "@/services";
+import { getPageData, getPageNumber } from "@/utils/pagination";
 
 // news website settings
 const newsWebsiteCollectionKey = "newsWebsiteCollection";
@@ -28,43 +29,62 @@ export function NewsWebsiteCollection() {
     fetchData();
   }, []);
 
-  return <WebsiteTable data={data} />;
+  return <WebsiteTable websites={data} />;
 }
 
 export function NewsWebsite() {
   const [data, setData] = useState<NewsWebsiteValue[]>([]);
   const { t } = useTranslation("settings");
+  const [loading, setLoading] = useState(true);
 
   // fetch news website
   const fetchNewsWebsite = async () => {
+    const processingTask = await hasCrawlingTask();
+
     const resp = await getSystemConfig<NewsWebsiteValue[]>({ key: newsWebsiteKey });
 
     if (!resp || !resp.value) return;
     if (resp.value.length === 0) return;
 
     setData(resp.value);
+
+    if (!processingTask) setLoading(false);
   };
 
   useEffect(() => {
     fetchNewsWebsite();
   }, []);
 
+  // crawling website handle
+  const crawlingWebsiteHandle = async () => {
+    setLoading(true);
+    await crawlingWebsite();
+  };
+
   return (
     <Stack w={"100%"} align="stretch" justify="flex-start" gap="md">
-      <Button variant="default" onClick={() => crawlingWebsite()}>
+      <Button variant="default" disabled={loading} onClick={crawlingWebsiteHandle}>
         {t("news_website.button.update_news_website")}
       </Button>
-      <WebsiteTable data={data} />
+      <WebsiteTable websites={data} />
     </Stack>
   );
 }
 
 interface WebsiteTableProps {
-  data: NewsWebsiteValue[];
+  websites: NewsWebsiteValue[];
 }
 
-function WebsiteTable({ data }: WebsiteTableProps) {
+function WebsiteTable({ websites }: WebsiteTableProps) {
   const { t } = useTranslation("settings");
+  const [page, setPage] = useState<number>(1);
+  const [data, setData] = useState<NewsWebsiteValue[]>(getPageData(websites, page, 25));
+
+  // update page
+  const updatePageHandle = (page: number) => {
+    setPage(page);
+    setData(getPageData(websites, page, 25));
+  };
 
   const tableHeader = (
     <Table.Tr>
@@ -86,6 +106,7 @@ function WebsiteTable({ data }: WebsiteTableProps) {
     <Table>
       <Table.Thead>{tableHeader}</Table.Thead>
       <Table.Tbody>{tableBody}</Table.Tbody>
+      <Pagination value={page} onChange={updatePageHandle} total={getPageNumber({ limit: 25, total: websites.length })} />
     </Table>
   );
 }

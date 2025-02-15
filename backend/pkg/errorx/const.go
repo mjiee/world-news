@@ -20,4 +20,5 @@ var (
 // crawling error
 var (
 	CrawlingRecordNotFound = NewBasicError(103011, "Crawling record not found.")
+	HasProcessingTasks     = NewBasicError(103012, "There are still processing tasks. Please try again later.")
 )

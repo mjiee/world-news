@@ -15,6 +15,8 @@ export function GetNewsDetail(arg1:dto.GetNewsDetailRequest):Promise<httpx.Respo
 
 export function GetSystemConfig(arg1:dto.GetSystemConfigRequest):Promise<httpx.Response>;
 
+export function HasCrawlingTasks():Promise<httpx.Response>;
+
 export function QueryCrawlingRecords(arg1:dto.QueryCrawlingRecordsRequest):Promise<httpx.Response>;
 
 export function QueryNews(arg1:dto.QueryNewsRequest):Promise<httpx.Response>;

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/mjiee/world-news/backend/entity"
+	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
-	"github.com/mjiee/world-news/backend/pkg/httpx"
 	"github.com/mjiee/world-news/backend/repository"
 	"github.com/mjiee/world-news/backend/repository/model"
 
@@ -16,7 +16,7 @@ import (
 // NewsService represents the interface for news-related operations.
 type NewsService interface {
 	CreateNews(ctx context.Context, news ...*entity.NewsDetail) error
-	QueryNews(ctx context.Context, recordId uint, page *httpx.Pagination) ([]*entity.NewsDetail, int64, error)
+	QueryNews(ctx context.Context, params *valueobject.QueryNewsParams) ([]*entity.NewsDetail, int64, error)
 	GetNewsDetail(ctx context.Context, id uint) (*entity.NewsDetail, error)
 	DeleteNews(ctx context.Context, id uint) error
 }
@@ -49,10 +49,17 @@ func (s *newsService) CreateNews(ctx context.Context, news ...*entity.NewsDetail
 }
 
 // QueryNews queries news details based on the provided record ID and pagination.
-func (s *newsService) QueryNews(ctx context.Context, recordId uint, page *httpx.Pagination) ([]*entity.NewsDetail, int64, error) {
-	repo := repository.Q.NewsDetail
+func (s *newsService) QueryNews(ctx context.Context, params *valueobject.QueryNewsParams) ([]*entity.NewsDetail, int64, error) {
+	var (
+		repo  = repository.Q.NewsDetail
+		query = repo.WithContext(ctx)
+	)
 
-	data, total, err := repo.WithContext(ctx).Where(repo.RecordId.Eq(recordId)).FindByPage(page.GetOffset(), page.GetLimit())
+	if params.RecordId != 0 {
+		query = query.Where(repo.RecordId.Eq(params.RecordId))
+	}
+
+	data, total, err := query.FindByPage(params.Page.GetOffset(), params.Page.GetLimit())
 	if err != nil {
 		return nil, 0, errors.WithStack(err)
 	}

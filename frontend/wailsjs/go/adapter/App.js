@@ -26,6 +26,10 @@ export function GetSystemConfig(arg1) {
   return window['go']['adapter']['App']['GetSystemConfig'](arg1);
 }
 
+export function HasCrawlingTasks() {
+  return window['go']['adapter']['App']['HasCrawlingTasks']();
+}
+
 export function QueryCrawlingRecords(arg1) {
   return window['go']['adapter']['App']['QueryCrawlingRecords'](arg1);
 }
