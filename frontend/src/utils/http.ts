@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
-import { useTranslation } from "react-i18next";
-import { useNotificationStore, useRemoteServiceStore } from "@/stores";
+import toast from "react-hot-toast";
+import { useRemoteServiceStore } from "@/stores";
 import { httpx } from "wailsjs/go/models";
 import { isWeb } from "./platform";
 
@@ -19,21 +19,25 @@ export function useRemoteService(): boolean {
 
 // call is used to handle the results returned by wails.
 export async function call<R>(resp: Promise<httpx.Response>): Promise<R | undefined> {
-  let result = await resp
-    .then((resp) => {
-      if (resp.code !== 0) {
-        notificationError(resp?.message ?? undefined);
+  try {
+    let result = await resp
+      .then((resp) => {
+        if (resp.code !== 0) {
+          notificationError(resp?.message ?? undefined);
 
-        return;
-      }
+          return;
+        }
 
-      return resp.result;
-    })
-    .catch((err) => {
-      notificationError();
-    });
+        return resp.result;
+      })
+      .catch((err) => {
+        notificationError();
+      });
 
-  return result ?? undefined;
+    return result ?? undefined;
+  } catch (error) {
+    return undefined;
+  }
 }
 
 // post http request
@@ -76,8 +80,5 @@ async function httpResultHandle<R>(resp: Promise<AxiosResponse<Response<R>, any>
 
 // notificationError is used to show notification error
 function notificationError(message?: string | undefined) {
-  const { t } = useTranslation();
-  const showNotification = useNotificationStore((state) => state.showNotification);
-
-  showNotification(message ?? t("message.internal_error"));
+  toast.error(message ?? "internal error");
 }
