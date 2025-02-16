@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, PillsInput, Pill, Stack, TextInput } from "@mantine/core";
+import { Button, PillsInput, Pill, Stack } from "@mantine/core";
 import { useField } from "@mantine/form";
 import { useTranslation } from "react-i18next";
 import { getSystemConfig, saveSystemConfig } from "@/services";
