@@ -11,6 +11,7 @@ import (
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	pkgCollector "github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
+	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/service"
 
 	"github.com/gocolly/colly/v2"
@@ -51,7 +52,7 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	}
 
 	if websiteConfig.Id == 0 {
-		return errorx.InternalError
+		return errorx.NewsWebsiteConfigNotFound
 	}
 
 	newsWebsites, err := valueobject.NewsWebsitesFromAny(websiteConfig.Value)
@@ -66,12 +67,12 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	}
 
 	if websiteConfig.Id == 0 {
-		return errorx.InternalError
+		return errorx.NewsTopicConfigNotFound
 	}
 
 	newsKeywords, ok := topicConfig.Value.([]string)
 	if !ok {
-		return errorx.InternalError
+		return errorx.InternalError.SetErr(errors.New("invalid news topic config"))
 	}
 
 	// create crawling record
@@ -82,19 +83,19 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	}
 
 	// crawling news website
-	go c.crawlingNewsHandle(record, newsKeywords, newsWebsites)
+	go c.crawlingNewsHandle(ctx, record, newsKeywords, newsWebsites)
 
 	return nil
 }
 
 // crawlingNewsHandle crawling news
-func (c *CrawlingNewsCommand) crawlingNewsHandle(record *entity.CrawlingRecord, newsTopics []string,
+func (c *CrawlingNewsCommand) crawlingNewsHandle(ctx context.Context, record *entity.CrawlingRecord, newsTopics []string,
 	newsWebsites []*valueobject.NewsWebsite) {
 	for _, website := range newsWebsites {
 		// crawling news topic page
 		topicPageUrls, err := c.crawlingNewsTopicPage(website.Url, newsTopics)
 		if err != nil {
-			// TODO: logging
+			logx.WithContext(ctx).Error("crawlingNewsTopicPage", err)
 
 			continue
 		}
@@ -105,7 +106,8 @@ func (c *CrawlingNewsCommand) crawlingNewsHandle(record *entity.CrawlingRecord, 
 		for _, topicPageUrl := range topicPageUrls {
 			links, err := c.crawlingNewsLink(topicPageUrl)
 			if err != nil {
-				// TODO: logging
+				logx.WithContext(ctx).Error("crawlingNewsLink", err)
+
 				continue
 			}
 
@@ -120,7 +122,8 @@ func (c *CrawlingNewsCommand) crawlingNewsHandle(record *entity.CrawlingRecord, 
 		for _, newsLink := range newsLinks {
 			detail, err := c.crawlingNewsDetail(newsLink)
 			if err != nil {
-				// TODO: logging
+				logx.WithContext(ctx).Error("crawlingNewsDetail", err)
+
 				continue
 			}
 
@@ -131,20 +134,37 @@ func (c *CrawlingNewsCommand) crawlingNewsHandle(record *entity.CrawlingRecord, 
 			news = append(news, detail)
 		}
 
+		// check crawling record exist
+		recordExist, err := c.crawlingSvc.CrawlingRecordExist(ctx, record.Id)
+		if err != nil {
+			logx.WithContext(ctx).Error("CrawlingRecordExist", err)
+
+			record.CrawlingFailed()
+
+			break
+		}
+
+		if !recordExist {
+			break
+		}
+
 		// save news
-		if err := c.newsSvc.CreateNews(context.Background(), news...); err != nil {
-			// TODO: logging
-			continue
+		if err := c.newsSvc.CreateNews(ctx, news...); err != nil {
+			logx.WithContext(ctx).Error("CreateNews", err)
+
+			record.CrawlingFailed()
+
+			break
 		}
 
 		record.Quantity += int64(len(news))
 	}
 
 	// update crawling record status
-	record.Status = valueobject.CompletedCrawlingRecord
+	record.CrawlingCompleted()
 
-	if err := c.crawlingSvc.UpdateCrawlingRecord(context.Background(), record); err != nil {
-		// TODO: logging
+	if err := c.crawlingSvc.UpdateCrawlingRecord(ctx, record); err != nil {
+		logx.WithContext(ctx).Error("UpdateCrawlingRecord", err)
 	}
 }
 

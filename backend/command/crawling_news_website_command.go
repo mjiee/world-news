@@ -9,6 +9,7 @@ import (
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	pkgCollector "github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
+	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/service"
 
 	"github.com/gocolly/colly/v2"
@@ -47,7 +48,7 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 	}
 
 	if config.Id == 0 {
-		return errorx.InternalError
+		return errorx.NewsWebsiteConfigNotFound
 	}
 
 	newsWebsiteCollections, err := valueobject.NewsWebsitesFromAny(config.Value)
@@ -63,20 +64,20 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 	}
 
 	// crawling news website
-	go c.crawlingNewsWebsite(record, newsWebsiteCollections)
+	go c.crawlingNewsWebsite(ctx, record, newsWebsiteCollections)
 
 	return nil
 }
 
 // crawlingNewsWebsite crawling news website
-func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(record *entity.CrawlingRecord,
+func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(ctx context.Context, record *entity.CrawlingRecord,
 	data []*valueobject.NewsWebsite) {
 	newsWebsites := make([]string, 0)
 
 	for _, item := range data {
 		websites, err := c.crawlingHandle(item.Url, item.Selectors...)
 		if err != nil {
-			// TODO: logging
+			logx.WithContext(ctx).Error("crawlingNewsWebsite", err)
 
 			continue
 		}
@@ -97,21 +98,32 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(record *entity.Crawling
 		data[i] = &valueobject.NewsWebsite{Url: item}
 	}
 
+	recordExist, err := c.crawlingSvc.CrawlingRecordExist(ctx, record.Id)
+	if err != nil {
+		logx.WithContext(ctx).Error("CrawlingRecordExist", err)
+
+		return
+	}
+
+	if !recordExist {
+		return
+	}
+
 	// save news website
-	if err := c.systemConfigSvc.SaveSystemConfig(context.Background(),
+	if err := c.systemConfigSvc.SaveSystemConfig(ctx,
 		entity.NewSystemConfig(valueobject.NewsWebsiteKey, data)); err != nil {
-		// TODO: logging
+
+		logx.WithContext(ctx).Error("SaveSystemConfig", err)
 
 		return
 	}
 
 	// update crawling record
-	record.Status = valueobject.CompletedCrawlingRecord
+	record.CrawlingCompleted()
 	record.Quantity = int64(len(newsWebsites))
 
-	if err := c.crawlingSvc.UpdateCrawlingRecord(context.Background(), record); err != nil {
-		// TODO: logging
-		return
+	if err := c.crawlingSvc.UpdateCrawlingRecord(ctx, record); err != nil {
+		logx.WithContext(ctx).Error("SaveSystemConfig", err)
 	}
 }
 

@@ -7,6 +7,8 @@ export function getPageNumber(page: httpx.Pagination): number {
 
 // getPageData to get page data
 export function getPageData<T>(arr: T[], page: number, limit: number): T[] {
+  if (!Array.isArray(arr)) return [];
+
   if (arr.length <= limit) return arr;
 
   const startIndex = (page - 1) * limit;
