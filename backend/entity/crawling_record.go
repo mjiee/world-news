@@ -58,3 +58,17 @@ func (c *CrawlingRecord) ToModel() (*model.CrawlingRecord, error) {
 		CreatedAt:  c.CreatedAt,
 	}, nil
 }
+
+// CrawlingFailed set the crawling record status to failed.
+func (c *CrawlingRecord) CrawlingFailed() {
+	c.Status = valueobject.FailedCrawlingRecord
+}
+
+// CrawlingCompleted set the crawling record status to completed.
+func (c *CrawlingRecord) CrawlingCompleted() {
+	if c.Status.IsFailed() {
+		return
+	}
+
+	c.Status = valueobject.CompletedCrawlingRecord
+}

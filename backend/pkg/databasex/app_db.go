@@ -1,10 +1,10 @@
 package databasex
 
 import (
-	"fmt"
-	"os"
 	"path/filepath"
-	"runtime"
+
+	"github.com/mjiee/world-news/backend/pkg/logx"
+	"github.com/mjiee/world-news/backend/pkg/pathx"
 
 	"github.com/pkg/errors"
 	"gorm.io/driver/sqlite"
@@ -18,27 +18,16 @@ func NewAppDB(appName string) (*gorm.DB, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	return gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+	return gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+		Logger: logx.NewAppDBLog(appName),
+	})
 }
 
-// getDbPath returns the file path for the database based on the application name and the operating system
+// getDbPath returns the path to the SQLite database file
 func getDbPath(appName string) (string, error) {
-	var basePath string
-
-	switch runtime.GOOS {
-	case "darwin": // macOS
-		basePath = filepath.Join(os.Getenv("HOME"), "Library", "Application Support", appName)
-	case "linux": // Linux
-		basePath = filepath.Join(os.Getenv("HOME"), ".local", "share", appName)
-	case "windows": // Windows
-		basePath = filepath.Join(os.Getenv("APPDATA"), appName)
-	default:
-		return "", fmt.Errorf("unsupported platform: %s", runtime.GOOS)
-	}
-
-	// Create the base path directory if it does not exist.
-	if err := os.MkdirAll(basePath, os.ModePerm); err != nil {
-		return "", fmt.Errorf("failed to create directory: %v", err)
+	basePath, err := pathx.GetAppBasePath(appName, "database")
+	if err != nil {
+		return "", err
 	}
 
 	return filepath.Join(basePath, "database.db"), nil

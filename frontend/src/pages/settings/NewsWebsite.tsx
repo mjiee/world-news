@@ -46,7 +46,7 @@ export function NewsWebsite() {
     const resp = await getSystemConfig<NewsWebsiteValue[]>({ key: newsWebsiteKey });
 
     if (!resp || !resp.value) return;
-    if (resp.value.length === 0) return;
+    if (resp.value?.length === 0) return;
 
     setData(resp.value);
   };
@@ -82,13 +82,13 @@ function WebsiteTable({ websites }: WebsiteTableProps) {
 
   // update data
   useEffect(() => {
-    setData(getPageData(websites, page, 25));
+    setData(getPageData<NewsWebsiteValue>(websites, page, 25));
   }, [websites, page]);
 
   // update page
   const updatePageHandle = (page: number) => {
     setPage(page);
-    setData(getPageData(websites, page, 25));
+    setData(getPageData<NewsWebsiteValue>(websites, page, 25));
   };
 
   // table header

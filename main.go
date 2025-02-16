@@ -4,6 +4,8 @@ import (
 	"embed"
 
 	"github.com/mjiee/world-news/backend/adapter"
+	"github.com/mjiee/world-news/backend/pkg/logx"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -18,7 +20,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "World News",
+		Title:  adapter.AppName,
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
@@ -29,6 +31,7 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
+		Logger: logx.NewAppLog(adapter.AppName),
 	})
 
 	if err != nil {

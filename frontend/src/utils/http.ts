@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import toast from "react-hot-toast";
 import { useRemoteServiceStore } from "@/stores";
 import { httpx } from "wailsjs/go/models";
+import { LogError } from "wailsjs/runtime";
 import { isWeb } from "./platform";
 
 export interface Response<R> {
@@ -35,7 +36,9 @@ export async function call<R>(resp: Promise<httpx.Response>): Promise<R | undefi
       });
 
     return result ?? undefined;
-  } catch (error) {
+  } catch (error: any) {
+    LogError(error instanceof Error ? error.toString() : String(error));
+
     return undefined;
   }
 }

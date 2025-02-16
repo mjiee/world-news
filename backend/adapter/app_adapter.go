@@ -2,7 +2,6 @@ package adapter
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/mjiee/world-news/backend/adapter/dto"
 	"github.com/mjiee/world-news/backend/command"
@@ -10,17 +9,18 @@ import (
 	"github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/databasex"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
+	"github.com/mjiee/world-news/backend/pkg/logx"
+	"github.com/mjiee/world-news/backend/pkg/tracex"
 	"github.com/mjiee/world-news/backend/repository"
 	"github.com/mjiee/world-news/backend/repository/model"
 	"github.com/mjiee/world-news/backend/service"
-
-	"github.com/wailsapp/wails/v2/pkg/logger"
 )
+
+const AppName = "world-news"
 
 // App struct
 type App struct {
-	ctx  context.Context
-	logx logger.Logger
+	ctx context.Context
 
 	crawlingSvc     service.CrawlingService
 	newsSvc         service.NewsService
@@ -29,16 +29,18 @@ type App struct {
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{
-		logx: logger.NewDefaultLogger(),
-	}
+	return &App{}
 }
 
 // init is called once at application startup.
 func (a *App) init() {
-	db, err := databasex.NewAppDB("world-news")
+	// init trace
+	tracex.InitTracer(AppName)
+
+	// init database
+	db, err := databasex.NewAppDB(AppName)
 	if err != nil {
-		a.logx.Fatal(fmt.Sprintf("Failed to create database connection: %+v", err))
+		logx.Fatal("database connection failed", err)
 
 		return
 	}
@@ -47,17 +49,19 @@ func (a *App) init() {
 
 	// auto migrate
 	if err := model.AutoMigrate(db); err != nil {
-		a.logx.Fatal(fmt.Sprintf("Failed to auto migrate database: %+v", err))
+		logx.Fatal("auto migrate database", err)
 
 		return
 	}
 
+	// init service
 	a.crawlingSvc = service.NewCrawlingService(collector.NewCollector())
 	a.newsSvc = service.NewNewsService()
 	a.systemConfigSvc = service.NewSystemConfigService()
 
+	// init system config
 	if err := a.systemConfigSvc.SystemConfigInit(a.ctx); err != nil {
-		a.logx.Fatal(fmt.Sprintf("Failed to init system config: %+v", err))
+		logx.Fatal("init system config: %+v", err)
 	}
 }
 
@@ -68,35 +72,40 @@ func (a *App) Startup(ctx context.Context) {
 	a.init()
 }
 
+// newContext creates a new context with trace information.
+func (a *App) newContext() context.Context {
+	return tracex.InjectTraceInContext(a.ctx)
+}
+
 // GetSystemConfig handles the request to retrieve system config.
 func (a *App) GetSystemConfig(req *dto.GetSystemConfigRequest) *httpx.Response {
-	data, err := a.systemConfigSvc.GetSystemConfig(a.ctx, req.Key)
+	data, err := a.systemConfigSvc.GetSystemConfig(a.newContext(), req.Key)
 
 	return httpx.Resp(dto.NewSystemConfigFromEntity(data), err)
 }
 
 // SaveSystemConfig handles the request to save system config.
 func (a *App) SaveSystemConfig(req *dto.SystemConfig) *httpx.Response {
-	return httpx.RespE(a.systemConfigSvc.SaveSystemConfig(a.ctx, req.ToEntity()))
+	return httpx.RespE(a.systemConfigSvc.SaveSystemConfig(a.newContext(), req.ToEntity()))
 }
 
 // CrawlingNews handles the request to crawl news.
 func (a *App) CrawlingNews(req *dto.CrawlingNewsRequest) *httpx.Response {
 	cmd := command.NewCrawlingNewsCommand(a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
 
-	return httpx.RespE(cmd.Execute(a.ctx))
+	return httpx.RespE(cmd.Execute(a.newContext()))
 }
 
 // CrawlingWebsite handles the request to crawl a news website.
 func (a *App) CrawlingWebsite() *httpx.Response {
 	cmd := command.NewCrawlingNewsWebsiteCommand(a.crawlingSvc, a.systemConfigSvc)
 
-	return httpx.RespE(cmd.Execute(a.ctx))
+	return httpx.RespE(cmd.Execute(a.newContext()))
 }
 
 // QueryCrawlingRecords handles the request to retrieve crawling records.
 func (a *App) QueryCrawlingRecords(req *dto.QueryCrawlingRecordsRequest) *httpx.Response {
-	data, total, err := a.crawlingSvc.QueryCrawlingRecords(a.ctx,
+	data, total, err := a.crawlingSvc.QueryCrawlingRecords(a.newContext(),
 		*valueobject.NewQueryRecordParams(req.RecordType, req.Status, req.Pagination))
 
 	return httpx.Resp(dto.NewQueryCrawlingRecordResult(data, total), err)
@@ -104,29 +113,30 @@ func (a *App) QueryCrawlingRecords(req *dto.QueryCrawlingRecordsRequest) *httpx.
 
 // DeleteCrawlingRecord handles the request to delete a crawling record.
 func (a *App) DeleteCrawlingRecord(req *dto.DeleteCrawlingRecordRequest) *httpx.Response {
-	return httpx.RespE(a.crawlingSvc.DeleteCrawlingRecord(a.ctx, req.Id))
+	return httpx.RespE(a.crawlingSvc.DeleteCrawlingRecord(a.newContext(), req.Id))
 }
 
 // HasCrawlingTasks handles the request to confirm whether there are ongoing crawling tasks.
 func (a *App) HasCrawlingTasks() *httpx.Response {
-	return httpx.Resp(a.crawlingSvc.HasProcessingTasks(a.ctx))
+	return httpx.Resp(a.crawlingSvc.HasProcessingTasks(a.newContext()))
 }
 
 // QueryNews handles the request to retrieve news detail list.
 func (a *App) QueryNews(req *dto.QueryNewsRequest) *httpx.Response {
-	data, total, err := a.newsSvc.QueryNews(a.ctx, valueobject.NewQueryNewsParams(req.RecordId, req.Pagination))
+	data, total, err := a.newsSvc.QueryNews(a.newContext(),
+		valueobject.NewQueryNewsParams(req.RecordId, req.Pagination))
 
 	return httpx.Resp(dto.NewQueryNewsResult(data, total), err)
 }
 
 // GetNewsDetail handles the request to retrieve a news detail.
 func (a *App) GetNewsDetail(req *dto.GetNewsDetailRequest) *httpx.Response {
-	news, err := a.newsSvc.GetNewsDetail(a.ctx, req.Id)
+	news, err := a.newsSvc.GetNewsDetail(a.newContext(), req.Id)
 
 	return httpx.Resp(dto.NewNewsDetailFromEntity(news), err)
 }
 
 // DeleteNews handles the request to delete a news detail.
 func (a *App) DeleteNews(req *dto.DeleteNewsRequest) *httpx.Response {
-	return httpx.RespE(a.newsSvc.DeleteNews(a.ctx, req.Id))
+	return httpx.RespE(a.newsSvc.DeleteNews(a.newContext(), req.Id))
 }

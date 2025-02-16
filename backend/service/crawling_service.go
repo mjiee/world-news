@@ -19,6 +19,7 @@ type CrawlingService interface {
 	QueryCrawlingRecords(ctx context.Context, params valueobject.QueryRecordParams) ([]*entity.CrawlingRecord, int64, error)
 	DeleteCrawlingRecord(ctx context.Context, id uint) error
 	HasProcessingTasks(ctx context.Context) (bool, error)
+	CrawlingRecordExist(ctx context.Context, id uint) (bool, error)
 }
 
 type crawlingService struct {
@@ -116,6 +117,15 @@ func (s *crawlingService) HasProcessingTasks(ctx context.Context) (bool, error) 
 	repo := repository.Q.CrawlingRecord
 
 	count, err := repo.WithContext(ctx).Where(repo.Status.Eq(string(valueobject.ProcessingCrawlingRecord))).Count()
+
+	return count > 0, errors.WithStack(err)
+}
+
+// CrawlingRecordExist check if crawling record exists
+func (s *crawlingService) CrawlingRecordExist(ctx context.Context, id uint) (bool, error) {
+	repo := repository.Q.CrawlingRecord
+
+	count, err := repo.WithContext(ctx).Where(repo.Id.Eq(id)).Count()
 
 	return count > 0, errors.WithStack(err)
 }
