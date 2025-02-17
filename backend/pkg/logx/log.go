@@ -28,8 +28,8 @@ type LogData struct {
 	// http fields
 	Path     string `json:"path,omitempty"`
 	Method   string `json:"method,omitempty"`
-	Request  string `json:"request,omitempty"`
-	Response string `json:"response,omitempty"`
+	Request  any    `json:"request,omitempty"`
+	Response any    `json:"response,omitempty"`
 
 	// database fields
 	SQL  string `json:"sql,omitempty"`
@@ -47,11 +47,14 @@ func SetDefaultLogger(logfile string) {
 			MaxAge:     5,
 		}
 
+		encoderCfg := zap.NewProductionEncoderConfig()
+		encoderCfg.EncodeTime = zapcore.RFC3339TimeEncoder
+
 		level := zap.NewAtomicLevel()
 		level.SetLevel(zapcore.InfoLevel)
 
 		core := zapcore.NewCore(
-			zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
+			zapcore.NewJSONEncoder(encoderCfg),
 			zapcore.NewMultiWriteSyncer(zapcore.AddSync(logFile)),
 			level,
 		)

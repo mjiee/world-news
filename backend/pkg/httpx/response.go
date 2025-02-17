@@ -21,11 +21,11 @@ func NewResponse(code uint32, message string) *Response {
 
 // Resp is a convenience function used to create a response object based on the provided result and error.
 func Resp(result any, err error) *Response {
-	if err == nil {
-		return Ok(result)
+	if err != nil {
+		return Fail(err)
 	}
 
-	return Fail(err)
+	return Ok(result)
 }
 
 // Ok is a convenience function used to create a response object with a successful status (code 0 and no message).

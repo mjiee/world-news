@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
@@ -39,8 +38,10 @@ func (s *systemConfigService) SystemConfigInit(ctx context.Context) error {
 		return nil
 	}
 
-	collectionValue, _ := json.Marshal(valueobject.NewsWebsiteCollection)
-	sysConfig, _ := entity.NewSystemConfig(valueobject.NewsWebsiteCollectionKey, string(collectionValue)).ToModel()
+	sysConfig, err := entity.NewSystemConfig(valueobject.NewsWebsiteCollectionKey, valueobject.NewsWebsiteCollection).ToModel()
+	if err != nil {
+		return errors.WithStack(err)
+	}
 
 	return errors.WithStack(repository.Q.SystemConfig.WithContext(ctx).Create(sysConfig))
 }

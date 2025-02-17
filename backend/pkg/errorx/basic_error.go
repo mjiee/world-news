@@ -60,3 +60,8 @@ func (e *BasicError) GetCode() uint32 {
 func (e *BasicError) GetMessage() string {
 	return e.message
 }
+
+// GetErr returns the internal error.
+func (e *BasicError) GetErr() error {
+	return e.err
+}
