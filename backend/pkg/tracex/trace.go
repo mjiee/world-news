@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"sync"
+	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
@@ -37,7 +38,7 @@ func InitTracer(traceName string) {
 
 // getTracer returns the singleton instance of the tracer
 func getTracer() trace.Tracer {
-	InitTracer("tracex")
+	InitTracer("world-news")
 
 	return tracer
 }
@@ -81,6 +82,10 @@ func ExtractTraceparent(ctx context.Context) string {
 	return trace.SpanFromContext(ctx).SpanContext().TraceID().String()
 }
 
+const startTrace = "start-trace"
+
+type startTimeKey struct{}
+
 // InjectTraceInContext ensure trace in context
 func InjectTraceInContext(ctx context.Context) context.Context {
 	span := trace.SpanFromContext(ctx)
@@ -88,14 +93,24 @@ func InjectTraceInContext(ctx context.Context) context.Context {
 		return ctx
 	}
 
-	ctx, span = StartSpan(ctx, "inject-trace")
+	ctx, span = StartSpan(ctx, startTrace)
 
 	defer span.End()
 
-	return ctx
+	return context.WithValue(ctx, startTimeKey{}, time.Now())
 }
 
 // LogField log field
 func LogField(ctx context.Context) zap.Field {
 	return zap.String(Traceparent, ExtractTraceparent(ctx))
+}
+
+// CalculateDuration calculate duration
+func CalculateDuration(ctx context.Context) int64 {
+	startTime, ok := ctx.Value(startTimeKey{}).(time.Time)
+	if !ok {
+		return 0
+	}
+
+	return time.Since(startTime).Milliseconds()
 }

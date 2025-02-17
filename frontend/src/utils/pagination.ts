@@ -14,5 +14,7 @@ export function getPageData<T>(arr: T[], page: number, limit: number): T[] {
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit;
 
-  return arr.slice(startIndex, endIndex);
+  let data = arr.slice(startIndex, endIndex);
+
+  return data;
 }
