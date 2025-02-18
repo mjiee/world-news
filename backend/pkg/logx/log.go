@@ -2,6 +2,7 @@ package logx
 
 import (
 	"context"
+	"os"
 	"sync"
 
 	"github.com/mjiee/world-news/backend/pkg/tracex"
@@ -26,7 +27,6 @@ type LogData struct {
 	Duration int64 `json:"duration,omitempty"`
 
 	// http fields
-	Path     string `json:"path,omitempty"`
 	Method   string `json:"method,omitempty"`
 	Request  any    `json:"request,omitempty"`
 	Response any    `json:"response,omitempty"`
@@ -39,27 +39,36 @@ type LogData struct {
 // SetDefaultLogger sets the default logger for the application
 func SetDefaultLogger(logfile string) {
 	once.Do(func() {
+		// writer
+		var writer zapcore.WriteSyncer
 
-		logFile := &lumberjack.Logger{
-			Filename:   logfile,
-			MaxSize:    10,
-			MaxBackups: 3,
-			MaxAge:     5,
+		if logfile != "" {
+			logFile := &lumberjack.Logger{
+				Filename:   logfile,
+				MaxSize:    10,
+				MaxBackups: 3,
+				MaxAge:     5,
+			}
+
+			writer = zapcore.AddSync(logFile)
+		} else {
+			writer = zapcore.AddSync(os.Stdout)
 		}
 
+		// encoder
 		encoderCfg := zap.NewProductionEncoderConfig()
 		encoderCfg.EncodeTime = zapcore.RFC3339TimeEncoder
 
+		// level
 		level := zap.NewAtomicLevel()
 		level.SetLevel(zapcore.InfoLevel)
 
-		core := zapcore.NewCore(
+		// create logger
+		defaultLog = zap.New(zapcore.NewCore(
 			zapcore.NewJSONEncoder(encoderCfg),
-			zapcore.NewMultiWriteSyncer(zapcore.AddSync(logFile)),
+			zapcore.NewMultiWriteSyncer(writer),
 			level,
-		)
-
-		defaultLog = zap.New(core)
+		))
 	})
 }
 

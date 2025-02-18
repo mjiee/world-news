@@ -5,7 +5,17 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "app",
+      "name": "run-web",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/main.go",
+      "args": [],
+      "buildFlags": "-tags web",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "run-app",
       "type": "go",
       "request": "launch",
       "mode": "debug",

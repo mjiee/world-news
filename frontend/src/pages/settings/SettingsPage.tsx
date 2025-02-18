@@ -5,28 +5,16 @@ import { NewsTopics } from "./NewsTopics";
 import { NewsWebsite, NewsWebsiteCollection } from "./NewsWebsite";
 import { isWeb } from "@/utils/platform";
 import IconPencil from "@/assets/icons/IconPencil.svg";
+import settingsTopic from "@/assets/images/settings_topic.png";
+import settingsService from "@/assets/images/settings_service.png";
+import settingsCollection from "@/assets/images/settings_collection.png";
+import settingsWebsite from "@/assets/images/settings_website.png";
 
 const settingsItems = [
-  {
-    id: "topic",
-    image: "https://img.icons8.com/?size=100&id=46893&format=png&color=000000",
-    content: <NewsTopics />,
-  },
-  {
-    id: "collection",
-    image: "https://img.icons8.com/?size=100&id=IwtVX5J92E9k&format=png&color=000000",
-    content: <NewsWebsiteCollection />,
-  },
-  {
-    id: "website",
-    image: "https://img.icons8.com/?size=100&id=42835&format=png&color=000000",
-    content: <NewsWebsite />,
-  },
-  {
-    id: "service",
-    image: "https://img.icons8.com/?size=100&id=104308&format=png&color=000000",
-    content: <RemoteService />,
-  },
+  { id: "topic", image: settingsTopic, content: <NewsTopics /> },
+  { id: "collection", image: settingsCollection, content: <NewsWebsiteCollection /> },
+  { id: "website", image: settingsWebsite, content: <NewsWebsite /> },
+  { id: "service", image: settingsService, content: <RemoteService /> },
 ];
 
 // Application settings page

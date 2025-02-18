@@ -2,6 +2,7 @@ package tracex
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -15,6 +16,7 @@ import (
 
 const (
 	Traceparent = "traceparent"
+	Trace       = "trace"
 )
 
 var (
@@ -77,9 +79,9 @@ func ExtractTraceFromRequest(ctx context.Context, r *http.Request) context.Conte
 
 // ExtractTraceparent extract traceparent from context
 func ExtractTraceparent(ctx context.Context) string {
-	ctx = InjectTraceInContext(ctx)
+	spanCtx := trace.SpanFromContext(InjectTraceInContext(ctx)).SpanContext()
 
-	return trace.SpanFromContext(ctx).SpanContext().TraceID().String()
+	return fmt.Sprintf("00-%s-%s-%s", spanCtx.TraceID(), spanCtx.SpanID(), spanCtx.TraceFlags())
 }
 
 const startTrace = "start-trace"
@@ -100,9 +102,16 @@ func InjectTraceInContext(ctx context.Context) context.Context {
 	return context.WithValue(ctx, startTimeKey{}, time.Now())
 }
 
+// GetTraceID get trace id
+func GetTraceID(ctx context.Context) string {
+	spanCtx := trace.SpanFromContext(InjectTraceInContext(ctx)).SpanContext()
+
+	return spanCtx.TraceID().String()
+}
+
 // LogField log field
 func LogField(ctx context.Context) zap.Field {
-	return zap.String(Traceparent, ExtractTraceparent(ctx))
+	return zap.String(Trace, GetTraceID(ctx))
 }
 
 // CalculateDuration calculate duration
