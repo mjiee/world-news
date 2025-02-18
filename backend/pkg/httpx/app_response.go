@@ -1,3 +1,5 @@
+//go:build !web
+
 package httpx
 
 import (
@@ -8,8 +10,8 @@ import (
 	"github.com/mjiee/world-news/backend/pkg/tracex"
 )
 
-// AppRespHandle is a function that handles the response of desktop app.
-func AppRespHandle(ctx context.Context, path string, req, result any, err error) *Response {
+// AppResp is a function that handles the response of desktop app.
+func AppResp(ctx context.Context, path string, req, result any, err error) *Response {
 	var (
 		resp = Resp(result, err)
 		data = &logx.LogData{

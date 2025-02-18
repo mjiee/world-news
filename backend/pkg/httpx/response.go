@@ -42,12 +42,3 @@ func Fail(err error) *Response {
 
 	return NewResponse(errorx.InternalError.GetCode(), errorx.InternalError.GetMessage())
 }
-
-// RespE is a convenience function used to create a response object based on the provided error.
-func RespE(err error) *Response {
-	if err == nil {
-		return NewResponse(0, "")
-	} else {
-		return Fail(err)
-	}
-}

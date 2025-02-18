@@ -1,3 +1,5 @@
+//go:build !web
+
 package logx
 
 import (
@@ -5,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/mjiee/world-news/backend/pkg/pathx"
+
 	"go.uber.org/zap"
 )
 
@@ -15,13 +18,13 @@ type appLog struct{}
 
 // NewAppLog creates a new instance of the appLog struct
 func NewAppLog(appName string) *appLog {
-	SetDefaultLogger(getAppLogPath(appName))
+	SetDefaultLogger(GetAppLogPath(appName))
 
 	return &appLog{}
 }
 
-// getAppLogPath returns the path to the log file for the application
-func getAppLogPath(appName string) string {
+// GetAppLogPath returns the path to the log file for the application
+func GetAppLogPath(appName string) string {
 	basePath, err := pathx.GetAppBasePath(appName, "logs")
 	if err != nil {
 		panic(err)

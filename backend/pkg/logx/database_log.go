@@ -19,13 +19,8 @@ const databaseMsg string = "database"
 type dbLog struct{}
 
 // NewDBLog creates a new instance of the dbLog struct
-func NewDBLog() *dbLog {
-	return &dbLog{}
-}
-
-// NewAppDBLog creates a new instance of the dbLog struct
-func NewAppDBLog(appName string) *dbLog {
-	SetDefaultLogger(getAppLogPath(appName))
+func NewDBLog(logfile string) *dbLog {
+	SetDefaultLogger(logfile)
 
 	return &dbLog{}
 }

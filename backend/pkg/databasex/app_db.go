@@ -1,3 +1,5 @@
+//go:build !web
+
 package databasex
 
 import (
@@ -11,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// NewAppDB creates a new instance of the AppDB struct
+// NewAppDB creates a new instance of the gorm.DB
 func NewAppDB(appName string) (*gorm.DB, error) {
 	dbPath, err := getDbPath(appName)
 	if err != nil {
@@ -19,7 +21,7 @@ func NewAppDB(appName string) (*gorm.DB, error) {
 	}
 
 	return gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: logx.NewAppDBLog(appName),
+		Logger: logx.NewDBLog(logx.GetAppLogPath(appName)),
 	})
 }
 
