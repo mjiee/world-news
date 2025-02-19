@@ -18,17 +18,14 @@ func NewSystemConfigFromEntity(config *entity.SystemConfig) *SystemConfig {
 	}
 
 	return &SystemConfig{
-		Key:   config.Key,
+		Key:   config.Key.String(),
 		Value: config.Value,
 	}
 }
 
 // ToEntity converts the SystemConfig to an entity.
 func (s *SystemConfig) ToEntity() *entity.SystemConfig {
-	return &entity.SystemConfig{
-		Key:   s.Key,
-		Value: s.Value,
-	}
+	return entity.NewSystemConfig(s.Key, s.Value)
 }
 
 // GetSystemConfigRequest get system config request

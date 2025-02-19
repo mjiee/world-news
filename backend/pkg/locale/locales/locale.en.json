@@ -1,0 +1,16 @@
+{
+  "test": {
+    "message": "hello world",
+    "template": "hello {{.Name}}"
+  },
+  "error": {
+    "InternalError": "Internal Server Error",
+    "ParamsError": "Request params error",
+    "SystemConfigNotFound": "System config not found",
+    "NewsNotFound": "News not found",
+    "CrawlingRecordNotFound": "Record not found",
+    "HasProcessingTasks": "There are still processing tasks. Please try again later",
+    "NewsWebsiteConfigNotFound": "Please complete the website configuration first",
+    "NewsTopicConfigNotFound": "Please complete the news topic configuration first"
+  }
+}

@@ -1,12 +1,5 @@
 package valueobject
 
-// system config key
-const (
-	NewsWebsiteCollectionKey = "newsWebsiteCollection" // news website collection
-	NewsWebsiteKey           = "newsWebsite"           // news website
-	NewsTopicKey             = "newsTopic"             // news topic
-)
-
 // html element
 const Html_h1 = "h1"
 const Html_p = "p"

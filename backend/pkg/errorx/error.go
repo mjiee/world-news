@@ -4,24 +4,24 @@ import "net/http"
 
 // basic error
 var (
-	InternalError = NewBasicError(http.StatusInternalServerError, "Internal Server Error.")
-	ParamsError   = NewBasicError(http.StatusBadRequest, "Request params error.")
+	InternalError = NewBasicError(http.StatusInternalServerError, "error.InternalError")
+	ParamsError   = NewBasicError(http.StatusBadRequest, "error.ParamsError")
 )
 
 // system config error
 var (
-	SystemConfigNotFound = NewBasicError(101011, "System config not found.")
+	SystemConfigNotFound = NewBasicError(101011, "error.ystemConfigNotFound")
 )
 
 // news error
 var (
-	NewsNotFound = NewBasicError(102011, "News not found.")
+	NewsNotFound = NewBasicError(102011, "error.NewsNotFound")
 )
 
 // crawling error
 var (
-	CrawlingRecordNotFound    = NewBasicError(103011, "Crawling record not found.")
-	HasProcessingTasks        = NewBasicError(103012, "There are still processing tasks. Please try again later.")
-	NewsWebsiteConfigNotFound = NewBasicError(103013, "Please configure the news website before crawling.")
-	NewsTopicConfigNotFound   = NewBasicError(103014, "Please configure the news topic before crawling.")
+	CrawlingRecordNotFound    = NewBasicError(103011, "error.CrawlingRecordNotFound")
+	HasProcessingTasks        = NewBasicError(103012, "error.HasProcessingTasks")
+	NewsWebsiteConfigNotFound = NewBasicError(103013, "error.NewsWebsiteConfigNotFound")
+	NewsTopicConfigNotFound   = NewBasicError(103014, "error.NewsTopicConfigNotFound")
 )

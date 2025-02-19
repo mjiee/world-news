@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/mjiee/world-news/backend/pkg/errorx"
+	"github.com/mjiee/world-news/backend/pkg/locale"
 	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/pkg/tracex"
 )
@@ -13,7 +14,7 @@ import (
 // AppResp is a function that handles the response of desktop app.
 func AppResp(ctx context.Context, path string, req, result any, err error) *Response {
 	var (
-		resp = Resp(result, err)
+		resp = Ok(result)
 		data = &logx.LogData{
 			Request:  req,
 			Response: resp,
@@ -23,14 +24,24 @@ func AppResp(ctx context.Context, path string, req, result any, err error) *Resp
 
 	if err != nil {
 		basicErr, ok := err.(*errorx.BasicError)
-		if ok && basicErr.GetErr() != nil {
-			logx.WithContext(ctx).Error(path, basicErr.GetErr())
-		} else if !ok {
+		if ok {
+			if basicErr.GetErr() != nil {
+				logx.WithContext(ctx).Error(path, basicErr.GetErr())
+			}
+
+			resp = NewResponse(basicErr.GetCode(), locale.AppLocalize(basicErr.GetMessage()))
+		} else {
 			logx.WithContext(ctx).Error(path, err)
+
+			resp = NewResponse(errorx.InternalError.GetCode(), locale.AppLocalize(errorx.InternalError.GetMessage()))
 		}
 	}
 
 	logx.WithContext(ctx).Info(path, data)
+
+	if resp == nil {
+		resp = Ok(nil)
+	}
 
 	return resp
 }

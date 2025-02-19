@@ -46,7 +46,7 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	}
 
 	// get news website
-	websiteConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsWebsiteKey)
+	websiteConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsWebsiteKey.String())
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	}
 
 	// get news keywords
-	topicConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsTopicKey)
+	topicConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsTopicKey.String())
 	if err != nil {
 		return err
 	}

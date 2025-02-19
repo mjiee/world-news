@@ -42,7 +42,7 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 	}
 
 	// get news website collection
-	config, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsWebsiteCollectionKey)
+	config, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsWebsiteCollectionKey.String())
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(ctx context.Context, re
 
 	// save news website
 	if err := c.systemConfigSvc.SaveSystemConfig(ctx,
-		entity.NewSystemConfig(valueobject.NewsWebsiteKey, data)); err != nil {
+		entity.NewSystemConfig(valueobject.NewsWebsiteKey.String(), data)); err != nil {
 
 		logx.WithContext(ctx).Error("SaveSystemConfig", err)
 
