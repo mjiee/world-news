@@ -6,6 +6,7 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/mjiee/world-news/backend/adapter"
 	"github.com/mjiee/world-news/backend/pkg/config"
@@ -50,7 +51,17 @@ func Run(assets embed.FS) {
 		logx.Fatal("init static file", err)
 	}
 
-	r.NoRoute(gin.WrapH(http.FileServer(http.FS(staticFp))))
+	r.StaticFS("/", http.FS(staticFp))
+
+	r.NoRoute(func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.URL.Path, "/api") {
+			c.AbortWithStatus(http.StatusNotFound)
+
+			return
+		}
+
+		c.Redirect(http.StatusMovedPermanently, "/")
+	})
 
 	// run app
 	if err = r.Run(config.Host); err != nil {

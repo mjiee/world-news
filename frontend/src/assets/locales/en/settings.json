@@ -33,6 +33,9 @@
     "lable": {
       "enable_remote_service": "Enable remote service.",
       "service_host": "Service host"
+    },
+    "validate": {
+      "host_invalid": "Please enter a valid service host."
     }
   },
   "news_topic": {

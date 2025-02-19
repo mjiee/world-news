@@ -73,7 +73,7 @@ func (a *WebAadapter) GetSystemConfig(c *gin.Context) {
 
 	data, err := a.systemConfigSvc.GetSystemConfig(ctx, req.Key)
 
-	httpx.WebResp(c, data, err)
+	httpx.WebResp(c, dto.NewSystemConfigFromEntity(data), err)
 }
 
 // SaveSystemConfig handles the request to save system config.

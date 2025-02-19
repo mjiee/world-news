@@ -15,7 +15,7 @@ type WebConfig struct {
 func NewWebConfig() *WebConfig {
 	var (
 		config = &WebConfig{
-			Host:   "0.0.0.0:8080",
+			Host:   "0.0.0.0:9010",
 			DBAddr: "host=localhost user=world_news password=world_news dbname=world_news port=5432 sslmode=disable TimeZone=Asia/Shanghai",
 		}
 		host    = os.Getenv("WORLD_NEWS_HOST")

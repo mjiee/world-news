@@ -1,13 +1,18 @@
+import { useEffect } from "react";
 import { Routes, Route } from "react-router";
 import toast, { Toaster, resolveValue } from "react-hot-toast";
 import { Notification } from "@mantine/core";
 import { HomePage } from "@/pages/home";
 import { SettingsPage } from "@/pages/settings";
 import { NewsDetailPage, NewsListPage } from "@/pages/news";
-import { initRemoteService } from "@/stores";
+import { useRemoteServiceStore } from "@/stores";
 
 function App() {
-  initRemoteService();
+  const getService = useRemoteServiceStore((state) => state.getService);
+
+  useEffect(() => {
+    getService();
+  }, []);
 
   return (
     <div>
