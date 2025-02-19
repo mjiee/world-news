@@ -1,10 +1,9 @@
-import { Container, Accordion, Text, Space, Switch, Avatar, Group, ActionIcon, Flex } from "@mantine/core";
+import { Container, Accordion, Text, Space, Avatar, Group } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import { BackHeader } from "@/components/BackHeader";
 import { NewsTopics } from "./NewsTopics";
 import { NewsWebsite, NewsWebsiteCollection } from "./NewsWebsite";
-import { isWeb } from "@/utils/platform";
-import IconPencil from "@/assets/icons/IconPencil.svg";
+import { RemoteService } from "./RemoteService";
 import settingsTopic from "@/assets/images/settings_topic.png";
 import settingsService from "@/assets/images/settings_service.png";
 import settingsCollection from "@/assets/images/settings_collection.png";
@@ -64,28 +63,5 @@ function SettingsLabel({ id, image }: SettingsLabelProps) {
         </Text>
       </div>
     </Group>
-  );
-}
-
-// remote service settings
-
-function RemoteService() {
-  const { t } = useTranslation("settings");
-
-  return isWeb() ? (
-    <p>{t("remote_service.web_not_support")}</p>
-  ) : (
-    <div>
-      <Switch defaultChecked label={t("remote_service.lable.enable_remote_service")} />
-      <Flex gap="lg" justify="flex-start" align="center" direction="row" wrap="wrap">
-        <ActionIcon variant="default">
-          <Avatar src={IconPencil} alt="eidt" variant="default" radius="sm" size="sm" />
-        </ActionIcon>
-        <p>
-          https://127.0.0.1:8080
-          <span style={{ color: "var(--mantine-color-gray-5)" }}>({t("remote_service.lable.service_host")})</span>
-        </p>
-      </Flex>
-    </div>
   );
 }

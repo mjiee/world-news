@@ -1,4 +1,4 @@
-import { call, useRemoteService } from "@/utils/http";
+import { call, post, useRemoteService } from "@/utils/http";
 import {
   CrawlingNews,
   CrawlingWebsite,
@@ -37,14 +37,14 @@ export interface CrawlingRecord {
 
 // crawlingNews to crawl news
 export async function crawlingNews(data: CrawlingNewsRequest) {
-  if (useRemoteService()) return;
+  if (useRemoteService()) return await post<CrawlingNewsRequest, any>("/api/crawling/news", data);
 
   return await call(CrawlingNews(data));
 }
 
 // crawlingWebsite to crawl website
 export async function crawlingWebsite() {
-  if (useRemoteService()) return;
+  if (useRemoteService()) return await post<any, any>("/api/crawling/website", {});
 
   return await call(CrawlingWebsite());
 }
@@ -53,21 +53,22 @@ export async function crawlingWebsite() {
 export async function queryCrawlingRecords(data: QueryCrawlingRecordsRequest) {
   const request = new dto.QueryCrawlingRecordsRequest(data);
 
-  if (useRemoteService()) return;
+  if (useRemoteService())
+    return await post<dto.QueryCrawlingRecordsRequest, QueryCrawlingRecordResult>("/api/crawling/record/query", request);
 
   return await call<QueryCrawlingRecordResult>(QueryCrawlingRecords(request));
 }
 
 // deleteCrawlingRecord to delete crawling record
 export async function deleteCrawlingRecord(data: DeleteCrawlingRecordRequest) {
-  if (useRemoteService()) return;
+  if (useRemoteService()) return await post("/api/crawling/record/delete", data);
 
   return await call(DeleteCrawlingRecord(data));
 }
 
 // hasCrawlingTask to check if has crawling task
 export async function hasCrawlingTask() {
-  if (useRemoteService()) return;
+  if (useRemoteService()) return await post<any, boolean>("/api/crawling/processing/task", {});
 
   return await call<boolean>(HasCrawlingTasks());
 }
