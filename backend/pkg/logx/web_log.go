@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -91,5 +92,5 @@ func (blw *respBodyWriter) Write(p []byte) (n int, err error) {
 
 // isJsonBody checks if the request/response body is a JSON body.
 func isJsonBody(header http.Header) bool {
-	return gin.MIMEJSON == header.Get(contentType)
+	return strings.Contains(header.Get(contentType), gin.MIMEJSON)
 }

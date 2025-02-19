@@ -72,18 +72,31 @@ func SetDefaultLogger(logfile string) {
 	})
 }
 
+// checkDefaultLogger checks if the default logger is set
+func checkDefaultLogger() {
+	if defaultLog == nil {
+		SetDefaultLogger("")
+	}
+}
+
 // info logs an info message
 func Info(msg string, data any) {
+	checkDefaultLogger()
+
 	defaultLog.Info(msg, zap.Any(dataField, data))
 }
 
 // Error logs an error
 func Error(msg string, err error) {
+	checkDefaultLogger()
+
 	defaultLog.Error(msg, zap.Error(err))
 }
 
 // Fatal logs a fatal message
 func Fatal(msg string, data error) {
+	checkDefaultLogger()
+
 	defaultLog.Fatal(msg, zap.Error(data))
 }
 
@@ -101,10 +114,14 @@ func WithContext(ctx context.Context) *contextLogger {
 
 // info logs an info message
 func (l *contextLogger) Info(msg string, data any) {
+	checkDefaultLogger()
+
 	defaultLog.Info(msg, tracex.LogField(l.ctx), zap.Any(dataField, data))
 }
 
 // Error logs an error
 func (l *contextLogger) Error(msg string, err error) {
+	checkDefaultLogger()
+
 	defaultLog.Error(msg, tracex.LogField(l.ctx), zap.Error(err))
 }

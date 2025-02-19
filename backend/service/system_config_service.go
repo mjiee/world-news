@@ -29,6 +29,19 @@ func NewSystemConfigService() SystemConfigService {
 func (s *systemConfigService) SystemConfigInit(ctx context.Context) error {
 	repo := repository.Q.SystemConfig
 
+	// init language
+	langConfig, err := s.GetSystemConfig(ctx, valueobject.LanguageKey.String())
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	if langConfig.Id != 0 {
+		if err := langConfig.UpdateSystemConfig(); err != nil {
+			return errors.WithStack(err)
+		}
+	}
+
+	// init news website collection
 	total, err := repo.WithContext(ctx).Count()
 	if err != nil {
 		return errors.WithStack(err)
@@ -38,7 +51,7 @@ func (s *systemConfigService) SystemConfigInit(ctx context.Context) error {
 		return nil
 	}
 
-	sysConfig, err := entity.NewSystemConfig(valueobject.NewsWebsiteCollectionKey, valueobject.NewsWebsiteCollection).ToModel()
+	sysConfig, err := entity.NewSystemConfig(valueobject.NewsWebsiteCollectionKey.String(), valueobject.NewsWebsiteCollection).ToModel()
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -52,7 +65,7 @@ func (s *systemConfigService) GetSystemConfig(ctx context.Context, key string) (
 
 	config, err := repo.WithContext(ctx).Where(repo.Key.Eq(key)).First()
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return &entity.SystemConfig{Key: key}, nil
+		return entity.NewSystemConfig(key, nil), nil
 	}
 
 	if err != nil {
@@ -64,7 +77,8 @@ func (s *systemConfigService) GetSystemConfig(ctx context.Context, key string) (
 
 // SaveSystemConfig saves the provided system configuration.
 func (s *systemConfigService) SaveSystemConfig(ctx context.Context, config *entity.SystemConfig) error {
-	oldConfig, err := s.GetSystemConfig(ctx, config.Key)
+	// get old config
+	oldConfig, err := s.GetSystemConfig(ctx, config.Key.String())
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -74,6 +88,12 @@ func (s *systemConfigService) SaveSystemConfig(ctx context.Context, config *enti
 		config.CreatedAt = oldConfig.CreatedAt
 	}
 
+	// update system config
+	if err = config.UpdateSystemConfig(); err != nil {
+		return errors.WithStack(err)
+	}
+
+	// save config
 	data, err := config.ToModel()
 	if err != nil {
 		return errors.WithStack(err)

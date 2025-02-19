@@ -45,12 +45,24 @@ export async function call<R>(resp: Promise<httpx.Response>): Promise<R | undefi
 
 // post http request
 export async function post<P, R>(url: string, params?: P): Promise<R | undefined> {
-  return await httpResultHandle(axios.post<Response<R>>(urlHandle(url), params));
+  try {
+    return await httpResultHandle(axios.post<Response<R>>(urlHandle(url), params));
+  } catch (error: any) {
+    LogError(error instanceof Error ? error.toString() : String(error));
+
+    return undefined;
+  }
 }
 
 // get http request
 export async function get<P, R>(url: string, params?: P): Promise<R | undefined> {
-  return await httpResultHandle(axios.get<Response<R>>(urlHandle(url), { params: params }));
+  try {
+    return await httpResultHandle(axios.get<Response<R>>(urlHandle(url), { params: params }));
+  } catch (error: any) {
+    LogError(error instanceof Error ? error.toString() : String(error));
+
+    return undefined;
+  }
 }
 
 // urlHandle is used to handle the url

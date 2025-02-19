@@ -9,6 +9,7 @@ import (
 
 	"github.com/mjiee/world-news/backend/adapter"
 	"github.com/mjiee/world-news/backend/pkg/config"
+	"github.com/mjiee/world-news/backend/pkg/locale"
 	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/pkg/tracex"
 
@@ -36,7 +37,9 @@ func Run(assets embed.FS) {
 	r := gin.New()
 
 	// middleware
-	r.Use(tracex.WebTracer()).Use(logx.WebLogger())
+	r.Use(tracex.WebTracer()).
+		Use(logx.WebLogger()).
+		Use(locale.WebLocale())
 
 	// register api router
 	ApiRouter(r.Group("/api"), webAdapter)
