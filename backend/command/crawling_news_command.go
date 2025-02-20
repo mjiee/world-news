@@ -55,9 +55,9 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 		return errorx.NewsWebsiteConfigNotFound
 	}
 
-	newsWebsites, err := valueobject.NewsWebsitesFromAny(websiteConfig.Value)
-	if err != nil {
-		return err
+	newsWebsites, ok := websiteConfig.Value.([]*valueobject.NewsWebsite)
+	if !ok {
+		return errorx.InternalError.SetErr(errors.New("invalid news websites config"))
 	}
 
 	// get news keywords
@@ -66,7 +66,7 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 		return err
 	}
 
-	if websiteConfig.Id == 0 {
+	if topicConfig.Id == 0 {
 		return errorx.NewsTopicConfigNotFound
 	}
 

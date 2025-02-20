@@ -6,7 +6,8 @@
     "view": "查看",
     "delete": "删除",
     "submit": "提交",
-    "save": "保存"
+    "save": "保存",
+    "upload": "上传"
   },
   "message": {
     "internal_error": "服务器内部错误"

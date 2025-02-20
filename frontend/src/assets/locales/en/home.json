@@ -11,6 +11,7 @@
   "crawling_records": {
     "table": {
       "head": {
+        "record_type": "Type",
         "date": "Date",
         "quantity": "Quantity",
         "status": "Status"
@@ -20,6 +21,10 @@
           "processing": "Processing",
           "completed": "Completed",
           "failed": "Failed"
+        },
+        "record_type": {
+          "crawlingWebsite": "Fetch website",
+          "crawlingNews": "Fetch news"
         }
       }
     },

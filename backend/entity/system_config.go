@@ -1,15 +1,12 @@
 package entity
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/locale"
 	"github.com/mjiee/world-news/backend/repository/model"
-
-	"github.com/pkg/errors"
 )
 
 // SystemConfig represents the structure of system configuration data stored in the database.
@@ -35,19 +32,21 @@ func NewSystemConfigFromModel(m *model.SystemConfig) (*SystemConfig, error) {
 		return nil, errorx.SystemConfigNotFound
 	}
 
-	var value any
-
-	if err := json.Unmarshal([]byte(m.Value), &value); err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	return &SystemConfig{
+	s := &SystemConfig{
 		Id:        m.Id,
 		Key:       valueobject.SystemConfigKey(m.Key),
-		Value:     value,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
-	}, nil
+	}
+
+	value, err := s.Key.UnmarshalValue(m.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	s.Value = value
+
+	return s, nil
 }
 
 // ToModel converts the SystemConfig entity to a SystemConfigModel.
@@ -56,9 +55,9 @@ func (s *SystemConfig) ToModel() (*model.SystemConfig, error) {
 		return nil, errorx.SystemConfigNotFound
 	}
 
-	value, err := json.Marshal(s.Value)
+	value, err := s.Key.MarshalValue(s.Value)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return &model.SystemConfig{

@@ -6,7 +6,8 @@
     "view": "View",
     "delete": "Delete",
     "submit": "Submit",
-    "save": "Save"
+    "save": "Save",
+    "upload": "Upload"
   },
   "message": {
     "internal_error": "Internal Server Error"
