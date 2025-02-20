@@ -1,0 +1,35 @@
+networks:
+  world_news_network:
+    driver: bridge
+
+services:
+  world_news_db:
+    image: postgres:17-alpine3.21
+    container_name: world_news_db
+    environment:
+      POSTGRES_PASSWORD: world_news
+    networks:
+      - world_news_network
+    volumes:
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  world_news_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: world_news_app
+    ports:
+      - "9010:9010"
+    environment:
+      WORLD_NEWS_DB_ADDR: "host=world_news_db port=5432 user=world_news password=world_news dbname=world_news sslmode=disable TimeZone=Asia/Shanghai"
+      GIN_MODE: release
+    depends_on:
+      world_news_db:
+        condition: service_healthy
+    networks:
+      - world_news_network

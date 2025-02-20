@@ -14,14 +14,14 @@ Welcome to **World-News** — your one-stop desktop application for viewing glob
 
 ## ⚙️ Tech Stack
 
-- **Wails** - Lightweight framework for building cross-platform desktop apps with Go and web technologies.
-- **React** - JavaScript library for building user interfaces, used for creating the frontend.
-- **Mantine** - A modern React component library for UI elements and hooks.
-- **Zustand** - A minimalistic state management library for React, used to manage application state.
-- **Gin** - Fast Go web framework for handling backend logic and API requests.
-- **Gorm** - ORM for Go, used to interact with databases.
-- **Zap** - Structured, leveled logging library for Go, used for application logging.
-- **SQLite** - Lightweight, serverless SQL database for local data storage.
+- **[Wails](https://wails.io/)** - Lightweight framework for building cross-platform desktop apps with Go and web technologies.
+- **[React](https://react.dev/)** - JavaScript library for building user interfaces, used for creating the frontend.
+- **[Mantine](https://mantine.dev/)** - A modern React component library for UI elements and hooks.
+- **[Zustand](https://zustand-demo.pmnd.rs/)** - A minimalistic state management library for React, used to manage application state.
+- **[Gin](https://gin-gonic.com/)** - Fast Go web framework for handling backend logic and API requests.
+- **[Gorm](https://gorm.io/)** - ORM for Go, used to interact with databases.
+- **[Zap](https://github.com/uber-go/zap)** - Structured, leveled logging library for Go, used for application logging.
+- **[SQLite](https://www.sqlite.org/)** - Lightweight, serverless SQL database for local data storage.
 
 ## 🛠️ Installation & Setup
 
@@ -50,13 +50,13 @@ After building, you can run the application locally:
 
 ```bash
 # On Linux/macOS
-./bin/world-news
+./build/bin/world-news
 
 # On Windows
-world-news.exe
+build\bin\world-news.exe
 ```
 
-### 2. Backend Deployment
+### 3. Backend Deployment
 
 The backend is built with Gin and provides APIs to fetch news. You can deploy it in the following ways:
 
@@ -73,21 +73,21 @@ Access the app at http://localhost:9010 in your browser.
 
 #### Local Deployment
 
-1. Ensure you have a running PostgreSQL database locally.
-2. Set up the database connection string:
+Ensure you have a running PostgreSQL database locally and that the relevant database and user have been created.
+Set up the database connection string:
 
 ```bash
 WORLD_NEWS_DB_ADDR="host=localhost user=world_news password=world_news dbname=world_news port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 ```
 
-3. Build and run the backend:
+Build and run the backend:
 
 ```bash
 # Build the project
 make build-web
 
 # Run the backend service
-./world-news
+./build/bin/world-news
 ```
 
 Access the app at http://localhost:9010 in your browser.

@@ -1,25 +1,25 @@
 # World-News 🌍📰
 
-欢迎使用 **World-News** —— 你的全球新闻查看一站式桌面应用，来自多个新闻来源。无论你是想了解最新头条，探索不同地区的新闻，还是关注特定话题，World-News 都能让你轻松访问和阅读来自世界各地的最相关报道。
+欢迎使用 **World-News** —— 一款用于查看全球新闻的一站式桌面应用。无论你是想了解最新的新闻头条，或是探索不同地区的新闻，还是关注特定话题的新闻，World-News 都能让你轻松访问和阅读来自世界各地的最相关报道。
 
 ## 🚀 主要特性
 
-- 实时获取来自多个全球新闻来源的最新新闻。
-- 下载后支持离线阅读 — 随时随地查看新闻。
-- 简单直观的用户界面，提供无缝便捷的新闻浏览体验。
-- 灵活的数据源配置，允许用户自定义新闻来源。
-- 支持桌面安装和网页部署，满足不同平台的需求。
+- 实时获取来自全球多个新闻来源的最新资讯。
+- 下载后可离线阅读，让您随时随地查看新闻。
+- 简洁直观的用户界面，带来流畅便捷的新闻浏览体验。
+- 灵活的数据源配置，支持用户自定义新闻来源。
+- 支持桌面安装和网页部署，满足不同平台的使用需求。
 
 ## ⚙️ 技术栈
 
-- **Wails** - 一个轻量级框架，用于使用 Go 和 Web 技术构建跨平台桌面应用。
-- **React** - 用于构建用户界面的 JavaScript 库，应用于前端开发。
-- **Mantine** - 现代化的 React 组件库，提供 UI 元素和 hooks。
-- **Zustand** - 一个极简的 React 状态管理库，用于管理应用状态。
-- **Gin** - 快速的 Go Web 框架，处理后端逻辑和 API 请求。
-- **Gorm** - Go 的 ORM，用于与数据库进行交互。
-- **Zap** - 一个结构化、分级的 Go 日志库，用于应用日志记录。
-- **SQLite** - 轻量级、无服务器的 SQL 数据库，用于本地数据存储。
+- **[Wails](https://wails.io/)** - 一个轻量级框架，用于使用 Go 和 Web 技术构建跨平台桌面应用。
+- **[React](https://react.dev/)** - 用于构建用户界面的 JavaScript 库，应用于前端开发。
+- **[Mantine](https://mantine.dev/)** - 现代化的 React 组件库，提供 UI 元素和 hooks。
+- **[Zustand](https://zustand-demo.pmnd.rs/)** - 一个极简的 React 状态管理库，用于管理应用状态。
+- **[Gin](https://gin-gonic.com/)** - 快速的 Go Web 框架，处理后端逻辑和 API 请求。
+- **[Gorm](https://gorm.io/)** - Go 的 ORM，用于与数据库进行交互。
+- **[Zap](https://github.com/uber-go/zap)** - 一个结构化、分级的 Go 日志库，用于应用日志记录。
+- **[SQLite](https://www.sqlite.org/)** - 轻量级、无服务器的 SQL 数据库，用于本地数据存储。
 
 ## 🛠️ 安装与设置
 
@@ -48,13 +48,13 @@ make build
 
 ```bash
 # 在 Linux/macOS 上运行
-./bin/world-news
+./build/bin/world-news
 
 # 在 Windows 上运行
-world-news.exe
+build\bin\world-news.exe
 ```
 
-### 2. 后端部署
+### 3. 后端部署
 
 后端使用 Gin 构建，提供获取新闻的 API。你可以通过以下方式部署后端：
 
@@ -71,21 +71,20 @@ docker compose up -d
 
 #### 本地部署
 
-1. 确保本地有运行中的 PostgreSQL 数据库。
-2. 设置数据库连接字符串：
+确保本地有运行中的 PostgreSQL 数据库，并创建了相关 database 和 user。设置数据库连接字符串：
 
 ```bash
 WORLD_NEWS_DB_ADDR="host=localhost port=5432 user=world_news password=world_news dbname=world_news sslmode=disable TimeZone=Asia/Shanghai"
 ```
 
-3. 构建并运行后端：
+构建并运行后端：
 
 ```bash
 # 构建项目
 make build-web
 
 # 运行后端服务
-./world-news
+./build/bin/world-news
 ```
 
 然后，在浏览器中访问 http://localhost:9010。
