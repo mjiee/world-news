@@ -1,3 +1,5 @@
+APP_NAME=world-news
+
 # app dependency check
 check-dependency:
 	@command -v wails >/dev/null 2>&1 || { \
@@ -30,3 +32,18 @@ run: check-dependency
 run-web: build-web-static
 	@go run -tags web main.go
 
+
+# build app
+.PHONY: build
+build: check-dependency
+	@wails build
+
+# build web
+.PHONY: build-web
+build-web: build-web-static
+	@go build -tags web -o ./build/bin/$(BIN) main.go
+
+# deploy
+.PHONY: deploy
+deploy:
+	@docker compose up -d
