@@ -10,10 +10,10 @@ export function LanguageSwitcher() {
   const { i18n } = useTranslation();
 
   const handleLanguageChange = () => {
-    const lang = language === en ? zh : en;
+    const lang = i18n.language === en ? zh : en;
 
-    setLanguage(lang);
     i18n.changeLanguage(lang);
+    setLanguage(lang);
   };
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export function LanguageSwitcher() {
 
   return (
     <ActionIcon variant="default" radius="xl" aria-label="Settings" onClick={handleLanguageChange}>
-      {language === en ? "中" : "EN"}
+      {i18n.language === en ? "中" : "EN"}
     </ActionIcon>
   );
 }

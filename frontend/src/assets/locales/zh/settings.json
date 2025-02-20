@@ -19,13 +19,17 @@
   },
   "news_website": {
     "button": {
-      "update_news_website": "更新新闻网站"
+      "fetch_news_website": "获取新闻网站"
     },
     "table": {
       "head": {
         "website": "网址",
         "selector": "选择器"
       }
+    },
+    "upload_website": {
+      "title": "上传新闻网站",
+      "invalid_value": "无效值"
     }
   },
   "remote_service": {

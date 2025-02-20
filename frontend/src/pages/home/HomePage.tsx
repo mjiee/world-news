@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Button, Container, Avatar, Group, Table, Modal, LoadingOverlay, Pagination } from "@mantine/core";
+import { Button, Container, Avatar, Group, Table, Modal, LoadingOverlay, Pagination, Box } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { LanguageSwitcher } from "@/components";
-import { hasCrawlingTask, crawlingNews, queryCrawlingRecords, deleteCrawlingRecord, CrawlingRecord } from "@/services";
+import {
+  hasCrawlingTask,
+  crawlingNews,
+  queryCrawlingRecords,
+  deleteCrawlingRecord,
+  CrawlingRecord,
+  CrawlingRecordType,
+} from "@/services";
 import { httpx } from "wailsjs/go/models";
 import { getPageNumber } from "@/utils/pagination";
 import styles from "@/assets/styles/header.module.css";
@@ -133,7 +140,9 @@ function CrawlingRecords() {
   return (
     <Container size="md">
       {loading ? (
-        <LoadingOverlay visible={loading} />
+        <Box pos="relative">
+          <LoadingOverlay visible={loading} />
+        </Box>
       ) : (
         <Table>
           <RecordTableHeader />
@@ -153,6 +162,7 @@ function RecordTableHeader() {
       <Table.Tr>
         <Table.Th>ID</Table.Th>
         <Table.Th>{t("crawling_records.table.head.date")}</Table.Th>
+        <Table.Th>{t("crawling_records.table.head.record_type")}</Table.Th>
         <Table.Th>{t("crawling_records.table.head.quantity")}</Table.Th>
         <Table.Th>{t("crawling_records.table.head.status")}</Table.Th>
         <Table.Th />
@@ -170,17 +180,25 @@ function RecordTableBody({ record, updatePage }: RecordTableBodyProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const viewButton =
+    record.recordType === CrawlingRecordType.CrawlingWebsite ? (
+      <></>
+    ) : (
+      <Button variant="default" size="xs" onClick={() => navigate("/news/list/" + record.id)}>
+        {t("button.view")}
+      </Button>
+    );
+
   return (
     <Table.Tr key={record.id}>
       <Table.Td>{record.id}</Table.Td>
       <Table.Td>{record.date}</Table.Td>
+      <Table.Td>{t("crawling_records.table.body.record_type." + record.recordType, { ns: "home" })}</Table.Td>
       <Table.Td>{record.quantity}</Table.Td>
       <Table.Td>{t("crawling_records.table.body.status." + record.status, { ns: "home" })}</Table.Td>
       <Table.Td>
         <Button.Group>
-          <Button variant="default" size="xs" onClick={() => navigate("/news/list/" + record.id)}>
-            {t("button.view")}
-          </Button>
+          {viewButton}
           <DeleteRecordButton recordId={record.id} date={record.date} updatePage={updatePage} />
         </Button.Group>
       </Table.Td>

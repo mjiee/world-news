@@ -19,13 +19,17 @@
   },
   "news_website": {
     "button": {
-      "update_news_website": "Update news website"
+      "fetch_news_website": "Fetch news website"
     },
     "table": {
       "head": {
         "website": "Website",
         "selector": "Selector"
       }
+    },
+    "upload_website": {
+      "title": "Upload news website",
+      "invalid_value": "Invalid value"
     }
   },
   "remote_service": {
@@ -35,7 +39,7 @@
       "service_host": "Service host"
     },
     "validate": {
-      "host_invalid": "Please enter a valid service host."
+      "invalid_host": "Please enter a valid service host."
     }
   },
   "news_topic": {

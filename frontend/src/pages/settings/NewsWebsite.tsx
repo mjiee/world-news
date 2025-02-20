@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
-import { Button, Table, Pill, Stack, Pagination } from "@mantine/core";
 import { useTranslation } from "react-i18next";
-import { getSystemConfig, crawlingWebsite, hasCrawlingTask } from "@/services";
+import { Button, Table, Pill, Stack, Pagination, Modal, Group, JsonInput, Flex } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { useField } from "@mantine/form";
+import { getSystemConfig, saveSystemConfig, crawlingWebsite, hasCrawlingTask } from "@/services";
 import { getPageData, getPageNumber } from "@/utils/pagination";
+import { validateUrl } from "@/utils/validate";
 
 // news website settings
 const newsWebsiteCollectionKey = "newsWebsiteCollection";
@@ -55,6 +58,11 @@ export function NewsWebsite() {
     fetchNewsWebsite();
   }, []);
 
+  // refresh data
+  const refreshData = async () => {
+    await fetchNewsWebsite();
+  };
+
   // crawling website handle
   const crawlingWebsiteHandle = async () => {
     setLoading(true);
@@ -63,14 +71,18 @@ export function NewsWebsite() {
 
   return (
     <Stack w={"100%"} align="stretch" justify="flex-start" gap="md">
-      <Button variant="default" disabled={loading} onClick={crawlingWebsiteHandle}>
-        {t("news_website.button.update_news_website")}
-      </Button>
+      <Flex gap="md">
+        <Button variant="default" disabled={loading} onClick={crawlingWebsiteHandle}>
+          {t("news_website.button.fetch_news_website")}
+        </Button>
+        <UploadNewsWebsite refershData={refreshData} />
+      </Flex>
       <WebsiteTable websites={data} />
     </Stack>
   );
 }
 
+// website table
 interface WebsiteTableProps {
   websites: NewsWebsiteValue[];
 }
@@ -118,4 +130,76 @@ function WebsiteTable({ websites }: WebsiteTableProps) {
       <Pagination value={page} onChange={updatePageHandle} total={getPageNumber({ limit: 25, total: websites.length })} />
     </Stack>
   );
+}
+
+// UploadNewsWebsite upload news website
+interface UploadNewsWebsiteProps {
+  refershData: () => void;
+}
+
+function UploadNewsWebsite({ refershData }: UploadNewsWebsiteProps) {
+  const { t } = useTranslation();
+  const [opened, { open, close }] = useDisclosure(false);
+
+  const website = useField({
+    initialValue: "",
+    validateOnChange: true,
+    validate: (value) => {
+      if (validateWebsiteValue(value)) return null;
+
+      return t("news_website.upload_website.invalid_value", { ns: "settings" });
+    },
+  });
+
+  // click ok handler
+  const clickOkHandler = async () => {
+    if (!website.validate()) return;
+
+    const websites: NewsWebsiteValue[] = JSON.parse(website.getValue());
+
+    await saveSystemConfig({ key: newsWebsiteKey, value: websites });
+
+    website.reset();
+    close();
+    refershData();
+  };
+
+  return (
+    <>
+      <Modal
+        title={t("news_website.upload_website.title", { ns: "settings" })}
+        opened={opened}
+        onClose={close}
+        withCloseButton={false}
+      >
+        <JsonInput {...website.getInputProps()} placeholder='[{"url": "https://news.com"}]' formatOnBlur rows={4} />
+        <Group justify="flex-end">
+          <Button onClick={clickOkHandler}>{t("button.ok")}</Button>
+          <Button onClick={close} variant="default">
+            {t("button.cancel")}
+          </Button>
+        </Group>
+      </Modal>
+      <Button variant="default" onClick={open}>
+        {t("button.upload")}
+      </Button>
+    </>
+  );
+}
+
+// validateWebsiteValue validate website value
+function validateWebsiteValue(value: string): boolean {
+  if (!value) return false;
+
+  try {
+    const websites: NewsWebsiteValue[] = JSON.parse(value);
+
+    websites.forEach((item) => {
+      if (!validateUrl(item.url)) throw new Error("invalid url");
+    });
+
+    return true;
+  } catch (_) {
+    return false;
+  }
 }

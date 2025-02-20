@@ -29,10 +29,15 @@ interface QueryCrawlingRecordResult {
 
 export interface CrawlingRecord {
   id: number;
-  recordType: string;
+  recordType: CrawlingRecordType;
   date: string;
   quantity: number;
   status: string;
+}
+
+export enum CrawlingRecordType {
+  CrawlingWebsite = "crawlingWebsite",
+  CrawlingNews = "crawlingNews",
 }
 
 // crawlingNews to crawl news

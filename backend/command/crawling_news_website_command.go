@@ -51,9 +51,9 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 		return errorx.NewsWebsiteConfigNotFound
 	}
 
-	newsWebsiteCollections, err := valueobject.NewsWebsitesFromAny(config.Value)
-	if err != nil {
-		return err
+	newsWebsiteCollections, ok := config.Value.([]*valueobject.NewsWebsite)
+	if !ok {
+		return errorx.InternalError.SetErr(errors.New("invalid news websites config"))
 	}
 
 	// create crawling record
