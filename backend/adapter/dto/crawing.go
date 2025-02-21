@@ -71,5 +71,11 @@ func NewCrawlingRecordFromEntity(record *entity.CrawlingRecord) *CrawlingRecord 
 
 // DeleteCrawlingRecordRequest is a struct for deleting a crawling record.
 type DeleteCrawlingRecordRequest struct {
-	Id uint `json:"id"`
+	Id uint `json:"id" binding:"required"`
+}
+
+// UpdateCrawlingRecordStatusRequest is a struct for updating a crawling record.
+type UpdateCrawlingRecordStatusRequest struct {
+	Id     uint   `json:"id" binding:"required"`
+	Status string `json:"status" binding:"oneof=processing paused"`
 }

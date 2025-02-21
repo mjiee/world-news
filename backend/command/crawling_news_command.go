@@ -2,16 +2,15 @@ package command
 
 import (
 	"context"
-	"net/url"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	pkgCollector "github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
+	"github.com/mjiee/world-news/backend/pkg/urlx"
 	"github.com/mjiee/world-news/backend/service"
 
 	"github.com/gocolly/colly/v2"
@@ -36,6 +35,39 @@ func NewCrawlingNewsCommand(crawlingSvc service.CrawlingService, newsSvc service
 
 func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	// check crawling record
+	if err := c.crawlingNewsAllowed(ctx); err != nil {
+		return err
+	}
+
+	// get news website
+	newsWebsites, err := c.getNewsWebsites(ctx)
+	if err != nil {
+		return err
+	}
+
+	// get news keywords
+	newsTopics, err := c.getNewsTopics(ctx)
+	if err != nil {
+		return err
+	}
+
+	// create crawling record
+	record := entity.NewCrawlingRecord(valueobject.CrawlingNews,
+		valueobject.NewCrawlingRecordConfig(newsWebsites, newsTopics))
+
+	if err := c.crawlingSvc.CreateCrawlingRecord(ctx, record); err != nil {
+		return err
+	}
+
+	// crawling news website
+	go c.crawlingHandle(ctx, record)
+
+	return nil
+}
+
+// crawlingNewsAllowed check crawling news allowed
+func (c *CrawlingNewsCommand) crawlingNewsAllowed(ctx context.Context) error {
+	// check crawling record
 	hasProcessingTask, err := c.crawlingSvc.HasProcessingTasks(ctx)
 	if err != nil {
 		return err
@@ -45,119 +77,79 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 		return errorx.HasProcessingTasks
 	}
 
-	// get news website
+	return nil
+}
+
+// getNewsWebsites get news websites
+func (c *CrawlingNewsCommand) getNewsWebsites(ctx context.Context) ([]*valueobject.NewsWebsite, error) {
 	websiteConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsWebsiteKey.String())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if websiteConfig.Id == 0 {
-		return errorx.NewsWebsiteConfigNotFound
+		return nil, errorx.NewsWebsiteConfigNotFound
 	}
 
 	newsWebsites, ok := websiteConfig.Value.([]*valueobject.NewsWebsite)
 	if !ok {
-		return errorx.InternalError.SetErr(errors.New("invalid news websites config"))
+		return nil, errorx.InternalError.SetErr(errors.New("invalid news websites config"))
 	}
 
-	// get news keywords
+	return newsWebsites, nil
+}
+
+// getNewsTopics get news topics
+func (c *CrawlingNewsCommand) getNewsTopics(ctx context.Context) ([]string, error) {
 	topicConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsTopicKey.String())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if topicConfig.Id == 0 {
-		return errorx.NewsTopicConfigNotFound
+		return nil, errorx.NewsTopicConfigNotFound
 	}
 
-	newsKeywords, ok := topicConfig.Value.([]string)
+	newsTopics, ok := topicConfig.Value.([]string)
 	if !ok {
-		return errorx.InternalError.SetErr(errors.New("invalid news topic config"))
+		return nil, errorx.InternalError.SetErr(errors.New("invalid news topic config"))
 	}
 
-	// create crawling record
-	record := entity.NewCrawlingRecord(valueobject.CrawlingNews)
-
-	if err := c.crawlingSvc.CreateCrawlingRecord(ctx, record); err != nil {
-		return err
-	}
-
-	// crawling news website
-	go c.crawlingNewsHandle(ctx, record, newsKeywords, newsWebsites)
-
-	return nil
+	return newsTopics, nil
 }
 
-// crawlingNewsHandle crawling news
-func (c *CrawlingNewsCommand) crawlingNewsHandle(ctx context.Context, record *entity.CrawlingRecord, newsTopics []string,
-	newsWebsites []*valueobject.NewsWebsite) {
-	for _, website := range newsWebsites {
-		// crawling news topic page
-		topicPageUrls, err := c.crawlingNewsTopicPage(website.Url, newsTopics)
-		if err != nil {
-			logx.WithContext(ctx).Error("crawlingNewsTopicPage", err)
+// crawlingHandle crawling news
+func (c *CrawlingNewsCommand) crawlingHandle(ctx context.Context, record *entity.CrawlingRecord) {
+	var err error
 
-			continue
-		}
+	for _, website := range record.Config.Sources {
+		select {
+		case <-ctx.Done():
+			record.CrawlingPaused()
 
-		// crawling news link
-		newsLinks := make([]string, 0)
-
-		for _, topicPageUrl := range topicPageUrls {
-			links, err := c.crawlingNewsLink(topicPageUrl)
+			return
+		default:
+			record, err = c.crawlingSvc.GetCrawlingRecord(ctx, record.Id)
 			if err != nil {
-				logx.WithContext(ctx).Error("crawlingNewsLink", err)
+				logx.WithContext(ctx).Error("GetCrawlingRecord", err)
 
-				continue
+				record.CrawlingFailed()
+
+				return
 			}
 
-			newsLinks = append(newsLinks, links...)
-		}
-
-		newsLinks = slices.CompactFunc(newsLinks, strings.EqualFold)
-
-		// crawling news detail
-		news := make([]*entity.NewsDetail, 0)
-
-		for _, newsLink := range newsLinks {
-			detail, err := c.crawlingNewsDetail(newsLink)
-			if err != nil {
-				logx.WithContext(ctx).Error("crawlingNewsDetail", err)
-
-				continue
+			if !record.Status.IsProcessing() {
+				return
 			}
 
-			if detail == nil {
-				continue
+			if err = c.crawlingNews(ctx, website, record); err != nil {
+				logx.WithContext(ctx).Error("crawlingNews", err)
+
+				record.CrawlingFailed()
+
+				return
 			}
-
-			news = append(news, detail)
 		}
-
-		// check crawling record exist
-		recordExist, err := c.crawlingSvc.CrawlingRecordExist(ctx, record.Id)
-		if err != nil {
-			logx.WithContext(ctx).Error("CrawlingRecordExist", err)
-
-			record.CrawlingFailed()
-
-			break
-		}
-
-		if !recordExist {
-			break
-		}
-
-		// save news
-		if err := c.newsSvc.CreateNews(ctx, news...); err != nil {
-			logx.WithContext(ctx).Error("CreateNews", err)
-
-			record.CrawlingFailed()
-
-			break
-		}
-
-		record.Quantity += int64(len(news))
 	}
 
 	// update crawling record status
@@ -168,172 +160,187 @@ func (c *CrawlingNewsCommand) crawlingNewsHandle(ctx context.Context, record *en
 	}
 }
 
+// crawlingNews crawling news
+func (c *CrawlingNewsCommand) crawlingNews(ctx context.Context, website *valueobject.NewsWebsite,
+	record *entity.CrawlingRecord) error {
+	// crawling news topic page
+	topicPageUrls, err := c.crawlingNewsTopicPage(website, record.Config.Topics)
+	if err != nil {
+		logx.WithContext(ctx).Error("crawlingNewsTopicPage", err)
+
+		return nil
+	}
+
+	// crawling newsData
+	newsData := c.crawlingNewsInTopicPage(ctx, topicPageUrls, website.Selector)
+
+	// crawling news detail
+	newsDetails := make([]*entity.NewsDetail, 0, len(newsData))
+
+	for _, detail := range newsData {
+		detail.RecordId = record.Id
+		detail.Source = website.GetHost()
+
+		if err := c.crawlingNewsDetail(detail, website.Selector); err != nil {
+			logx.WithContext(ctx).Error("crawlingNewsDetail", err)
+
+			continue
+		}
+
+		newsDetails = append(newsDetails, detail)
+	}
+
+	// save news
+	if err := c.newsSvc.CreateNews(ctx, newsDetails...); err != nil {
+		return err
+	}
+
+	record.Quantity += int64(len(newsDetails))
+
+	// update record
+	return c.crawlingSvc.UpdateCrawlingRecord(ctx, record)
+}
+
 // crawlingNewsTopicPage crawling news topic page
-func (c *CrawlingNewsCommand) crawlingNewsTopicPage(websiteUrl string, topics []string) ([]string, error) {
+func (c *CrawlingNewsCommand) crawlingNewsTopicPage(website *valueobject.NewsWebsite,
+	topics []string) (map[string][]string, error) {
 	var (
-		collector = c.crawlingSvc.GetCollector()
-		pageUrls  = []string{}
+		collector     = c.crawlingSvc.GetCollector()
+		topicPageData = map[string][]string{}
+		selector      = valueobject.Html_a
 	)
 
-	collector.OnHTML(valueobject.Html_a, func(h *colly.HTMLElement) {
-		if !isTopicLink(h.Text, topics) {
-			return
+	if website.Selector != nil && website.Selector.Topic != "" {
+		selector = website.Selector.Topic
+	}
+
+	collector.OnHTML(selector, func(h *colly.HTMLElement) {
+		for _, topic := range topics {
+			if !strings.EqualFold(h.Text, topic) {
+				continue
+			}
+
+			link := urlx.UrlPrefixHandle(h.Attr(valueobject.Attr_href), h.Request.URL)
+
+			if len(link) == 0 {
+				continue
+			}
+
+			topicPageData[topic] = append(topicPageData[topic], link)
 		}
-
-		link := urlPrefixHandle(h.Attr(valueobject.Attr_href), h.Request.URL)
-
-		if len(link) == 0 {
-			return
-		}
-
-		pageUrls = append(pageUrls, link)
 	})
 
-	if err := collector.Visit(websiteUrl); err != nil {
+	if err := collector.Visit(website.Url); err != nil {
 		if pkgCollector.IgnorableError(err) {
-			return pageUrls, nil
+			return topicPageData, nil
 		}
 
 		return nil, errors.WithStack(err)
 	}
 
-	pageUrls = slices.CompactFunc(pageUrls, strings.EqualFold) // remove duplicate
+	return topicPageData, nil
+}
 
-	return pageUrls, nil
+// crawlingNewsInTopicPage crawling news in topic page
+func (c *CrawlingNewsCommand) crawlingNewsInTopicPage(ctx context.Context, topicPages map[string][]string,
+	selector *valueobject.Selector) []*entity.NewsDetail {
+	var (
+		isVisited = map[string]struct{}{}
+		news      = []*entity.NewsDetail{}
+	)
+
+	for topic, urls := range topicPages {
+		for _, pageUrl := range urls {
+			if _, ok := isVisited[pageUrl]; ok {
+				continue
+			}
+
+			isVisited[pageUrl] = struct{}{}
+
+			data, err := c.crawlingNewsLink(pageUrl, topic, selector)
+			if err != nil {
+				logx.WithContext(ctx).Error("crawlingNewsLink", err)
+
+				continue
+			}
+
+			news = append(news, data...)
+		}
+	}
+
+	// remove duplicate
+	news = slices.CompactFunc(news, func(a, b *entity.NewsDetail) bool {
+		return a.Link == b.Link
+	})
+
+	return news
 }
 
 // crawlingNewsLink crawling news link
-func (c *CrawlingNewsCommand) crawlingNewsLink(topicPageUrl string) ([]string, error) {
+func (c *CrawlingNewsCommand) crawlingNewsLink(pageUrl, topic string,
+	selector *valueobject.Selector) ([]*entity.NewsDetail, error) {
 	var (
-		collector = c.crawlingSvc.GetCollector()
-		newsLinks = []string{}
+		collector    = c.crawlingSvc.GetCollector()
+		news         = []*entity.NewsDetail{}
+		linkSelector = valueobject.Html_a
 	)
 
-	collector.OnHTML(valueobject.Html_a, func(h *colly.HTMLElement) {
+	if selector != nil && selector.Link != "" {
+		linkSelector = selector.Link
+	}
+
+	collector.OnHTML(linkSelector, func(h *colly.HTMLElement) {
 		headers := strings.Fields(h.Text)
 
 		if len(headers) < 5 { // news title length must be greater than 5
 			return
 		}
 
-		link := urlPrefixHandle(h.Attr(valueobject.Attr_href), h.Request.URL)
+		link := urlx.UrlPrefixHandle(h.Attr(valueobject.Attr_href), h.Request.URL)
 
 		if len(link) == 0 {
 			return
 		}
 
-		newsLinks = append(newsLinks, link)
+		news = append(news, &entity.NewsDetail{
+			Link:  link,
+			Topic: topic,
+		})
 	})
 
-	if err := collector.Visit(topicPageUrl); err != nil {
+	if err := collector.Visit(pageUrl); err != nil {
 		if pkgCollector.IgnorableError(err) {
-			return newsLinks, nil
+			return news, nil
 		}
 
 		return nil, errors.WithStack(err)
-	}
-
-	newsLinks = slices.CompactFunc(newsLinks, strings.EqualFold)
-
-	if len(newsLinks) > 10 {
-		return newsLinks[:10], nil
-	}
-
-	return newsLinks, nil
-}
-
-// crawlingNewsDetail crawling news detail
-func (c *CrawlingNewsCommand) crawlingNewsDetail(newsLink string) (*entity.NewsDetail, error) {
-	var (
-		collector = c.crawlingSvc.GetCollector()
-		news      = &entity.NewsDetail{Link: newsLink}
-	)
-
-	// publish time
-	collector.OnHTML(valueobject.Html_time, func(h *colly.HTMLElement) {
-		publishedStr := h.Attr(valueobject.Attr_datetime)
-
-		data := strings.Split(publishedStr, "T")
-
-		if len(data) < 1 {
-			return
-		}
-
-		publishedAt, err := time.Parse(time.DateOnly, data[0])
-		if err != nil {
-			return
-		}
-
-		news.PublishedAt = publishedAt
-	})
-
-	// title
-	collector.OnHTML(valueobject.Html_h1, func(h *colly.HTMLElement) {
-		news.Title = h.Text
-	})
-
-	// content
-	collector.OnHTML(valueobject.Html_p, func(h *colly.HTMLElement) {
-		content := strings.TrimSpace(h.Text)
-
-		if len(content) == 0 {
-			return
-		}
-
-		news.Contents = append(news.Contents, content)
-	})
-
-	// images
-	collector.OnHTML(valueobject.Html_img, func(h *colly.HTMLElement) {
-		imgUrl := strings.TrimSpace(h.Attr(valueobject.Attr_src))
-
-		if len(imgUrl) == 0 {
-			return
-		}
-
-		news.Images = append(news.Images, urlPrefixHandle(imgUrl, h.Request.URL))
-	})
-
-	if err := collector.Visit(newsLink); err != nil && !pkgCollector.IgnorableError(err) {
-		return nil, errors.WithStack(err)
-	}
-
-	// validate news
-	if err := news.Validate(); err != nil {
-		return nil, nil
 	}
 
 	return news, nil
 }
 
-// urlPrefixHandle url prefix handle
-func urlPrefixHandle(webUrl string, reqUrl *url.URL) string {
-	if strings.HasPrefix(webUrl, "http") {
-		return webUrl
+// crawlingNewsDetail crawling news detail
+func (c *CrawlingNewsCommand) crawlingNewsDetail(news *entity.NewsDetail, selector *valueobject.Selector) error {
+	var (
+		collector = c.crawlingSvc.GetCollector()
+	)
+
+	// publish time
+	collector.OnHTML(news.ExtractPublishTime(selector.Time))
+
+	// title
+	collector.OnHTML(news.ExtractTitle(selector.Title))
+
+	// content
+	collector.OnHTML(news.ExtractContent(selector.Content))
+
+	// images
+	collector.OnHTML(news.ExtractImage(selector.Image))
+
+	if err := collector.Visit(news.Link); err != nil && !pkgCollector.IgnorableError(err) {
+		return errors.WithStack(err)
 	}
 
-	if !strings.Contains(webUrl, reqUrl.Host) {
-		webUrl = copyUrl(reqUrl).JoinPath(webUrl).String()
-	}
-
-	if strings.HasPrefix(webUrl, "/") {
-		return ""
-	}
-
-	return webUrl
-}
-
-// copyUrl copy url
-func copyUrl(src *url.URL) *url.URL {
-	return &url.URL{
-		Host:   src.Host,
-		Scheme: src.Scheme,
-	}
-}
-
-// isTopicLink is topic link
-func isTopicLink(text string, topics []string) bool {
-	return slices.ContainsFunc(topics, func(category string) bool {
-		return strings.EqualFold(text, category)
-	})
+	// validate news
+	return news.Validate()
 }

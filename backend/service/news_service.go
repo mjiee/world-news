@@ -49,7 +49,8 @@ func (s *newsService) CreateNews(ctx context.Context, news ...*entity.NewsDetail
 }
 
 // QueryNews queries news details based on the provided record ID and pagination.
-func (s *newsService) QueryNews(ctx context.Context, params *valueobject.QueryNewsParams) ([]*entity.NewsDetail, int64, error) {
+func (s *newsService) QueryNews(ctx context.Context, params *valueobject.QueryNewsParams) (
+	[]*entity.NewsDetail, int64, error) {
 	var (
 		repo  = repository.Q.NewsDetail
 		query = repo.WithContext(ctx)
@@ -59,7 +60,15 @@ func (s *newsService) QueryNews(ctx context.Context, params *valueobject.QueryNe
 		query = query.Where(repo.RecordId.Eq(params.RecordId))
 	}
 
-	data, total, err := query.FindByPage(params.Page.GetOffset(), params.Page.GetLimit())
+	if params.Source != "" {
+		query = query.Where(repo.Source.Eq(params.Source))
+	}
+
+	if params.Topic != "" {
+		query = query.Where(repo.Topic.Eq(params.Topic))
+	}
+
+	data, total, err := query.Order(repo.ID.Desc()).FindByPage(params.Page.GetOffset(), params.Page.GetLimit())
 	if err != nil {
 		return nil, 0, errors.WithStack(err)
 	}

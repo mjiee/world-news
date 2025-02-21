@@ -152,6 +152,21 @@ func (a *WebAadapter) DeleteCrawlingRecord(c *gin.Context) {
 	httpx.WebResp(c, nil, a.crawlingSvc.DeleteCrawlingRecord(ctx, req.Id))
 }
 
+// UpdateCrawlingRecordStatus handles the request to update a crawling record status.
+func (a *WebAadapter) UpdateCrawlingRecordStatus(c *gin.Context) {
+	var (
+		ctx = c.Request.Context()
+		req dto.UpdateCrawlingRecordStatusRequest
+	)
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		httpx.WebResp(c, nil, err)
+		return
+	}
+
+	httpx.WebResp(c, nil, a.crawlingSvc.UpdateCrawlingRecordStatus(ctx, req.Id, req.Status))
+}
+
 // HasCrawlingTasks handles the request to confirm whether there are ongoing crawling tasks.
 func (a *WebAadapter) HasCrawlingTasks(c *gin.Context) {
 	var (
@@ -175,8 +190,7 @@ func (a *WebAadapter) QueryNews(c *gin.Context) {
 		return
 	}
 
-	data, total, err := a.newsSvc.QueryNews(ctx,
-		valueobject.NewQueryNewsParams(req.RecordId, req.Pagination))
+	data, total, err := a.newsSvc.QueryNews(ctx, req.ToValueobject())
 
 	httpx.WebResp(c, dto.NewQueryNewsResult(data, total), err)
 }

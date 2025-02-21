@@ -5,7 +5,9 @@ import (
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
+	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/repository"
+	"gorm.io/gorm"
 
 	"github.com/gocolly/colly/v2"
 	"github.com/pkg/errors"
@@ -16,10 +18,12 @@ type CrawlingService interface {
 	GetCollector() *colly.Collector
 	CreateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error
 	UpdateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error
+	UpdateCrawlingRecordStatus(ctx context.Context, id uint, status string) error
+	GetCrawlingRecord(ctx context.Context, id uint) (*entity.CrawlingRecord, error)
 	QueryCrawlingRecords(ctx context.Context, params valueobject.QueryRecordParams) ([]*entity.CrawlingRecord, int64, error)
 	DeleteCrawlingRecord(ctx context.Context, id uint) error
 	HasProcessingTasks(ctx context.Context) (bool, error)
-	CrawlingRecordExist(ctx context.Context, id uint) (bool, error)
+	PauseAllTasks(ctx context.Context) error
 }
 
 type crawlingService struct {
@@ -46,7 +50,7 @@ func (s *crawlingService) CreateCrawlingRecord(ctx context.Context, record *enti
 		return errors.WithStack(err)
 	}
 
-	record.Id = data.Id
+	record.Id = data.ID
 
 	return nil
 }
@@ -63,8 +67,34 @@ func (s *crawlingService) UpdateCrawlingRecord(ctx context.Context, record *enti
 	return errors.WithStack(err)
 }
 
+// UpdateCrawlingRecordStatus update crawling record status
+func (s *crawlingService) UpdateCrawlingRecordStatus(ctx context.Context, id uint, status string) error {
+	repo := repository.Q.CrawlingRecord
+
+	_, err := repo.WithContext(ctx).Where(repo.ID.Eq(id)).Update(repo.Status, status)
+
+	return errors.WithStack(err)
+}
+
+// GetCrawlingRecord get crawling record
+func (s *crawlingService) GetCrawlingRecord(ctx context.Context, id uint) (*entity.CrawlingRecord, error) {
+	repo := repository.Q.CrawlingRecord
+
+	data, err := repo.WithContext(ctx).Where(repo.ID.Eq(id)).First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errorx.CrawlingRecordNotFound
+		}
+
+		return nil, errors.WithStack(err)
+	}
+
+	return entity.NewCrawlingRecordFromModel(data)
+}
+
 // QueryCrawlingRecords get crawling records
-func (s *crawlingService) QueryCrawlingRecords(ctx context.Context, params valueobject.QueryRecordParams) ([]*entity.CrawlingRecord, int64, error) {
+func (s *crawlingService) QueryCrawlingRecords(ctx context.Context, params valueobject.QueryRecordParams) (
+	[]*entity.CrawlingRecord, int64, error) {
 	var (
 		repo  = repository.Q.CrawlingRecord
 		query = repo.WithContext(ctx)
@@ -78,7 +108,7 @@ func (s *crawlingService) QueryCrawlingRecords(ctx context.Context, params value
 		query = query.Where(repo.Status.Eq(params.Status))
 	}
 
-	data, total, err := query.FindByPage(params.Page.GetOffset(), params.Page.GetLimit())
+	data, total, err := query.Order(repo.ID.Desc()).FindByPage(params.Page.GetOffset(), params.Page.GetLimit())
 	if err != nil {
 		return nil, 0, errors.WithStack(err)
 	}
@@ -98,7 +128,7 @@ func (s *crawlingService) QueryCrawlingRecords(ctx context.Context, params value
 // DeleteCrawlingRecord delete crawling record
 func (s *crawlingService) DeleteCrawlingRecord(ctx context.Context, id uint) error {
 	err := repository.Q.Transaction(func(tx *repository.Query) error {
-		if _, err := tx.CrawlingRecord.WithContext(ctx).Where(tx.CrawlingRecord.Id.Eq(uint(id))).Delete(); err != nil {
+		if _, err := tx.CrawlingRecord.WithContext(ctx).Where(tx.CrawlingRecord.ID.Eq(uint(id))).Delete(); err != nil {
 			return errors.WithStack(err)
 		}
 
@@ -121,11 +151,13 @@ func (s *crawlingService) HasProcessingTasks(ctx context.Context) (bool, error) 
 	return count > 0, errors.WithStack(err)
 }
 
-// CrawlingRecordExist check if crawling record exists
-func (s *crawlingService) CrawlingRecordExist(ctx context.Context, id uint) (bool, error) {
+// PauseAllTasks pause all tasks
+func (s *crawlingService) PauseAllTasks(ctx context.Context) error {
 	repo := repository.Q.CrawlingRecord
 
-	count, err := repo.WithContext(ctx).Where(repo.Id.Eq(id)).Count()
+	_, err := repo.WithContext(ctx).
+		Where(repo.Status.Eq(valueobject.ProcessingCrawlingRecord.String())).
+		Update(repo.Status, valueobject.PausedCrawlingRecord.String())
 
-	return count > 0, errors.WithStack(err)
+	return errors.WithStack(err)
 }

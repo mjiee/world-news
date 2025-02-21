@@ -5,6 +5,8 @@ import "github.com/mjiee/world-news/backend/pkg/httpx"
 // QueryNewsParams query news params
 type QueryNewsParams struct {
 	RecordId uint
+	Source   string
+	Topic    string
 	Page     *httpx.Pagination
 }
 

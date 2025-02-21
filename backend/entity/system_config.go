@@ -33,7 +33,7 @@ func NewSystemConfigFromModel(m *model.SystemConfig) (*SystemConfig, error) {
 	}
 
 	s := &SystemConfig{
-		Id:        m.Id,
+		Id:        m.ID,
 		Key:       valueobject.SystemConfigKey(m.Key),
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
@@ -61,11 +61,11 @@ func (s *SystemConfig) ToModel() (*model.SystemConfig, error) {
 	}
 
 	return &model.SystemConfig{
-		Id:        s.Id,
+		ID:        s.Id,
 		Key:       s.Key.String(),
 		Value:     string(value),
 		CreatedAt: s.CreatedAt,
-		UpdatedAt: s.UpdatedAt,
+		UpdatedAt: time.Now(),
 	}, nil
 }
 

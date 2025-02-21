@@ -57,61 +57,71 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 	}
 
 	// create crawling record
-	record := entity.NewCrawlingRecord(valueobject.CrawlingWebsite)
+	record := entity.NewCrawlingRecord(valueobject.CrawlingWebsite,
+		valueobject.NewCrawlingRecordConfig(newsWebsiteCollections, nil))
 
 	if err := c.crawlingSvc.CreateCrawlingRecord(ctx, record); err != nil {
 		return err
 	}
 
 	// crawling news website
-	go c.crawlingNewsWebsite(ctx, record, newsWebsiteCollections)
+	go c.crawlingHandle(ctx, record)
 
 	return nil
 }
 
-// crawlingNewsWebsite crawling news website
-func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(ctx context.Context, record *entity.CrawlingRecord,
-	data []*valueobject.NewsWebsite) {
-	newsWebsites := make([]string, 0)
+// crawlingHandle crawling news website
+func (c *CrawlingNewsWebsiteCommand) crawlingHandle(ctx context.Context, record *entity.CrawlingRecord) {
+	var (
+		newsWebsites = make([]*valueobject.NewsWebsite, 0)
+		err          error
+	)
 
-	for _, item := range data {
-		websites, err := c.crawlingHandle(item.Url, item.Selectors...)
-		if err != nil {
-			logx.WithContext(ctx).Error("crawlingNewsWebsite", err)
+	for _, item := range record.Config.Sources {
+		select {
+		case <-ctx.Done():
+			record.CrawlingPaused()
 
-			continue
+			return
+		default:
+			// check crawling record
+			record, err = c.crawlingSvc.GetCrawlingRecord(ctx, record.Id)
+			if err != nil {
+				logx.WithContext(ctx).Error("GetCrawlingRecord", err)
+
+				record.CrawlingFailed()
+
+				return
+			}
+
+			if !record.Status.IsProcessing() {
+				return
+			}
+
+			// crawling news website
+			websites, err := c.crawlingNewsWebsite(item.Url, item.Selector)
+			if err != nil {
+				logx.WithContext(ctx).Error("crawlingNewsWebsite", err)
+
+				continue
+			}
+
+			websites = slices.DeleteFunc(websites, func(v *valueobject.NewsWebsite) bool {
+				return strings.HasPrefix(v.Url, item.Url)
+			})
+
+			newsWebsites = append(newsWebsites, websites...)
 		}
-
-		websites = slices.DeleteFunc(websites, func(v string) bool {
-			return strings.HasPrefix(v, item.Url)
-		})
-
-		newsWebsites = append(newsWebsites, websites...)
 	}
 
 	// remove duplicate
-	newsWebsites = slices.CompactFunc(newsWebsites, strings.EqualFold)
-
-	data = make([]*valueobject.NewsWebsite, len(newsWebsites))
-
-	for i, item := range newsWebsites {
-		data[i] = &valueobject.NewsWebsite{Url: item}
-	}
-
-	recordExist, err := c.crawlingSvc.CrawlingRecordExist(ctx, record.Id)
-	if err != nil {
-		logx.WithContext(ctx).Error("CrawlingRecordExist", err)
-
-		return
-	}
-
-	if !recordExist {
-		return
-	}
+	newsWebsites = slices.CompactFunc(newsWebsites, func(a, b *valueobject.NewsWebsite) bool {
+		return a.Url == b.Url
+	})
 
 	// save news website
 	if err := c.systemConfigSvc.SaveSystemConfig(ctx,
-		entity.NewSystemConfig(valueobject.NewsWebsiteKey.String(), data)); err != nil {
+		entity.NewSystemConfig(valueobject.NewsWebsiteKey.String(), newsWebsites)); err != nil {
 
 		logx.WithContext(ctx).Error("SaveSystemConfig", err)
 
@@ -127,49 +137,50 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(ctx context.Context, re
 	}
 }
 
-// crawlingHandle crawling handle
-func (c *CrawlingNewsWebsiteCommand) crawlingHandle(website string, selectors ...string) ([]string, error) {
-	if len(selectors) == 0 {
-		return nil, nil
+// crawlingNewsWebsite crawling news website
+func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(collectionUrl string,
+	selector *valueobject.Selector) ([]*valueobject.NewsWebsite, error) {
+
+	var newsWebsites []*valueobject.NewsWebsite
+
+	if selector == nil {
+		return newsWebsites, nil
 	}
 
 	// crawling website
-	var (
-		links     = make([]string, 0)
-		collector = c.crawlingSvc.GetCollector()
-	)
+	collector := c.crawlingSvc.GetCollector()
 
-	collector.OnHTML(selectors[0], func(h *colly.HTMLElement) {
+	collector.OnHTML(selector.Website, func(h *colly.HTMLElement) {
 		link := h.Attr(valueobject.Attr_href)
 
 		if len(link) > 0 {
-			links = append(links, link)
+			newsWebsites = append(newsWebsites, &valueobject.NewsWebsite{Url: link})
 		}
 	})
 
-	if err := collector.Visit(website); err != nil {
+	if err := collector.Visit(collectionUrl); err != nil {
 		if pkgCollector.IgnorableError(err) {
-			return links, nil
+			return newsWebsites, nil
 		}
 
 		return nil, errors.WithStack(err)
 	}
 
-	if len(selectors) <= 1 || len(links) == 0 {
-		return links, nil
+	if selector.Child == nil || len(newsWebsites) == 0 {
+		return newsWebsites, nil
 	}
 
 	// crawling sub website
-	newUrls := []string{}
+	newsWebsitesData := []*valueobject.NewsWebsite{}
 
-	for _, link := range links {
-		urls, err := c.crawlingHandle(link, selectors[1:]...)
+	for _, link := range newsWebsites {
+		data, err := c.crawlingNewsWebsite(link.Url, selector.Child)
 		if err != nil {
 			return nil, err
 		}
 
-		newUrls = append(newUrls, urls...)
+		newsWebsitesData = append(newsWebsitesData, data...)
 	}
 
-	return newUrls, nil
+	return append(newsWebsitesData, newsWebsites...), nil
 }

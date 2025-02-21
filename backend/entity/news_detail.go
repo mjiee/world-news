@@ -2,11 +2,15 @@ package entity
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
+	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
+	"github.com/mjiee/world-news/backend/pkg/urlx"
 	"github.com/mjiee/world-news/backend/repository/model"
 
+	"github.com/gocolly/colly/v2"
 	"github.com/pkg/errors"
 )
 
@@ -14,11 +18,14 @@ import (
 type NewsDetail struct {
 	Id          uint
 	RecordId    uint // crawling record id
+	Source      string
+	Topic       string
 	Title       string
+	Author      string
+	PublishedAt time.Time
 	Link        string
 	Contents    []string
 	Images      []string
-	PublishedAt time.Time
 	CreatedAt   time.Time
 }
 
@@ -44,7 +51,10 @@ func NewNewsDetailFromModel(m *model.NewsDetail) (*NewsDetail, error) {
 	return &NewsDetail{
 		Id:          m.ID,
 		RecordId:    m.RecordId,
+		Source:      m.Source,
+		Topic:       m.Topic,
 		Title:       m.Title,
+		Author:      m.Author,
 		Link:        m.Link,
 		Contents:    contents,
 		Images:      images,
@@ -72,7 +82,10 @@ func (n *NewsDetail) ToModel() (*model.NewsDetail, error) {
 	return &model.NewsDetail{
 		ID:          n.Id,
 		RecordId:    n.RecordId,
+		Source:      n.Source,
+		Topic:       n.Topic,
 		Title:       n.Title,
+		Author:      n.Author,
 		Link:        n.Link,
 		Contents:    string(contents),
 		Images:      string(images),
@@ -96,4 +109,73 @@ func (n *NewsDetail) Validate() error {
 	}
 
 	return nil
+}
+
+// ExtractTitle extracts the title from the news detail page.
+func (n *NewsDetail) ExtractTitle(selector string) (string, colly.HTMLCallback) {
+	if selector == "" {
+		selector = valueobject.Html_h1
+	}
+
+	return selector, func(h *colly.HTMLElement) {
+		n.Title = h.Text
+	}
+}
+
+// ExtractPublishTime extracts the publish time from the news detail page.
+func (n *NewsDetail) ExtractPublishTime(selector string) (string, colly.HTMLCallback) {
+	if selector == "" {
+		selector = valueobject.Html_time
+	}
+
+	return selector, func(h *colly.HTMLElement) {
+		publishedStr := h.Attr(valueobject.Attr_datetime)
+
+		data := strings.Split(publishedStr, "T")
+
+		if len(data) < 1 {
+			return
+		}
+
+		publishedAt, err := time.Parse(time.DateOnly, data[0])
+		if err != nil {
+			return
+		}
+
+		n.PublishedAt = publishedAt
+	}
+}
+
+// ExtractContent extracts the content from the news detail page.
+func (n *NewsDetail) ExtractContent(selector string) (string, colly.HTMLCallback) {
+	if selector == "" {
+		selector = valueobject.Html_p
+	}
+
+	return selector, func(h *colly.HTMLElement) {
+		content := strings.TrimSpace(h.Text)
+
+		if len(content) == 0 {
+			return
+		}
+
+		n.Contents = append(n.Contents, content)
+	}
+}
+
+// ExtractImage extracts the image from the news detail page.
+func (n *NewsDetail) ExtractImage(selector string) (string, colly.HTMLCallback) {
+	if selector == "" {
+		selector = valueobject.Html_img
+	}
+
+	return selector, func(h *colly.HTMLElement) {
+		imgUrl := strings.TrimSpace(h.Attr(valueobject.Attr_src))
+
+		if len(imgUrl) == 0 {
+			return
+		}
+
+		n.Images = append(n.Images, urlx.UrlPrefixHandle(imgUrl, h.Request.URL))
+	}
 }

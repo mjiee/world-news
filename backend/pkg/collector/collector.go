@@ -14,12 +14,12 @@ import (
 // NewCollector creates a new collector instance.
 func NewCollector() *colly.Collector {
 	c := colly.NewCollector(
-	// colly.Async(true),
+		colly.Async(true),
 	)
 
 	c.Limit(&colly.LimitRule{
 		RandomDelay: 5 * time.Second,
-		// Parallelism: 2,
+		Parallelism: 10,
 	})
 
 	c.WithTransport(&http.Transport{

@@ -4,12 +4,14 @@ import "time"
 
 // CrawlingRecord represents a crawling record.
 type CrawlingRecord struct {
-	Id         uint `gorm:"primaryKey"`
+	ID         uint `gorm:"primaryKey"`
 	RecordType string
 	Date       time.Time
 	Quantity   int64
 	Status     string
+	Config     string
 	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 func (c *CrawlingRecord) TableName() string {

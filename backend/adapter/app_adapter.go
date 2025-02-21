@@ -22,7 +22,8 @@ const AppName = "world-news"
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx    context.Context
+	cancel context.CancelFunc
 
 	crawlingSvc     service.CrawlingService
 	newsSvc         service.NewsService
@@ -36,7 +37,7 @@ func NewApp() *App {
 	// init database
 	db, err := databasex.NewAppDB(AppName)
 	if err != nil {
-		logx.Fatal("database connection failed", err)
+		logx.Fatal("NewAppDB", err)
 
 		return app
 	}
@@ -45,7 +46,7 @@ func NewApp() *App {
 
 	// auto migrate
 	if err := model.AutoMigrate(db); err != nil {
-		logx.Fatal("auto migrate database", err)
+		logx.Fatal("AutoMigrate", err)
 
 		return app
 	}
@@ -60,11 +61,20 @@ func NewApp() *App {
 
 // startup is called when the app starts.
 func (a *App) Startup(ctx context.Context) {
-	a.ctx = ctx
+	a.ctx, a.cancel = context.WithCancel(ctx)
 
 	// init system config
 	if err := a.systemConfigSvc.SystemConfigInit(a.ctx); err != nil {
-		logx.Fatal("init system config: %+v", err)
+		logx.Fatal("SystemConfigInit", err)
+	}
+}
+
+// Shutdown is called at application termination.
+func (a *App) Shutdown(ctx context.Context) {
+	a.cancel()
+
+	if err := a.crawlingSvc.PauseAllTasks(ctx); err != nil {
+		logx.Fatal("PauseAllTasks", err)
 	}
 }
 
@@ -120,6 +130,14 @@ func (a *App) DeleteCrawlingRecord(req *dto.DeleteCrawlingRecordRequest) *httpx.
 	return httpx.AppResp(ctx, "DeleteCrawlingRecord", req, nil, a.crawlingSvc.DeleteCrawlingRecord(ctx, req.Id))
 }
 
+// UpdateCrawlingRecordStatus handles the request to update a crawling record status.
+func (a *App) UpdateCrawlingRecordStatus(req *dto.UpdateCrawlingRecordStatusRequest) *httpx.Response {
+	ctx := tracex.InjectTraceInContext(a.ctx)
+
+	return httpx.AppResp(ctx, "UpdateCrawlingRecordStatus", req, nil,
+		a.crawlingSvc.UpdateCrawlingRecordStatus(ctx, req.Id, req.Status))
+}
+
 // HasCrawlingTasks handles the request to confirm whether there are ongoing crawling tasks.
 func (a *App) HasCrawlingTasks() *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
@@ -133,8 +151,7 @@ func (a *App) HasCrawlingTasks() *httpx.Response {
 func (a *App) QueryNews(req *dto.QueryNewsRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
 
-	data, total, err := a.newsSvc.QueryNews(ctx,
-		valueobject.NewQueryNewsParams(req.RecordId, req.Pagination))
+	data, total, err := a.newsSvc.QueryNews(ctx, req.ToValueobject())
 
 	return httpx.AppResp(ctx, "QueryNews", req, dto.NewQueryNewsResult(data, total), err)
 }

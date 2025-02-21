@@ -4,13 +4,26 @@ import (
 	"time"
 
 	"github.com/mjiee/world-news/backend/entity"
+	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
 )
 
 // QueryNewsRequest get news detail list request
 type QueryNewsRequest struct {
 	RecordId   uint              `json:"recordId"`
+	Source     string            `json:"source"`
+	Topic      string            `json:"topic"`
 	Pagination *httpx.Pagination `json:"pagination"`
+}
+
+// ToValueobject query news params
+func (q *QueryNewsRequest) ToValueobject() *valueobject.QueryNewsParams {
+	return &valueobject.QueryNewsParams{
+		RecordId: q.RecordId,
+		Source:   q.Source,
+		Topic:    q.Topic,
+		Page:     q.Pagination,
+	}
 }
 
 // QueryNewsResult get news detail list result
