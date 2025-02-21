@@ -7,8 +7,8 @@ import (
 
 // SystemConfig system config
 type SystemConfig struct {
-	Key   string `json:"key"`
-	Value any    `json:"value"`
+	Key   string `json:"key" binding:"required"`
+	Value any    `json:"value" binding:"required"`
 }
 
 // NewSystemConfigFromEntity creates a new SystemConfig from the provided entity.

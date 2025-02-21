@@ -29,11 +29,14 @@ func newNewsDetail(db *gorm.DB, opts ...gen.DOOption) newsDetail {
 	_newsDetail.ALL = field.NewAsterisk(tableName)
 	_newsDetail.ID = field.NewUint(tableName, "id")
 	_newsDetail.RecordId = field.NewUint(tableName, "record_id")
+	_newsDetail.Source = field.NewString(tableName, "source")
+	_newsDetail.Topic = field.NewString(tableName, "topic")
 	_newsDetail.Title = field.NewString(tableName, "title")
+	_newsDetail.Author = field.NewString(tableName, "author")
+	_newsDetail.PublishedAt = field.NewTime(tableName, "published_at")
 	_newsDetail.Link = field.NewString(tableName, "link")
 	_newsDetail.Contents = field.NewString(tableName, "contents")
 	_newsDetail.Images = field.NewString(tableName, "images")
-	_newsDetail.PublishedAt = field.NewTime(tableName, "published_at")
 	_newsDetail.CreatedAt = field.NewTime(tableName, "created_at")
 
 	_newsDetail.fillFieldMap()
@@ -47,11 +50,14 @@ type newsDetail struct {
 	ALL         field.Asterisk
 	ID          field.Uint
 	RecordId    field.Uint
+	Source      field.String
+	Topic       field.String
 	Title       field.String
+	Author      field.String
+	PublishedAt field.Time
 	Link        field.String
 	Contents    field.String
 	Images      field.String
-	PublishedAt field.Time
 	CreatedAt   field.Time
 
 	fieldMap map[string]field.Expr
@@ -71,11 +77,14 @@ func (n *newsDetail) updateTableName(table string) *newsDetail {
 	n.ALL = field.NewAsterisk(table)
 	n.ID = field.NewUint(table, "id")
 	n.RecordId = field.NewUint(table, "record_id")
+	n.Source = field.NewString(table, "source")
+	n.Topic = field.NewString(table, "topic")
 	n.Title = field.NewString(table, "title")
+	n.Author = field.NewString(table, "author")
+	n.PublishedAt = field.NewTime(table, "published_at")
 	n.Link = field.NewString(table, "link")
 	n.Contents = field.NewString(table, "contents")
 	n.Images = field.NewString(table, "images")
-	n.PublishedAt = field.NewTime(table, "published_at")
 	n.CreatedAt = field.NewTime(table, "created_at")
 
 	n.fillFieldMap()
@@ -103,14 +112,17 @@ func (n *newsDetail) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (n *newsDetail) fillFieldMap() {
-	n.fieldMap = make(map[string]field.Expr, 8)
+	n.fieldMap = make(map[string]field.Expr, 11)
 	n.fieldMap["id"] = n.ID
 	n.fieldMap["record_id"] = n.RecordId
+	n.fieldMap["source"] = n.Source
+	n.fieldMap["topic"] = n.Topic
 	n.fieldMap["title"] = n.Title
+	n.fieldMap["author"] = n.Author
+	n.fieldMap["published_at"] = n.PublishedAt
 	n.fieldMap["link"] = n.Link
 	n.fieldMap["contents"] = n.Contents
 	n.fieldMap["images"] = n.Images
-	n.fieldMap["published_at"] = n.PublishedAt
 	n.fieldMap["created_at"] = n.CreatedAt
 }
 

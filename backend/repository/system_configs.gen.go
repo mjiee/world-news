@@ -27,7 +27,7 @@ func newSystemConfig(db *gorm.DB, opts ...gen.DOOption) systemConfig {
 
 	tableName := _systemConfig.systemConfigDo.TableName()
 	_systemConfig.ALL = field.NewAsterisk(tableName)
-	_systemConfig.Id = field.NewUint(tableName, "id")
+	_systemConfig.ID = field.NewUint(tableName, "id")
 	_systemConfig.Key = field.NewString(tableName, "key")
 	_systemConfig.Value = field.NewString(tableName, "value")
 	_systemConfig.CreatedAt = field.NewTime(tableName, "created_at")
@@ -42,7 +42,7 @@ type systemConfig struct {
 	systemConfigDo systemConfigDo
 
 	ALL       field.Asterisk
-	Id        field.Uint
+	ID        field.Uint
 	Key       field.String
 	Value     field.String
 	CreatedAt field.Time
@@ -63,7 +63,7 @@ func (s systemConfig) As(alias string) *systemConfig {
 
 func (s *systemConfig) updateTableName(table string) *systemConfig {
 	s.ALL = field.NewAsterisk(table)
-	s.Id = field.NewUint(table, "id")
+	s.ID = field.NewUint(table, "id")
 	s.Key = field.NewString(table, "key")
 	s.Value = field.NewString(table, "value")
 	s.CreatedAt = field.NewTime(table, "created_at")
@@ -97,7 +97,7 @@ func (s *systemConfig) GetFieldByName(fieldName string) (field.OrderExpr, bool) 
 
 func (s *systemConfig) fillFieldMap() {
 	s.fieldMap = make(map[string]field.Expr, 5)
-	s.fieldMap["id"] = s.Id
+	s.fieldMap["id"] = s.ID
 	s.fieldMap["key"] = s.Key
 	s.fieldMap["value"] = s.Value
 	s.fieldMap["created_at"] = s.CreatedAt

@@ -15,16 +15,20 @@ type CrawlingRecord struct {
 	Date       time.Time
 	Quantity   int64
 	Status     valueobject.CrawlingRecordStatus
+	Config     *valueobject.CrawlingRecordConfig
 	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 // NewCrawlingRecord creates a new CrawlingRecord entity.
-func NewCrawlingRecord(recordType valueobject.CrawlingRecordType) *CrawlingRecord {
+func NewCrawlingRecord(recordType valueobject.CrawlingRecordType,
+	config *valueobject.CrawlingRecordConfig) *CrawlingRecord {
 	return &CrawlingRecord{
 		RecordType: recordType,
 		Date:       time.Now(),
 		Quantity:   0,
 		Status:     valueobject.ProcessingCrawlingRecord,
+		Config:     config,
 	}
 }
 
@@ -33,13 +37,21 @@ func NewCrawlingRecordFromModel(m *model.CrawlingRecord) (*CrawlingRecord, error
 	if m == nil {
 		return nil, errorx.CrawlingRecordNotFound
 	}
+
+	config, err := valueobject.NewCrawlingRecordConfigFromModel(m.Config)
+	if err != nil {
+		return nil, err
+	}
+
 	return &CrawlingRecord{
-		Id:         m.Id,
+		Id:         m.ID,
 		RecordType: valueobject.CrawlingRecordType(m.RecordType),
 		Date:       m.Date,
 		Quantity:   m.Quantity,
 		Status:     valueobject.CrawlingRecordStatus(m.Status),
+		Config:     config,
 		CreatedAt:  m.CreatedAt,
+		UpdatedAt:  m.UpdatedAt,
 	}, nil
 }
 
@@ -49,13 +61,20 @@ func (c *CrawlingRecord) ToModel() (*model.CrawlingRecord, error) {
 		return nil, errorx.CrawlingRecordNotFound
 	}
 
+	config, err := c.Config.ToModel()
+	if err != nil {
+		return nil, err
+	}
+
 	return &model.CrawlingRecord{
-		Id:         c.Id,
+		ID:         c.Id,
 		RecordType: string(c.RecordType),
 		Date:       c.Date,
 		Quantity:   c.Quantity,
 		Status:     string(c.Status),
+		Config:     config,
 		CreatedAt:  c.CreatedAt,
+		UpdatedAt:  time.Now(),
 	}, nil
 }
 
@@ -64,9 +83,14 @@ func (c *CrawlingRecord) CrawlingFailed() {
 	c.Status = valueobject.FailedCrawlingRecord
 }
 
+// CrawlingPaused set the crawling record status to paused.
+func (c *CrawlingRecord) CrawlingPaused() {
+	c.Status = valueobject.PausedCrawlingRecord
+}
+
 // CrawlingCompleted set the crawling record status to completed.
 func (c *CrawlingRecord) CrawlingCompleted() {
-	if c.Status.IsFailed() {
+	if !c.Status.IsProcessing() {
 		return
 	}
 
