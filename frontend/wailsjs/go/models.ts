@@ -1,7 +1,7 @@
 export namespace dto {
 	
 	export class CrawlingNewsRequest {
-	    startTime: string;
+	    startTime?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new CrawlingNewsRequest(source);
@@ -29,6 +29,18 @@ export namespace dto {
 	
 	    static createFrom(source: any = {}) {
 	        return new DeleteNewsRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	    }
+	}
+	export class GetCrawlingRecordRequest {
+	    id: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new GetCrawlingRecordRequest(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -96,6 +108,8 @@ export namespace dto {
 	}
 	export class QueryNewsRequest {
 	    recordId: number;
+	    source: string;
+	    topic: string;
 	    pagination?: httpx.Pagination;
 	
 	    static createFrom(source: any = {}) {
@@ -105,6 +119,8 @@ export namespace dto {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.recordId = source["recordId"];
+	        this.source = source["source"];
+	        this.topic = source["topic"];
 	        this.pagination = this.convertValues(source["pagination"], httpx.Pagination);
 	    }
 	
@@ -138,6 +154,20 @@ export namespace dto {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.key = source["key"];
 	        this.value = source["value"];
+	    }
+	}
+	export class UpdateCrawlingRecordStatusRequest {
+	    id: number;
+	    status: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateCrawlingRecordStatusRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.status = source["status"];
 	    }
 	}
 

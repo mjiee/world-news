@@ -4,13 +4,14 @@
     "template": "你好{{.Name}}"
   },
   "error": {
-    "InternalError": "服务内部错误",
-    "ParamsError": "请求参数错误",
-    "SystemConfigNotFound": "配置不存在",
-    "NewsNotFound": "新闻不存在",
-    "CrawlingRecordNotFound": "获取记录不存在",
-    "HasProcessingTasks": "有其它任务正在处理中，请稍后再试",
-    "NewsWebsiteConfigNotFound": "请先完成网站配置",
-    "NewsTopicConfigNotFound": "请先完成新闻主题配置"
+    "internalError": "服务内部错误",
+    "paramsError": "请求参数错误",
+    "systemConfigNotFound": "配置不存在",
+    "newsNotFound": "新闻不存在",
+    "crawlingRecordNotFound": "获取记录不存在",
+    "hasProcessingTasks": "有其它任务正在处理中，请稍后再试",
+    "newsWebsiteConfigNotFound": "请先完成网站配置",
+    "newsTopicConfigNotFound": "请先完成新闻主题配置",
+    "updateRecordStatusNotAllowed": "不允许更新该记录的状态"
   }
 }

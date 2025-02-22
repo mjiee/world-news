@@ -2,34 +2,11 @@
   "header": {
     "button": {
       "settings": "Settings",
-      "fetch_news": "Fetch News"
+      "fetch_news": "Fetch News",
+      "records": "History"
     },
     "label": {
       "start_time": "Start Time"
-    }
-  },
-  "crawling_records": {
-    "table": {
-      "head": {
-        "record_type": "Type",
-        "date": "Date",
-        "quantity": "Quantity",
-        "status": "Status"
-      },
-      "body": {
-        "status": {
-          "processing": "Processing",
-          "completed": "Completed",
-          "failed": "Failed"
-        },
-        "record_type": {
-          "crawlingWebsite": "Fetch website",
-          "crawlingNews": "Fetch news"
-        }
-      }
-    },
-    "button": {
-      "delete_label": "Do you want to delete this record ({{date}})?"
     }
   }
 }

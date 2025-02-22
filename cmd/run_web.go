@@ -14,6 +14,7 @@ import (
 	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/pkg/tracex"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,7 +41,12 @@ func Run(assets embed.FS) {
 	// middleware
 	r.Use(tracex.WebTracer()).
 		Use(logx.WebLogger()).
-		Use(locale.WebLocale())
+		Use(locale.WebLocale()).
+		Use(cors.New(cors.Config{
+			AllowAllOrigins: true,
+			AllowMethods:    []string{"POST", "GET", "OPTIONS"},
+			AllowHeaders:    []string{"Origin", "Content-Type", "Content-Length", "Content-Language", "Authorization"},
+		}))
 
 	// register api router
 	ApiRouter(r.Group("/api"), webAdapter)
@@ -76,8 +82,10 @@ func ApiRouter(r *gin.RouterGroup, webAdapter *adapter.WebAadapter) {
 	r.POST("/crawling/website", webAdapter.CrawlingWebsite)
 	r.POST("/crawling/news", webAdapter.CrawlingNews)
 	r.POST("/crawling/processing/task", webAdapter.HasCrawlingTasks)
+	r.POST("/crawling/record/detail", webAdapter.GetCrawlingRecord)
 	r.POST("/crawling/record/query", webAdapter.QueryCrawlingRecords)
 	r.POST("/crawling/record/delete", webAdapter.DeleteCrawlingRecord)
+	r.POST("/crawling/record/status", webAdapter.UpdateCrawlingRecordStatus)
 	r.POST("/news/query", webAdapter.QueryNews)
 	r.POST("/news/detail", webAdapter.GetNewsDetail)
 	r.POST("/news/delete", webAdapter.DeleteNews)

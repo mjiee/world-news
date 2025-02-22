@@ -2,14 +2,11 @@ import { useState, useEffect } from "react";
 import { Button, PillsInput, Pill, Stack } from "@mantine/core";
 import { useField } from "@mantine/form";
 import { useTranslation } from "react-i18next";
-import { getSystemConfig, saveSystemConfig } from "@/services";
-
-// news topic settings
-const newsTopicKey = "newsTopic";
+import { getSystemConfig, saveSystemConfig, SystemConfigKey } from "@/services";
 
 // save news topics
 const saveNewsTopics = async (newTopics: string[]) => {
-  await saveSystemConfig({ key: newsTopicKey, value: newTopics });
+  await saveSystemConfig({ key: SystemConfigKey.NewsTopics, value: newTopics });
 };
 
 export function NewsTopics() {
@@ -30,7 +27,7 @@ export function NewsTopics() {
 
   // fetch news topics
   const fetchNewsTopics = async () => {
-    const resp = await getSystemConfig<string[]>({ key: newsTopicKey });
+    const resp = await getSystemConfig<string[]>({ key: SystemConfigKey.NewsTopics });
 
     if (!resp || !resp.value) return;
     if (resp.value.length === 0) return;

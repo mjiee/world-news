@@ -112,23 +112,27 @@ func (n *NewsDetail) Validate() error {
 }
 
 // ExtractTitle extracts the title from the news detail page.
-func (n *NewsDetail) ExtractTitle(selector string) (string, colly.HTMLCallback) {
-	if selector == "" {
-		selector = valueobject.Html_h1
+func (n *NewsDetail) ExtractTitle(selector *valueobject.Selector) (string, colly.HTMLCallback) {
+	titleSelector := valueobject.Html_h1
+
+	if selector != nil && selector.Title != "" {
+		titleSelector = selector.Title
 	}
 
-	return selector, func(h *colly.HTMLElement) {
-		n.Title = h.Text
+	return titleSelector, func(h *colly.HTMLElement) {
+		n.Title = strings.TrimSpace(h.Text)
 	}
 }
 
 // ExtractPublishTime extracts the publish time from the news detail page.
-func (n *NewsDetail) ExtractPublishTime(selector string) (string, colly.HTMLCallback) {
-	if selector == "" {
-		selector = valueobject.Html_time
+func (n *NewsDetail) ExtractPublishTime(selector *valueobject.Selector) (string, colly.HTMLCallback) {
+	timeSelector := valueobject.Html_time
+
+	if selector != nil && selector.Time != "" {
+		timeSelector = selector.Time
 	}
 
-	return selector, func(h *colly.HTMLElement) {
+	return timeSelector, func(h *colly.HTMLElement) {
 		publishedStr := h.Attr(valueobject.Attr_datetime)
 
 		data := strings.Split(publishedStr, "T")
@@ -147,12 +151,14 @@ func (n *NewsDetail) ExtractPublishTime(selector string) (string, colly.HTMLCall
 }
 
 // ExtractContent extracts the content from the news detail page.
-func (n *NewsDetail) ExtractContent(selector string) (string, colly.HTMLCallback) {
-	if selector == "" {
-		selector = valueobject.Html_p
+func (n *NewsDetail) ExtractContent(selector *valueobject.Selector) (string, colly.HTMLCallback) {
+	contentSelector := valueobject.Html_p
+
+	if selector != nil && selector.Content != "" {
+		contentSelector = selector.Content
 	}
 
-	return selector, func(h *colly.HTMLElement) {
+	return contentSelector, func(h *colly.HTMLElement) {
 		content := strings.TrimSpace(h.Text)
 
 		if len(content) == 0 {
@@ -164,12 +170,14 @@ func (n *NewsDetail) ExtractContent(selector string) (string, colly.HTMLCallback
 }
 
 // ExtractImage extracts the image from the news detail page.
-func (n *NewsDetail) ExtractImage(selector string) (string, colly.HTMLCallback) {
-	if selector == "" {
-		selector = valueobject.Html_img
+func (n *NewsDetail) ExtractImage(selector *valueobject.Selector) (string, colly.HTMLCallback) {
+	imgSelector := valueobject.Html_img
+
+	if selector != nil && selector.Image != "" {
+		imgSelector = selector.Image
 	}
 
-	return selector, func(h *colly.HTMLElement) {
+	return imgSelector, func(h *colly.HTMLElement) {
 		imgUrl := strings.TrimSpace(h.Attr(valueobject.Attr_src))
 
 		if len(imgUrl) == 0 {

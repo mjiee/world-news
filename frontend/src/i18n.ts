@@ -11,10 +11,12 @@ import settingsEn from "@/assets/locales/en/settings.json";
 import settingsZh from "@/assets/locales/zh/settings.json";
 import newsEn from "@/assets/locales/en/news.json";
 import newsZh from "@/assets/locales/zh/news.json";
+import record from "@/assets/locales/en/record.json";
+import recordZh from "@/assets/locales/zh/record.json";
 
 const resources = {
-  en: { common: commonEn, home: homeEn, settings: settingsEn, news: newsEn },
-  zh: { common: commonZh, home: homeZh, settings: settingsZh, news: newsZh },
+  en: { common: commonEn, home: homeEn, settings: settingsEn, news: newsEn, record: record },
+  zh: { common: commonZh, home: homeZh, settings: settingsZh, news: newsZh, record: recordZh },
 };
 
 i18n

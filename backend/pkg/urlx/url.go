@@ -1,12 +1,15 @@
 package urlx
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
 )
 
 // UrlPrefixHandle url prefix handle
 func UrlPrefixHandle(webUrl string, reqUrl *url.URL) string {
+	webUrl = strings.TrimLeft(webUrl, "/")
+
 	if strings.HasPrefix(webUrl, "http") {
 		return webUrl
 	}
@@ -15,8 +18,8 @@ func UrlPrefixHandle(webUrl string, reqUrl *url.URL) string {
 		webUrl = copyUrl(reqUrl).JoinPath(webUrl).String()
 	}
 
-	if strings.HasPrefix(webUrl, "/") {
-		return ""
+	if !strings.HasPrefix(webUrl, "http") {
+		webUrl = fmt.Sprintf("%s://%s", reqUrl.Scheme, webUrl)
 	}
 
 	return webUrl

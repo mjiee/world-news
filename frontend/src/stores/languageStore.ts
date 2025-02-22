@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { saveSystemConfig } from "@/services";
+import { saveSystemConfig, SystemConfigKey } from "@/services";
 import { isWeb } from "@/utils/platform";
 
 interface LanguageState {
@@ -11,7 +11,7 @@ export const useLanguageStore = create<LanguageState>((set) => {
   return {
     language: "en",
     setLanguage: (newLanguage: string) => {
-      if (!isWeb()) return saveSystemConfig({ key: "language", value: newLanguage });
+      if (!isWeb()) return saveSystemConfig({ key: SystemConfigKey.Language, value: newLanguage });
 
       set((state) => ({ ...state, language: newLanguage }));
     },

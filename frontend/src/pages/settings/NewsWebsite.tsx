@@ -3,24 +3,22 @@ import { useTranslation } from "react-i18next";
 import { Button, Table, Pill, Stack, Pagination, Modal, Group, JsonInput, Flex } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useField } from "@mantine/form";
-import { getSystemConfig, saveSystemConfig, crawlingWebsite, hasCrawlingTask } from "@/services";
+import {
+  getSystemConfig,
+  saveSystemConfig,
+  crawlingWebsite,
+  hasCrawlingTask,
+  SystemConfigKey,
+  NewsWebsiteValue,
+} from "@/services";
 import { getPageData, getPageNumber } from "@/utils/pagination";
-import { validateUrl } from "@/utils/validate";
-
-// news website settings
-const newsWebsiteCollectionKey = "newsWebsiteCollection";
-const newsWebsiteKey = "newsWebsite";
-
-interface NewsWebsiteValue {
-  url: string;
-  selectors?: string[];
-}
+import { validateUrl } from "@/utils/url";
 
 export function NewsWebsiteCollection() {
   const [data, setData] = useState<NewsWebsiteValue[]>([]);
 
   const fetchData = async () => {
-    const resp = await getSystemConfig<NewsWebsiteValue[]>({ key: newsWebsiteCollectionKey });
+    const resp = await getSystemConfig<NewsWebsiteValue[]>({ key: SystemConfigKey.NewsWebsiteCollections });
 
     if (!resp || !resp.value) return;
     if (resp.value.length === 0) return;
@@ -46,7 +44,7 @@ export function NewsWebsite() {
 
     if (!processingTask) setLoading(false);
 
-    const resp = await getSystemConfig<NewsWebsiteValue[]>({ key: newsWebsiteKey });
+    const resp = await getSystemConfig<NewsWebsiteValue[]>({ key: SystemConfigKey.NewsWebsites });
 
     if (!resp || !resp.value) return;
     if (resp.value?.length === 0) return;
@@ -115,9 +113,7 @@ function WebsiteTable({ websites }: WebsiteTableProps) {
   const tableBody = data.map((item) => (
     <Table.Tr key={item.url}>
       <Table.Td>{item.url}</Table.Td>
-      <Table.Td>
-        <Pill.Group>{item.selectors?.map((value) => <Pill key={value}>{value}</Pill>)}</Pill.Group>
-      </Table.Td>
+      <Table.Td>{JSON.stringify(item.selector)}</Table.Td>
     </Table.Tr>
   ));
 
@@ -157,7 +153,7 @@ function UploadNewsWebsite({ refershData }: UploadNewsWebsiteProps) {
 
     const websites: NewsWebsiteValue[] = JSON.parse(website.getValue());
 
-    await saveSystemConfig({ key: newsWebsiteKey, value: websites });
+    await saveSystemConfig({ key: SystemConfigKey.NewsWebsites, value: websites });
 
     website.reset();
     close();

@@ -5,6 +5,8 @@ import {
   QueryCrawlingRecords,
   DeleteCrawlingRecord,
   HasCrawlingTasks,
+  UpdateCrawlingRecordStatus,
+  GetCrawlingRecord,
 } from "wailsjs/go/adapter/App";
 import { dto, httpx } from "wailsjs/go/models";
 
@@ -18,8 +20,17 @@ interface QueryCrawlingRecordsRequest {
   pagination: httpx.Pagination;
 }
 
+interface GetCrawlingRecordRequest {
+  id: number;
+}
+
 interface DeleteCrawlingRecordRequest {
   id: number;
+}
+
+interface UpdateCrawlingRecordStatusRequest {
+  id: number;
+  status: CrawlingRecordStatus;
 }
 
 interface QueryCrawlingRecordResult {
@@ -32,7 +43,20 @@ export interface CrawlingRecord {
   recordType: CrawlingRecordType;
   date: string;
   quantity: number;
-  status: string;
+  status: CrawlingRecordStatus;
+  config?: CrawlingRecordConfig;
+}
+
+export interface CrawlingRecordConfig {
+  sources: string[];
+  topics: string[];
+}
+
+export enum CrawlingRecordStatus {
+  ProcessingCrawlingRecord = "processing",
+  CompletedCrawlingRecord = "completed",
+  FailedCrawlingRecord = "failed",
+  PausedCrawlingRecord = "paused",
 }
 
 export enum CrawlingRecordType {
@@ -52,6 +76,13 @@ export async function crawlingWebsite() {
   if (useRemoteService()) return await post<any, any>("/api/crawling/website", {});
 
   return await call(CrawlingWebsite());
+}
+
+// getCrawlingRecord to get crawling record
+export async function getCrawlingRecord(data: GetCrawlingRecordRequest) {
+  if (useRemoteService()) return await post<GetCrawlingRecordRequest, CrawlingRecord>("/api/crawling/record/detail", data);
+
+  return await call<CrawlingRecord>(GetCrawlingRecord(data));
 }
 
 // queryCrawlingRecords to query crawling records
@@ -76,4 +107,11 @@ export async function hasCrawlingTask() {
   if (useRemoteService()) return await post<any, boolean>("/api/crawling/processing/task", {});
 
   return await call<boolean>(HasCrawlingTasks());
+}
+
+// updateCrawlingRecordStatus to update crawling record status
+export async function updateCrawlingRecordStatus(data: UpdateCrawlingRecordStatusRequest) {
+  if (useRemoteService()) return await post<UpdateCrawlingRecordStatusRequest, any>("/api/crawling/record/status", data);
+
+  return await call(UpdateCrawlingRecordStatus(data));
 }

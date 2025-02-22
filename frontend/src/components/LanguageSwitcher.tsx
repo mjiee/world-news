@@ -17,7 +17,11 @@ export function LanguageSwitcher() {
   };
 
   useEffect(() => {
-    if (language !== i18n.language) {
+    if (language === i18n.language) return;
+
+    if (i18n.language !== en && i18n.language !== zh) {
+      i18n.changeLanguage(language);
+    } else if (language !== i18n.language) {
       setLanguage(i18n.language);
     }
   }, []);

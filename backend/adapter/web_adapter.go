@@ -12,6 +12,7 @@ import (
 	"github.com/mjiee/world-news/backend/pkg/config"
 	"github.com/mjiee/world-news/backend/pkg/databasex"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
+	"github.com/mjiee/world-news/backend/pkg/tracex"
 	"github.com/mjiee/world-news/backend/repository"
 	"github.com/mjiee/world-news/backend/repository/model"
 	"github.com/mjiee/world-news/backend/service"
@@ -94,8 +95,9 @@ func (a *WebAadapter) SaveSystemConfig(c *gin.Context) {
 // CrawlingNews handles the request to crawling news.
 func (a *WebAadapter) CrawlingNews(c *gin.Context) {
 	var (
-		ctx = c.Request.Context()
-		req dto.CrawlingNewsRequest
+		ctx    = c.Request.Context()
+		cmdCtx = tracex.CopyTraceContext(ctx, context.Background())
+		req    dto.CrawlingNewsRequest
 	)
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -103,7 +105,7 @@ func (a *WebAadapter) CrawlingNews(c *gin.Context) {
 		return
 	}
 
-	cmd := command.NewCrawlingNewsCommand(a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
+	cmd := command.NewCrawlingNewsCommand(cmdCtx, a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
 
 	httpx.WebResp(c, nil, cmd.Execute(ctx))
 }
@@ -111,10 +113,11 @@ func (a *WebAadapter) CrawlingNews(c *gin.Context) {
 // CrawlingWebsite handles the request to crawling website.
 func (a *WebAadapter) CrawlingWebsite(c *gin.Context) {
 	var (
-		ctx = c.Request.Context()
+		ctx    = c.Request.Context()
+		cmdCtx = tracex.CopyTraceContext(ctx, context.Background())
 	)
 
-	cmd := command.NewCrawlingNewsWebsiteCommand(a.crawlingSvc, a.systemConfigSvc)
+	cmd := command.NewCrawlingNewsWebsiteCommand(cmdCtx, a.crawlingSvc, a.systemConfigSvc)
 
 	httpx.WebResp(c, nil, cmd.Execute(ctx))
 }
@@ -135,6 +138,23 @@ func (a *WebAadapter) QueryCrawlingRecords(c *gin.Context) {
 		*valueobject.NewQueryRecordParams(req.RecordType, req.Status, req.Pagination))
 
 	httpx.WebResp(c, dto.NewQueryCrawlingRecordResult(data, total), err)
+}
+
+// GetCrawlingRecord handles the request to retrieve a crawling record.
+func (a *WebAadapter) GetCrawlingRecord(c *gin.Context) {
+	var (
+		ctx = c.Request.Context()
+		req dto.GetCrawlingRecordRequest
+	)
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		httpx.WebResp(c, nil, err)
+		return
+	}
+
+	data, err := a.crawlingSvc.GetCrawlingRecord(ctx, req.Id)
+
+	httpx.WebResp(c, dto.NewCrawlingRecordFromEntity(data), err)
 }
 
 // DeleteCrawlingRecord handles the request to delete a crawling record.

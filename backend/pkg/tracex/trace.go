@@ -77,6 +77,13 @@ func ExtractTraceFromRequest(ctx context.Context, r *http.Request) context.Conte
 	return ctx
 }
 
+// CopyTraceContext copy trace context
+func CopyTraceContext(source, target context.Context) context.Context {
+	spanContext := trace.SpanContextFromContext(source)
+
+	return trace.ContextWithRemoteSpanContext(target, spanContext)
+}
+
 // ExtractTraceparent extract traceparent from context
 func ExtractTraceparent(ctx context.Context) string {
 	spanCtx := trace.SpanFromContext(InjectTraceInContext(ctx)).SpanContext()

@@ -18,6 +18,10 @@ export function DeleteNews(arg1) {
   return window['go']['adapter']['App']['DeleteNews'](arg1);
 }
 
+export function GetCrawlingRecord(arg1) {
+  return window['go']['adapter']['App']['GetCrawlingRecord'](arg1);
+}
+
 export function GetNewsDetail(arg1) {
   return window['go']['adapter']['App']['GetNewsDetail'](arg1);
 }
@@ -40,4 +44,8 @@ export function QueryNews(arg1) {
 
 export function SaveSystemConfig(arg1) {
   return window['go']['adapter']['App']['SaveSystemConfig'](arg1);
+}
+
+export function UpdateCrawlingRecordStatus(arg1) {
+  return window['go']['adapter']['App']['UpdateCrawlingRecordStatus'](arg1);
 }

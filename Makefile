@@ -36,7 +36,7 @@ run-web: build-web-static
 # build app
 .PHONY: build
 build: check-dependency
-	@wails build
+	@wails build -clean
 
 # build web
 .PHONY: build-web

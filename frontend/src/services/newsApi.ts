@@ -4,6 +4,8 @@ import { dto, httpx } from "wailsjs/go/models";
 
 export interface QueryNewsRequest {
   recordId: number;
+  source: string;
+  topic: string;
   pagination: httpx.Pagination;
 }
 
@@ -15,6 +17,8 @@ export interface QueryNewsResult {
 export interface NewsDetail {
   id: number;
   title: string;
+  source: string;
+  topic: string;
   link: string;
   contents: string[];
   images: string[];

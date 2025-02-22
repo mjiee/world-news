@@ -18,13 +18,16 @@ import (
 
 // CrawlingNewsWebsiteCommand crawlling news website command
 type CrawlingNewsWebsiteCommand struct {
+	ctx context.Context
+
 	crawlingSvc     service.CrawlingService
 	systemConfigSvc service.SystemConfigService
 }
 
-func NewCrawlingNewsWebsiteCommand(crawlingSvc service.CrawlingService,
+func NewCrawlingNewsWebsiteCommand(ctx context.Context, crawlingSvc service.CrawlingService,
 	systemConfigSvc service.SystemConfigService) *CrawlingNewsWebsiteCommand {
 	return &CrawlingNewsWebsiteCommand{
+		ctx:             ctx,
 		crawlingSvc:     crawlingSvc,
 		systemConfigSvc: systemConfigSvc,
 	}
@@ -65,13 +68,13 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 	}
 
 	// crawling news website
-	go c.crawlingHandle(ctx, record)
+	go c.crawlingHandle(record)
 
 	return nil
 }
 
 // crawlingHandle crawling news website
-func (c *CrawlingNewsWebsiteCommand) crawlingHandle(ctx context.Context, record *entity.CrawlingRecord) {
+func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecord) {
 	var (
 		newsWebsites = make([]*valueobject.NewsWebsite, 0)
 		err          error
@@ -79,15 +82,15 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(ctx context.Context, record 
 
 	for _, item := range record.Config.Sources {
 		select {
-		case <-ctx.Done():
+		case <-c.ctx.Done():
 			record.CrawlingPaused()
 
 			return
 		default:
 			// check crawling record
-			record, err = c.crawlingSvc.GetCrawlingRecord(ctx, record.Id)
+			record, err = c.crawlingSvc.GetCrawlingRecord(c.ctx, record.Id)
 			if err != nil {
-				logx.WithContext(ctx).Error("GetCrawlingRecord", err)
+				logx.WithContext(c.ctx).Error("GetCrawlingRecord", err)
 
 				record.CrawlingFailed()
 
@@ -101,7 +104,7 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(ctx context.Context, record 
 			// crawling news website
 			websites, err := c.crawlingNewsWebsite(item.Url, item.Selector)
 			if err != nil {
-				logx.WithContext(ctx).Error("crawlingNewsWebsite", err)
+				logx.WithContext(c.ctx).Error("crawlingNewsWebsite", err)
 
 				continue
 			}
@@ -120,10 +123,10 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(ctx context.Context, record 
 	})
 
 	// save news website
-	if err := c.systemConfigSvc.SaveSystemConfig(ctx,
+	if err := c.systemConfigSvc.SaveSystemConfig(c.ctx,
 		entity.NewSystemConfig(valueobject.NewsWebsiteKey.String(), newsWebsites)); err != nil {
 
-		logx.WithContext(ctx).Error("SaveSystemConfig", err)
+		logx.WithContext(c.ctx).Error("SaveSystemConfig", err)
 
 		return
 	}
@@ -132,8 +135,8 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(ctx context.Context, record 
 	record.CrawlingCompleted()
 	record.Quantity = int64(len(newsWebsites))
 
-	if err := c.crawlingSvc.UpdateCrawlingRecord(ctx, record); err != nil {
-		logx.WithContext(ctx).Error("SaveSystemConfig", err)
+	if err := c.crawlingSvc.UpdateCrawlingRecord(c.ctx, record); err != nil {
+		logx.WithContext(c.ctx).Error("SaveSystemConfig", err)
 	}
 }
 
