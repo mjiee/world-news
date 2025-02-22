@@ -11,10 +11,10 @@ type SystemConfigKey string
 
 // system config key
 const (
-	NewsWebsiteCollectionKey SystemConfigKey = "newsWebsiteCollection" // news website collection
-	NewsWebsiteKey           SystemConfigKey = "newsWebsite"           // news website
-	NewsTopicKey             SystemConfigKey = "newsTopic"             // news topic
-	LanguageKey              SystemConfigKey = "language"              // language
+	NewsWebsiteCollectionKey SystemConfigKey = "newsWebsiteCollections" // news website collection
+	NewsWebsiteKey           SystemConfigKey = "newsWebsites"           // news website
+	NewsTopicKey             SystemConfigKey = "newsTopics"             // news topic
+	LanguageKey              SystemConfigKey = "language"               // language
 )
 
 func (s SystemConfigKey) String() string {

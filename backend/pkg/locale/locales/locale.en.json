@@ -4,13 +4,14 @@
     "template": "hello {{.Name}}"
   },
   "error": {
-    "InternalError": "Internal Server Error",
-    "ParamsError": "Request params error",
-    "SystemConfigNotFound": "System config not found",
-    "NewsNotFound": "News not found",
-    "CrawlingRecordNotFound": "Record not found",
-    "HasProcessingTasks": "There are still processing tasks. Please try again later",
-    "NewsWebsiteConfigNotFound": "Please complete the website configuration first",
-    "NewsTopicConfigNotFound": "Please complete the news topic configuration first"
+    "internalError": "Internal Server Error",
+    "paramsError": "Request params error",
+    "systemConfigNotFound": "System config not found",
+    "newsNotFound": "News not found",
+    "crawlingRecordNotFound": "Record not found",
+    "hasProcessingTasks": "There are still processing tasks. Please try again later",
+    "newsWebsiteConfigNotFound": "Please complete the website configuration first",
+    "newsTopicConfigNotFound": "Please complete the news topic configuration first",
+    "updateRecordStatusNotAllowed": "Record status update not allowed"
   }
 }

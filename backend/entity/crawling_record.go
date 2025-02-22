@@ -96,3 +96,14 @@ func (c *CrawlingRecord) CrawlingCompleted() {
 
 	c.Status = valueobject.CompletedCrawlingRecord
 }
+
+// UpdateStatus updates the crawling record status.
+func (c *CrawlingRecord) UpdateStatus(status valueobject.CrawlingRecordStatus) error {
+	if c.Status.UpdateValidStatus(status) != nil {
+		return errorx.UpdateRecordStatusNotAllowed
+	}
+
+	c.Status = status
+
+	return nil
+}

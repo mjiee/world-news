@@ -2,34 +2,11 @@
   "header": {
     "button": {
       "settings": "设置",
-      "fetch_news": "获取新闻"
+      "fetch_news": "获取新闻",
+      "records": "获取记录"
     },
     "label": {
       "start_time": "开始时间"
-    }
-  },
-  "crawling_records": {
-    "table": {
-      "head": {
-        "record_type": "类型",
-        "date": "日期",
-        "quantity": "数量",
-        "status": "状态"
-      },
-      "body": {
-        "status": {
-          "processing": "处理中",
-          "completed": "已完成",
-          "failed": "已失败"
-        },
-        "record_type": {
-          "crawlingWebsite": "获取网站",
-          "crawlingNews": "获取新闻"
-        }
-      }
-    },
-    "button": {
-      "delete_label": "是否想要删除该记录 ({{date}})?"
     }
   }
 }

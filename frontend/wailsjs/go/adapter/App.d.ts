@@ -11,6 +11,8 @@ export function DeleteCrawlingRecord(arg1:dto.DeleteCrawlingRecordRequest):Promi
 
 export function DeleteNews(arg1:dto.DeleteNewsRequest):Promise<httpx.Response>;
 
+export function GetCrawlingRecord(arg1:dto.GetCrawlingRecordRequest):Promise<httpx.Response>;
+
 export function GetNewsDetail(arg1:dto.GetNewsDetailRequest):Promise<httpx.Response>;
 
 export function GetSystemConfig(arg1:dto.GetSystemConfigRequest):Promise<httpx.Response>;
@@ -22,3 +24,5 @@ export function QueryCrawlingRecords(arg1:dto.QueryCrawlingRecordsRequest):Promi
 export function QueryNews(arg1:dto.QueryNewsRequest):Promise<httpx.Response>;
 
 export function SaveSystemConfig(arg1:dto.SystemConfig):Promise<httpx.Response>;
+
+export function UpdateCrawlingRecordStatus(arg1:dto.UpdateCrawlingRecordStatusRequest):Promise<httpx.Response>;

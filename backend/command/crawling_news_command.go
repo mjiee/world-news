@@ -19,14 +19,17 @@ import (
 
 // CrawlingNewsCommand is a command for crawling news.
 type CrawlingNewsCommand struct {
+	ctx context.Context
+
 	crawlingSvc     service.CrawlingService
 	newsSvc         service.NewsService
 	systemConfigSvc service.SystemConfigService
 }
 
-func NewCrawlingNewsCommand(crawlingSvc service.CrawlingService, newsSvc service.NewsService,
+func NewCrawlingNewsCommand(ctx context.Context, crawlingSvc service.CrawlingService, newsSvc service.NewsService,
 	systemConfigSvc service.SystemConfigService) *CrawlingNewsCommand {
 	return &CrawlingNewsCommand{
+		ctx:             ctx,
 		crawlingSvc:     crawlingSvc,
 		newsSvc:         newsSvc,
 		systemConfigSvc: systemConfigSvc,
@@ -60,7 +63,7 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	}
 
 	// crawling news website
-	go c.crawlingHandle(ctx, record)
+	go c.crawlingHandle(record)
 
 	return nil
 }
@@ -119,19 +122,19 @@ func (c *CrawlingNewsCommand) getNewsTopics(ctx context.Context) ([]string, erro
 }
 
 // crawlingHandle crawling news
-func (c *CrawlingNewsCommand) crawlingHandle(ctx context.Context, record *entity.CrawlingRecord) {
+func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
 	var err error
 
 	for _, website := range record.Config.Sources {
 		select {
-		case <-ctx.Done():
+		case <-c.ctx.Done():
 			record.CrawlingPaused()
 
 			return
 		default:
-			record, err = c.crawlingSvc.GetCrawlingRecord(ctx, record.Id)
+			record, err = c.crawlingSvc.GetCrawlingRecord(c.ctx, record.Id)
 			if err != nil {
-				logx.WithContext(ctx).Error("GetCrawlingRecord", err)
+				logx.WithContext(c.ctx).Error("GetCrawlingRecord", err)
 
 				record.CrawlingFailed()
 
@@ -142,8 +145,8 @@ func (c *CrawlingNewsCommand) crawlingHandle(ctx context.Context, record *entity
 				return
 			}
 
-			if err = c.crawlingNews(ctx, website, record); err != nil {
-				logx.WithContext(ctx).Error("crawlingNews", err)
+			if err = c.crawlingNews(website, record); err != nil {
+				logx.WithContext(c.ctx).Error("crawlingNews", err)
 
 				record.CrawlingFailed()
 
@@ -155,24 +158,23 @@ func (c *CrawlingNewsCommand) crawlingHandle(ctx context.Context, record *entity
 	// update crawling record status
 	record.CrawlingCompleted()
 
-	if err := c.crawlingSvc.UpdateCrawlingRecord(ctx, record); err != nil {
-		logx.WithContext(ctx).Error("UpdateCrawlingRecord", err)
+	if err := c.crawlingSvc.UpdateCrawlingRecord(c.ctx, record); err != nil {
+		logx.WithContext(c.ctx).Error("UpdateCrawlingRecord", err)
 	}
 }
 
 // crawlingNews crawling news
-func (c *CrawlingNewsCommand) crawlingNews(ctx context.Context, website *valueobject.NewsWebsite,
-	record *entity.CrawlingRecord) error {
+func (c *CrawlingNewsCommand) crawlingNews(website *valueobject.NewsWebsite, record *entity.CrawlingRecord) error {
 	// crawling news topic page
 	topicPageUrls, err := c.crawlingNewsTopicPage(website, record.Config.Topics)
 	if err != nil {
-		logx.WithContext(ctx).Error("crawlingNewsTopicPage", err)
+		logx.WithContext(c.ctx).Error("crawlingNewsTopicPage", err)
 
 		return nil
 	}
 
 	// crawling newsData
-	newsData := c.crawlingNewsInTopicPage(ctx, topicPageUrls, website.Selector)
+	newsData := c.crawlingNewsInTopicPage(topicPageUrls, website.Selector)
 
 	// crawling news detail
 	newsDetails := make([]*entity.NewsDetail, 0, len(newsData))
@@ -182,7 +184,7 @@ func (c *CrawlingNewsCommand) crawlingNews(ctx context.Context, website *valueob
 		detail.Source = website.GetHost()
 
 		if err := c.crawlingNewsDetail(detail, website.Selector); err != nil {
-			logx.WithContext(ctx).Error("crawlingNewsDetail", err)
+			logx.WithContext(c.ctx).Error("crawlingNewsDetail", err)
 
 			continue
 		}
@@ -190,20 +192,23 @@ func (c *CrawlingNewsCommand) crawlingNews(ctx context.Context, website *valueob
 		newsDetails = append(newsDetails, detail)
 	}
 
+	// remove duplicate
+	removeDuplicateImage(newsDetails)
+
 	// save news
-	if err := c.newsSvc.CreateNews(ctx, newsDetails...); err != nil {
+	if err := c.newsSvc.CreateNews(c.ctx, newsDetails...); err != nil {
 		return err
 	}
 
 	record.Quantity += int64(len(newsDetails))
 
 	// update record
-	return c.crawlingSvc.UpdateCrawlingRecord(ctx, record)
+	return c.crawlingSvc.UpdateCrawlingRecord(c.ctx, record)
 }
 
 // crawlingNewsTopicPage crawling news topic page
-func (c *CrawlingNewsCommand) crawlingNewsTopicPage(website *valueobject.NewsWebsite,
-	topics []string) (map[string][]string, error) {
+func (c *CrawlingNewsCommand) crawlingNewsTopicPage(website *valueobject.NewsWebsite, topics []string) (
+	map[string][]string, error) {
 	var (
 		collector     = c.crawlingSvc.GetCollector()
 		topicPageData = map[string][]string{}
@@ -242,7 +247,7 @@ func (c *CrawlingNewsCommand) crawlingNewsTopicPage(website *valueobject.NewsWeb
 }
 
 // crawlingNewsInTopicPage crawling news in topic page
-func (c *CrawlingNewsCommand) crawlingNewsInTopicPage(ctx context.Context, topicPages map[string][]string,
+func (c *CrawlingNewsCommand) crawlingNewsInTopicPage(topicPages map[string][]string,
 	selector *valueobject.Selector) []*entity.NewsDetail {
 	var (
 		isVisited = map[string]struct{}{}
@@ -259,7 +264,7 @@ func (c *CrawlingNewsCommand) crawlingNewsInTopicPage(ctx context.Context, topic
 
 			data, err := c.crawlingNewsLink(pageUrl, topic, selector)
 			if err != nil {
-				logx.WithContext(ctx).Error("crawlingNewsLink", err)
+				logx.WithContext(c.ctx).Error("crawlingNewsLink", err)
 
 				continue
 			}
@@ -277,8 +282,8 @@ func (c *CrawlingNewsCommand) crawlingNewsInTopicPage(ctx context.Context, topic
 }
 
 // crawlingNewsLink crawling news link
-func (c *CrawlingNewsCommand) crawlingNewsLink(pageUrl, topic string,
-	selector *valueobject.Selector) ([]*entity.NewsDetail, error) {
+func (c *CrawlingNewsCommand) crawlingNewsLink(pageUrl, topic string, selector *valueobject.Selector) (
+	[]*entity.NewsDetail, error) {
 	var (
 		collector    = c.crawlingSvc.GetCollector()
 		news         = []*entity.NewsDetail{}
@@ -326,16 +331,16 @@ func (c *CrawlingNewsCommand) crawlingNewsDetail(news *entity.NewsDetail, select
 	)
 
 	// publish time
-	collector.OnHTML(news.ExtractPublishTime(selector.Time))
+	collector.OnHTML(news.ExtractPublishTime(selector))
 
 	// title
-	collector.OnHTML(news.ExtractTitle(selector.Title))
+	collector.OnHTML(news.ExtractTitle(selector))
 
 	// content
-	collector.OnHTML(news.ExtractContent(selector.Content))
+	collector.OnHTML(news.ExtractContent(selector))
 
 	// images
-	collector.OnHTML(news.ExtractImage(selector.Image))
+	collector.OnHTML(news.ExtractImage(selector))
 
 	if err := collector.Visit(news.Link); err != nil && !pkgCollector.IgnorableError(err) {
 		return errors.WithStack(err)
@@ -343,4 +348,31 @@ func (c *CrawlingNewsCommand) crawlingNewsDetail(news *entity.NewsDetail, select
 
 	// validate news
 	return news.Validate()
+}
+
+// removeDuplicateImage removes duplicate elements.
+func removeDuplicateImage(data []*entity.NewsDetail) {
+	// count image
+	imageCount := map[string]int{}
+
+	for _, item := range data {
+		for _, image := range item.Images {
+			imageCount[image]++
+		}
+	}
+
+	// remove duplicate image
+	for _, item := range data {
+		newImages := make([]string, 0, len(item.Images))
+
+		for _, image := range item.Images {
+			if imageCount[image] > 1 {
+				continue
+			}
+
+			newImages = append(newImages, image)
+		}
+
+		item.Images = newImages
+	}
 }

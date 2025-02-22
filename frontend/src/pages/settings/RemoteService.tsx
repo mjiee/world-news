@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useField } from "@mantine/form";
 import { useRemoteServiceStore } from "@/stores";
 import { isWeb } from "@/utils/platform";
-import { validateUrl } from "@/utils/validate";
+import { validateUrl } from "@/utils/url";
 
 // remote service settings
 export function RemoteService() {

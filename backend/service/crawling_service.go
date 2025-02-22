@@ -69,9 +69,18 @@ func (s *crawlingService) UpdateCrawlingRecord(ctx context.Context, record *enti
 
 // UpdateCrawlingRecordStatus update crawling record status
 func (s *crawlingService) UpdateCrawlingRecordStatus(ctx context.Context, id uint, status string) error {
+	record, err := s.GetCrawlingRecord(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := record.Status.UpdateValidStatus(valueobject.CrawlingRecordStatus(status)); err != nil {
+		return err
+	}
+
 	repo := repository.Q.CrawlingRecord
 
-	_, err := repo.WithContext(ctx).Where(repo.ID.Eq(id)).Update(repo.Status, status)
+	_, err = repo.WithContext(ctx).Where(repo.ID.Eq(id)).Update(repo.Status, status)
 
 	return errors.WithStack(err)
 }

@@ -118,7 +118,9 @@ const getRemoteServiceHost = () => {
 
 // urlHandle is used to handle the url
 function urlHandle(url: string): string {
-  const host = getRemoteServiceHost();
+  let host = getRemoteServiceHost();
+
+  if (!host) host = import.meta.env.VITE_SERVICE_HOST;
 
   if (!host) return url;
 

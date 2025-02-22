@@ -99,7 +99,7 @@ func (a *App) SaveSystemConfig(req *dto.SystemConfig) *httpx.Response {
 func (a *App) CrawlingNews(req *dto.CrawlingNewsRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
 
-	cmd := command.NewCrawlingNewsCommand(a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
+	cmd := command.NewCrawlingNewsCommand(a.ctx, a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
 
 	return httpx.AppResp(ctx, "CrawlingNews", req, nil, cmd.Execute(ctx))
 }
@@ -108,7 +108,7 @@ func (a *App) CrawlingNews(req *dto.CrawlingNewsRequest) *httpx.Response {
 func (a *App) CrawlingWebsite() *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
 
-	cmd := command.NewCrawlingNewsWebsiteCommand(a.crawlingSvc, a.systemConfigSvc)
+	cmd := command.NewCrawlingNewsWebsiteCommand(a.ctx, a.crawlingSvc, a.systemConfigSvc)
 
 	return httpx.AppResp(ctx, "CrawlingWebsite", nil, nil, cmd.Execute(ctx))
 }
@@ -121,6 +121,15 @@ func (a *App) QueryCrawlingRecords(req *dto.QueryCrawlingRecordsRequest) *httpx.
 		*valueobject.NewQueryRecordParams(req.RecordType, req.Status, req.Pagination))
 
 	return httpx.AppResp(ctx, "QueryCrawlingRecords", req, dto.NewQueryCrawlingRecordResult(data, total), err)
+}
+
+// GetCrawlingRecord handles the request to retrieve a crawling record.
+func (a *App) GetCrawlingRecord(req *dto.GetCrawlingRecordRequest) *httpx.Response {
+	ctx := tracex.InjectTraceInContext(a.ctx)
+
+	data, err := a.crawlingSvc.GetCrawlingRecord(ctx, req.Id)
+
+	return httpx.AppResp(ctx, "GetCrawlingRecord", req, dto.NewCrawlingRecordFromEntity(data), err)
 }
 
 // DeleteCrawlingRecord handles the request to delete a crawling record.

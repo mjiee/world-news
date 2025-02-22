@@ -37,7 +37,17 @@ func NewQueryNewsResult(data []*entity.NewsDetail, total int64) *QueryNewsResult
 	res := make([]*NewsDetail, len(data))
 
 	for i, v := range data {
-		res[i] = NewNewsDetailFromEntity(v)
+		item := NewNewsDetailFromEntity(v)
+
+		if len(item.Images) > 1 {
+			item.Images = item.Images[:1]
+		}
+
+		if len(item.Contents) > 1 {
+			item.Contents = item.Contents[:1]
+		}
+
+		res[i] = item
 	}
 
 	return &QueryNewsResult{
@@ -56,6 +66,8 @@ type QueryNewsResponse struct {
 type NewsDetail struct {
 	Id          uint     `json:"id"`
 	Title       string   `json:"title"`
+	Source      string   `json:"source"`
+	Topic       string   `json:"topic"`
 	Link        string   `json:"link"`
 	Contents    []string `json:"contents"`
 	Images      []string `json:"images"`
@@ -68,13 +80,21 @@ func NewNewsDetailFromEntity(data *entity.NewsDetail) *NewsDetail {
 		return nil
 	}
 
+	publishedAt := ""
+
+	if !data.PublishedAt.IsZero() {
+		publishedAt = data.PublishedAt.Format(time.DateTime)
+	}
+
 	return &NewsDetail{
 		Id:          data.Id,
 		Title:       data.Title,
+		Source:      data.Source,
+		Topic:       data.Topic,
 		Link:        data.Link,
 		Contents:    data.Contents,
 		Images:      data.Images,
-		PublishedAt: data.PublishedAt.Format(time.DateTime),
+		PublishedAt: publishedAt,
 	}
 }
 
