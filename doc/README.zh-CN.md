@@ -12,7 +12,7 @@
 
 ## 🖥️ 用户界面
 
-<p><img width="70%" src="./images/app-zh.png" alt="world-news ui"></p>
+<p><img width="100%" src="./images/app-zh.png" alt="world-news ui"></p>
 
 ## ⚙️ 技术栈
 
@@ -58,7 +58,7 @@ make build
 build\bin\world-news.exe
 ```
 
-### 3. 后端部署
+### 3. 后端部署【可选】
 
 后端使用 Gin 构建，提供获取新闻的 API。你可以通过以下方式部署后端：
 
