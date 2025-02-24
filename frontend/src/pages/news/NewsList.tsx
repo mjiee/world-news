@@ -173,8 +173,12 @@ function NewsCard({ news, updatePage }: NewsCardProps) {
         <Text mt="md">{news.title}</Text>
       </div>
       <Group justify="space-between" mt={5} mb="xs">
-        {news.publishedAt ? newsCardfooter(news.publishedAt) : newsCardfooter(news.topic)}
-        {newsCardfooter(news.source)}
+        <Group gap="xs">
+          {newsCardfooter(news.source)}
+          {newsCardfooter(news.topic)}
+          {newsCardfooter(news.publishedAt)}
+        </Group>
+
         <DeleteNewsButton newsId={news.id} updatePage={updatePage} />
       </Group>
     </Card>
