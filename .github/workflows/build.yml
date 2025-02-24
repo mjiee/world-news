@@ -14,27 +14,25 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: "1.23"
 
-      - name: Set up Wails CLI
-        run: |
-          go install github.com/wailsapp/wails/v2/cmd/wails@latest
-
       - name: Install dependencies
         run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@latest
           go mod tidy
 
       - name: Build Wails app for macOS
         run: |
-          wails build -platform darwin/universal
+          wails build -platform darwin/amd64 -o world-news-darwin-amd64
+          wails build -platform darwin/arm64 -o world-news-darwin-arm64
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macOS-build
-          path: ./build/darwin/*
+          path: ./build/bin/*
