@@ -1,6 +1,16 @@
-# World-News 🌍📰
+<p align="center"><a href="https://github.com/mjiee/world-news"><img width="200" src="https://github.com/mjiee/world-news/blob/master/build/appicon.png" alt="world news log"></a></p>
 
-[中文说明](./README.zh-CN.md)
+<h1 align="center">World News</h1>
+
+<p align="center">
+  <a href="https://github.com/mjiee/world-news/releases"><img src="https://img.shields.io/github/release/mjiee/world-news" alt="Release version"></a>
+  <a href="https://github.com/wailsapp/wails"><img src="https://img.shields.io/badge/wails-2.10.0-red" alt="go version"></a>
+  <a href="https://go.dev"><img src="https://img.shields.io/github/go-mod/go-version/mjiee/world-news" alt="go version"></a> 
+  <a href="https://react.dev"><img src="https://img.shields.io/badge/react-18.2.0-blue" alt="go version"></a>
+  <a href="https://github.com/mjiee/world-news/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mjiee/world-news" alt="License"></a>
+</p>
+
+[中文说明](./doc/README.zh-CN.md)
 
 Welcome to **World-News** — your one-stop desktop application for viewing global news from various sources. Whether you're looking to catch up on the latest headlines, explore different regions, or stay updated on specific topics, World-News makes it easy to access and read the most relevant stories from around the world.
 
@@ -11,6 +21,10 @@ Welcome to **World-News** — your one-stop desktop application for viewing glob
 - Simple, intuitive user interface for seamless and convenient news browsing.
 - Flexible data source configuration, allowing users to customize their news sources.
 - Available for both desktop installation and web deployment, catering to different platform needs.
+
+## 🖥️ User Interface
+
+<p><img width="70%" src="./doc/images/app.png" alt="world-news ui"></p>
 
 ## ⚙️ Tech Stack
 

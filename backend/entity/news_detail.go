@@ -26,6 +26,7 @@ type NewsDetail struct {
 	Link        string
 	Contents    []string
 	Images      []string
+	Video       string
 	CreatedAt   time.Time
 }
 
@@ -58,6 +59,7 @@ func NewNewsDetailFromModel(m *model.NewsDetail) (*NewsDetail, error) {
 		Link:        m.Link,
 		Contents:    contents,
 		Images:      images,
+		Video:       m.Video,
 		PublishedAt: m.PublishedAt,
 		CreatedAt:   m.CreatedAt,
 	}, nil
@@ -89,6 +91,7 @@ func (n *NewsDetail) ToModel() (*model.NewsDetail, error) {
 		Link:        n.Link,
 		Contents:    string(contents),
 		Images:      string(images),
+		Video:       n.Video,
 		PublishedAt: n.PublishedAt,
 		CreatedAt:   n.CreatedAt,
 	}, nil

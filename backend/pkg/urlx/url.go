@@ -8,11 +8,15 @@ import (
 
 // UrlPrefixHandle url prefix handle
 func UrlPrefixHandle(webUrl string, reqUrl *url.URL) string {
-	webUrl = strings.TrimLeft(webUrl, "/")
-
 	if strings.HasPrefix(webUrl, "http") {
 		return webUrl
 	}
+
+	if strings.HasPrefix(webUrl, "//") {
+		return fmt.Sprintf("%s:%s", reqUrl.Scheme, webUrl)
+	}
+
+	webUrl = strings.TrimLeft(webUrl, "/")
 
 	if !strings.Contains(webUrl, reqUrl.Host) {
 		webUrl = copyUrl(reqUrl).JoinPath(webUrl).String()

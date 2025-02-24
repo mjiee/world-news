@@ -14,6 +14,7 @@ type NewsDetail struct {
 	Link        string
 	Contents    string
 	Images      string
+	Video       string
 	CreatedAt   time.Time
 }
 
