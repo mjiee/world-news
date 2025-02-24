@@ -28,8 +28,7 @@ jobs:
 
       - name: Build Wails app for macOS
         run: |
-          wails build -platform darwin/amd64 -o world-news-darwin-amd64
-          wails build -platform darwin/arm64 -o world-news-darwin-arm64
+          wails build -platform darwin/universal
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
