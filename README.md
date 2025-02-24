@@ -24,7 +24,7 @@ Welcome to **World-News** — your one-stop desktop application for viewing glob
 
 ## 🖥️ User Interface
 
-<p><img width="70%" src="./doc/images/app.png" alt="world-news ui"></p>
+<p><img width="100%" src="./doc/images/app.png" alt="world-news ui"></p>
 
 ## ⚙️ Tech Stack
 
@@ -70,7 +70,7 @@ After building, you can run the application locally:
 build\bin\world-news.exe
 ```
 
-### 3. Backend Deployment
+### 3. Backend Deployment \[Optional\]
 
 The backend is built with Gin and provides APIs to fetch news. You can deploy it in the following ways:
 
