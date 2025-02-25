@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Wails app for macOS
         run: |
-          wails build -platform darwin/universal
+          wails build -clean -platform darwin/universal
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
