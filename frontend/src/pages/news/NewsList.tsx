@@ -104,23 +104,27 @@ function SearchNews({ recordId, searchFrom, searchHandler }: SearchNewsProps) {
 
   // fetch data
   const fetchData = async () => {
+    let sourceData: string[] = [];
+    let topicsData: string[] = [];
+
     if (recordId > 0) {
       const resp = await getCrawlingRecord({ id: recordId });
 
       if (!resp || !resp.config) return;
 
-      setSources(resp?.config?.sources);
-      setTopics(resp.config.topics);
+      sourceData = resp.config.sources;
+      topicsData = resp.config.topics;
     } else {
       const sourceConfig = await getSystemConfig<NewsWebsiteValue[]>({ key: SystemConfigKey.NewsWebsites });
       const topicsConfig = await getSystemConfig<string[]>({ key: SystemConfigKey.NewsTopics });
 
-      if (topicsConfig && topicsConfig.value) setTopics(topicsConfig.value);
+      if (topicsConfig && topicsConfig.value) topicsData = topicsConfig?.value;
 
-      if (sourceConfig && sourceConfig.value) {
-        setSources(sourceConfig?.value?.map((item) => getHost(item.url)));
-      }
+      if (sourceConfig && sourceConfig.value) sourceData = sourceConfig?.value?.map((item) => getHost(item.url));
     }
+
+    setSources(sourceData.filter((item, index) => sourceData.indexOf(item) === index));
+    setTopics(topicsData.filter((item, index) => topicsData.indexOf(item) === index));
   };
 
   useEffect(() => {

@@ -119,7 +119,7 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 
 	// remove duplicate
 	newsWebsites = slices.CompactFunc(newsWebsites, func(a, b *valueobject.NewsWebsite) bool {
-		return a.Url == b.Url
+		return a.GetHost() == b.GetHost()
 	})
 
 	// save news website
