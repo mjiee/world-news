@@ -29,6 +29,7 @@ export function CrawlingRecordPage() {
 
 // crawling records
 function CrawlingRecords() {
+  const { t } = useTranslation();
   const [records, setRecords] = useState<CrawlingRecord[]>([]);
   const [pagination, setPagination] = useState<httpx.Pagination>({ page: 1, limit: 25, total: 0 });
   const [loading, setLoading] = useState<boolean>(true);
@@ -63,6 +64,9 @@ function CrawlingRecords() {
 
   return (
     <>
+      <Button variant="default" onClick={() => setLoading(true)}>
+        {t("button.refresh")}
+      </Button>
       {loading ? (
         <Box pos="relative">
           <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
