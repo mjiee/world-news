@@ -36,6 +36,7 @@ Welcome to **World-News** — your one-stop desktop application for viewing glob
 - **[Gorm](https://gorm.io/)** - ORM for Go, used to interact with databases.
 - **[Zap](https://github.com/uber-go/zap)** - Structured, leveled logging library for Go, used for application logging.
 - **[SQLite](https://www.sqlite.org/)** - Lightweight, serverless SQL database for local data storage.
+- **[Colly](https://github.com/gocolly/colly)** - Fast and efficient web scraping library for Go.
 
 ## 🛠️ Installation & Setup
 
@@ -72,7 +73,7 @@ build\bin\world-news.exe
 
 ### 3. Backend Deployment \[Optional\]
 
-The backend is built with Gin and provides APIs to fetch news. You can deploy it in the following ways:
+The backend is built with Gin and serves as a web application for presenting news. You can deploy it in the following ways:
 
 #### Docker Compose Deployment
 
