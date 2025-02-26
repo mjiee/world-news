@@ -24,6 +24,7 @@
 - **[Gorm](https://gorm.io/)** - Go 的 ORM，用于与数据库进行交互。
 - **[Zap](https://github.com/uber-go/zap)** - 一个结构化、分级的 Go 日志库，用于应用日志记录。
 - **[SQLite](https://www.sqlite.org/)** - 轻量级、无服务器的 SQL 数据库，用于本地数据存储。
+- **[Colly](https://github.com/gocolly/colly)** - 一个 Go 的爬虫库，用于抓取网页内容。
 
 ## 🛠️ 安装与设置
 
@@ -60,7 +61,7 @@ build\bin\world-news.exe
 
 ### 3. 后端部署【可选】
 
-后端使用 Gin 构建，提供获取新闻的 API。你可以通过以下方式部署后端：
+后端使用 Gin 构建，提供 Web 端访问界面。你可以通过以下方式部署后端：
 
 #### 使用 Docker Compose 部署
 
