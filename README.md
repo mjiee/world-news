@@ -92,7 +92,7 @@ Ensure you have a running PostgreSQL database locally and that the relevant data
 Set up the database connection string:
 
 ```bash
-WORLD_NEWS_DB_ADDR="host=localhost user=world_news password=world_news dbname=world_news port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+WORLD_NEWS_DB_ADDR="host=localhost user=world_news password=world_news dbname=world_news port=5432 sslmode=disable"
 ```
 
 Build and run the backend:
@@ -106,6 +106,22 @@ make build-web
 ```
 
 Access the app at http://localhost:9010 in your browser.
+
+#### Environment Variables
+
+- **WORLD_NEWS_HOST**  
+  _Description_: The host and port for the web service.  
+  _Default_: `0.0.0.0:9010`.
+
+- **WORLD_NEWS_DB_ADDR**  
+  _Description_: The connection string for the database.
+
+- **WORLD_NEWS_TOKEN**  
+  _Description_: The token used for API authentication.  
+  _Default_: `0123456`.
+
+- **WORLD_NEWS_LOG_FILE**  
+  _Description_: The file path for storing logs.
 
 ## ⚠️ Important Notes
 

@@ -94,6 +94,22 @@ make build-web
 
 然后，在浏览器中访问 http://localhost:9010。
 
+#### 环境变量
+
+- **WORLD_NEWS_HOST**  
+  _描述_: 服务监听地址和端口。  
+  _默认值_: `0.0.0.0:9010`.
+
+- **WORLD_NEWS_DB_ADDR**  
+  _描述_: 数据库连接字符串。
+
+- **WORLD_NEWS_TOKEN**  
+  _描述_: API 认证使用的 token。
+  _默认值_: `0123456`.
+
+- **WORLD_NEWS_LOG_FILE**  
+  _描述_: 日志文件路径。
+
 ## ⚠️ 重要提示
 
 - **学习项目**: World-News 是一个学习项目，旨在探索 Go、React、Wails 和其他 Web 技术。它不适用于生产或商业用途。

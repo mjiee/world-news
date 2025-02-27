@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import { Avatar, Button, Container, Paper, TextInput, Title } from "@mantine/core";
 import { LanguageSwitcher } from "@/components";
 import { useRemoteServiceStore } from "@/stores";
-import classes from "./styles/auth.module.css";
 import styles from "@/assets/styles/header.module.css";
 import appicon from "@/assets/images/appicon.png";
+import classes from "./styles/auth.module.css";
 
 // login page
 export function LoginPage() {
