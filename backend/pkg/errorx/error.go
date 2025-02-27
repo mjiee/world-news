@@ -6,6 +6,7 @@ import "net/http"
 var (
 	InternalError = NewBasicError(http.StatusInternalServerError, "error.internalError")
 	ParamsError   = NewBasicError(http.StatusBadRequest, "error.paramsError")
+	Unauthorized  = NewBasicError(http.StatusUnauthorized, "error.unauthorized")
 )
 
 // system config error
