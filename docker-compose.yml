@@ -28,6 +28,7 @@ services:
     environment:
       WORLD_NEWS_DB_ADDR: "host=world_news_db port=5432 user=world_news password=world_news dbname=world_news sslmode=disable"
       GIN_MODE: release
+      WORLD_NEWS_TOKEN: ${WORLD_NEWS_TOKEN}
     depends_on:
       world_news_db:
         condition: service_healthy
