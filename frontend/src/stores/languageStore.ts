@@ -11,9 +11,9 @@ export const useLanguageStore = create<LanguageState>((set) => {
   return {
     language: "en",
     setLanguage: (newLanguage: string) => {
-      if (!isWeb()) return saveSystemConfig({ key: SystemConfigKey.Language, value: newLanguage });
+      if (!isWeb()) return saveSystemConfig({ key: SystemConfigKey.Language, value: newLanguage }, true);
 
-      set((state) => ({ ...state, language: newLanguage }));
+      set({ language: newLanguage });
     },
   };
 });

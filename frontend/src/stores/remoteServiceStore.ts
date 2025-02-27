@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { getRemoteService, saveRemoteService, SystemConfigKey } from "@/services";
+import { getSystemConfig, saveSystemConfig, SystemConfigKey } from "@/services";
+import { isWeb } from "@/utils/platform";
 
 interface RemoteServiceState {
   enable: boolean;
@@ -21,7 +22,9 @@ export const useRemoteServiceStore = create<RemoteServiceState>((set) => ({
   host: "http://localhost:9010",
   token: "",
   getService: async () => {
-    const resp = await getRemoteService<RemoteServiceValue>({ key: SystemConfigKey.RemoteService });
+    if (isWeb()) return;
+
+    const resp = await getSystemConfig<RemoteServiceValue>({ key: SystemConfigKey.RemoteService }, true);
 
     if (!resp || !resp.value) return;
 
@@ -39,7 +42,7 @@ export const useRemoteServiceStore = create<RemoteServiceState>((set) => ({
         token: token,
       };
 
-      saveRemoteService({ key: SystemConfigKey.RemoteService, value: data });
+      if (!isWeb()) saveSystemConfig({ key: SystemConfigKey.RemoteService, value: data }, true);
 
       return data;
     }),

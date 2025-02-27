@@ -41,29 +41,19 @@ export interface NewsSelector {
 }
 
 // getSystemConfig to get system config
-export async function getSystemConfig<T>(request: GetSystemConfigRequest): Promise<SystemConfig<T> | undefined> {
-  if (useRemoteService()) return await post<GetSystemConfigRequest, SystemConfig<T>>("/api/system/config", request);
+export async function getSystemConfig<T>(
+  request: GetSystemConfigRequest,
+  forceLocal = false,
+): Promise<SystemConfig<T> | undefined> {
+  if (useRemoteService(forceLocal))
+    return await post<GetSystemConfigRequest, SystemConfig<T>>("/api/system/config", request);
 
   return await call<SystemConfig<T>>(GetSystemConfig(request));
 }
 
 // saveSystemConfig to save system config
-export async function saveSystemConfig<T>(request: SystemConfig<T>) {
-  if (useRemoteService()) return await post<SystemConfig<T>, any>("/api/system/config/save", request);
+export async function saveSystemConfig<T>(request: SystemConfig<T>, forceLocal = false) {
+  if (useRemoteService(forceLocal)) return await post<SystemConfig<T>, any>("/api/system/config/save", request);
 
   return await call(SaveSystemConfig(new dto.SystemConfig(request)));
 }
-
-// saveRemoteService is used to save the remote service
-export const saveRemoteService = async <T>(data: SystemConfig<T>) => {
-  if (isWeb()) return undefined;
-
-  return await call(SaveSystemConfig(new dto.SystemConfig(data)));
-};
-
-// getRemoteService is used to get the remote service
-export const getRemoteService = async <T>(request: GetSystemConfigRequest): Promise<SystemConfig<T> | undefined> => {
-  if (isWeb()) return undefined;
-
-  return await call<SystemConfig<T>>(GetSystemConfig(request));
-};
