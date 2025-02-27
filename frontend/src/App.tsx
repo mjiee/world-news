@@ -5,7 +5,7 @@ import { Notification, Space } from "@mantine/core";
 import { HomePage } from "@/pages/home";
 import { SettingsPage } from "@/pages/settings";
 import { NewsDetailPage, NewsListPage } from "@/pages/news";
-import { LoginPage } from "./pages/auth";
+import { LoginPage } from "@/pages/auth";
 import { CrawlingRecordPage } from "./pages/record";
 import { useRemoteServiceStore } from "@/stores";
 
