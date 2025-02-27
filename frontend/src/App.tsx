@@ -5,6 +5,7 @@ import { Notification, Space } from "@mantine/core";
 import { HomePage } from "@/pages/home";
 import { SettingsPage } from "@/pages/settings";
 import { NewsDetailPage, NewsListPage } from "@/pages/news";
+import { LoginPage } from "./pages/auth";
 import { CrawlingRecordPage } from "./pages/record";
 import { useRemoteServiceStore } from "@/stores";
 
@@ -21,6 +22,7 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="records" element={<CrawlingRecordPage />} />
+        <Route path="login" element={<LoginPage />} />
         <Route path="news/list/:recordId" element={<NewsListPage />} />
         <Route path="news/detail/:newsId" element={<NewsDetailPage />} />
       </Routes>

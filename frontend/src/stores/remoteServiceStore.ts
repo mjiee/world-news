@@ -6,7 +6,8 @@ interface RemoteServiceState {
   host?: string;
   token?: string;
   getService: () => void;
-  saveService: (enable: boolean, host: string | undefined) => void;
+  setToken: (token: string) => void;
+  saveService: (enable: boolean, host: string | undefined, token: string | undefined) => void;
 }
 
 interface RemoteServiceValue {
@@ -18,6 +19,7 @@ interface RemoteServiceValue {
 export const useRemoteServiceStore = create<RemoteServiceState>((set) => ({
   enable: false,
   host: "http://localhost:9010",
+  token: "",
   getService: async () => {
     const resp = await getRemoteService<RemoteServiceValue>({ key: SystemConfigKey.RemoteService });
 
@@ -27,12 +29,14 @@ export const useRemoteServiceStore = create<RemoteServiceState>((set) => ({
       return { ...resp.value };
     });
   },
-  saveService: async (enable: boolean, host: string | undefined) =>
+  setToken: (token: string) => set((state) => ({ ...state, token: token })),
+  saveService: async (enable: boolean, host: string | undefined, token: string | undefined) =>
     set((state) => {
       let data = {
         ...state,
         enable: enable,
         host: host,
+        token: token,
       };
 
       saveRemoteService({ key: SystemConfigKey.RemoteService, value: data });

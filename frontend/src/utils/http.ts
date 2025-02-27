@@ -1,5 +1,6 @@
-import axios, { AxiosResponse } from "axios";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
+import axios from "axios";
 import { useRemoteServiceStore, useLanguageStore } from "@/stores";
 import { httpx } from "wailsjs/go/models";
 import { LogError } from "wailsjs/runtime";
@@ -73,11 +74,22 @@ const getLanguage = () => {
   return state.language;
 };
 
+// get service token
+const getServiceToken = () => {
+  const state = useRemoteServiceStore.getState();
+  return state.token;
+};
+
 // request interceptor
 serviceAxios.interceptors.request.use(
   (config) => {
     // set language
     config.headers["Accept-Language"] = getLanguage();
+
+    // set service token
+    const authorizationBasic = btoa("token:" + getServiceToken());
+
+    config.headers["Authorization"] = "Basic " + authorizationBasic;
 
     return config;
   },
@@ -95,6 +107,8 @@ serviceAxios.interceptors.response.use(
     let data = response.data;
 
     if (data?.code !== 0) {
+      if (data?.code === 401 && isWeb()) window.location.href = "/login";
+
       notificationError(data?.message ?? undefined);
 
       return;
