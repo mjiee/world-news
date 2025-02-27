@@ -1,5 +1,4 @@
 import toast from "react-hot-toast";
-import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { useRemoteServiceStore, useLanguageStore } from "@/stores";
 import { httpx } from "wailsjs/go/models";
@@ -13,10 +12,14 @@ export interface Response<R> {
 }
 
 // useRemoteService is used to check if the remote service is enabled
-export function useRemoteService(): boolean {
+export function useRemoteService(forceLocal = false): boolean {
+  if (isWeb()) return true;
+
+  if (forceLocal) return false;
+
   const { enable, host } = useRemoteServiceStore.getState();
 
-  return isWeb() || (enable && host !== null && !!host);
+  return enable && host !== null && !!host;
 }
 
 // call is used to handle the results returned by wails.
