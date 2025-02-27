@@ -17,7 +17,7 @@ const (
 
 // BasicAuth returns a Basic HTTP Authorization middleware. It takes as argument a map[string]string where
 func BasicAuth(accounts gin.Accounts) gin.HandlerFunc {
-	authPairs := make([]string, len(accounts), len(accounts))
+	authPairs := make([]string, 0, len(accounts))
 
 	for user, password := range accounts {
 		authPairs = append(authPairs, authData(user, password))
