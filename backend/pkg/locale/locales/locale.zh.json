@@ -5,6 +5,7 @@
   },
   "error": {
     "internalError": "服务内部错误",
+    "unauthorized": "未授权，请设置授权码",
     "paramsError": "请求参数错误",
     "systemConfigNotFound": "配置不存在",
     "newsNotFound": "新闻不存在",

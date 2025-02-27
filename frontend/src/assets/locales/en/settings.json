@@ -36,10 +36,12 @@
     "web_not_support": "The web client does not support remote service configuration.",
     "lable": {
       "enable_remote_service": "Enable remote service.",
-      "service_host": "Service host"
+      "service_host": "Host",
+      "service_token": "Token"
     },
     "validate": {
-      "invalid_host": "Please enter a valid service host."
+      "invalid_host": "Please enter a valid service host.",
+      "invalid_token": "Please enter a valid service token."
     }
   },
   "news_topic": {

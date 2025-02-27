@@ -5,6 +5,7 @@
   },
   "error": {
     "internalError": "Internal Server Error",
+    "unauthorized": "Unauthorized",
     "paramsError": "Request params error",
     "systemConfigNotFound": "System config not found",
     "newsNotFound": "News not found",

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/mjiee/world-news/backend/adapter"
+	"github.com/mjiee/world-news/backend/pkg/auth"
 	"github.com/mjiee/world-news/backend/pkg/config"
 	"github.com/mjiee/world-news/backend/pkg/locale"
 	"github.com/mjiee/world-news/backend/pkg/logx"
@@ -45,11 +46,12 @@ func Run(assets embed.FS) {
 		Use(cors.New(cors.Config{
 			AllowAllOrigins: true,
 			AllowMethods:    []string{"POST", "GET", "OPTIONS"},
-			AllowHeaders:    []string{"Origin", "Content-Type", "Content-Length", "Content-Language", "Authorization"},
+			AllowHeaders: []string{"Origin", "Content-Type", "Content-Length",
+				"Content-Language", "Authorization", "Traceparent"},
 		}))
 
 	// register api router
-	ApiRouter(r.Group("/api"), webAdapter)
+	ApiRouter(r.Group("/api", auth.BasicAuth(gin.Accounts{"token": config.Token})), webAdapter)
 
 	// serve static files
 	staticFp, err := fs.Sub(assets, "frontend/dist")
@@ -66,7 +68,13 @@ func Run(assets embed.FS) {
 			return
 		}
 
-		c.Redirect(http.StatusMovedPermanently, "/")
+		data, err := fs.ReadFile(staticFp, "index.html")
+		if err != nil {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+
+		c.Data(http.StatusOK, "text/html", data)
 	})
 
 	// run app

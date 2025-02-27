@@ -11,6 +11,12 @@
     "refresh": "刷新"
   },
   "message": {
-    "internal_error": "服务器内部错误"
+    "internal_error": "服务器内部错误",
+    "unauthorized": "未授权"
+  },
+  "auth": {
+    "button": "登陆",
+    "title": "欢迎使用！",
+    "label": "授权码"
   }
 }

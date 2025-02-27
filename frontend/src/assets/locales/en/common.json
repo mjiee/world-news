@@ -11,6 +11,12 @@
     "refresh": "Refresh"
   },
   "message": {
-    "internal_error": "Internal Server Error"
+    "internal_error": "Internal Server Error",
+    "unauthorized": "unauthorized"
+  },
+  "auth": {
+    "button": "Sign In",
+    "title": "Welcome back!",
+    "label": "Token"
   }
 }
