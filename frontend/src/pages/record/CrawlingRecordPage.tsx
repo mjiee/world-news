@@ -117,7 +117,7 @@ function RecordTableBody({ record, updatePage }: RecordTableBodyProps) {
       <Table.Td>
         <Button.Group>
           {viewRecordButton(record)}
-          {pauseRecordButton(record)}
+          {pauseRecordButton(record, updatePage)}
           <DeleteRecordButton record={record} updatePage={updatePage} />
         </Button.Group>
       </Table.Td>
@@ -140,7 +140,7 @@ const viewRecordButton = (record: CrawlingRecord) => {
 };
 
 // pause record button
-const pauseRecordButton = (record: CrawlingRecord) => {
+const pauseRecordButton = (record: CrawlingRecord, updatePage: (page: number) => void) => {
   const { t } = useTranslation("record");
 
   return record.status !== CrawlingRecordStatus.ProcessingCrawlingRecord ? (
@@ -149,7 +149,10 @@ const pauseRecordButton = (record: CrawlingRecord) => {
     <Button
       variant="default"
       size="xs"
-      onClick={() => updateCrawlingRecordStatus({ id: record.id, status: CrawlingRecordStatus.PausedCrawlingRecord })}
+      onClick={() => {
+        updateCrawlingRecordStatus({ id: record.id, status: CrawlingRecordStatus.PausedCrawlingRecord });
+        updatePage(1);
+      }}
     >
       {t("button.pause")}
     </Button>
