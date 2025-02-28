@@ -19,6 +19,7 @@ type CrawlingService interface {
 	CreateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error
 	UpdateCrawlingRecord(ctx context.Context, record *entity.CrawlingRecord) error
 	UpdateCrawlingRecordStatus(ctx context.Context, id uint, status string) error
+	UpdateCrawlingRecordQuantity(ctx context.Context, id uint, quantity int64) error
 	GetCrawlingRecord(ctx context.Context, id uint) (*entity.CrawlingRecord, error)
 	QueryCrawlingRecords(ctx context.Context, params valueobject.QueryRecordParams) ([]*entity.CrawlingRecord, int64, error)
 	DeleteCrawlingRecord(ctx context.Context, id uint) error
@@ -63,6 +64,15 @@ func (s *crawlingService) UpdateCrawlingRecord(ctx context.Context, record *enti
 	}
 
 	_, err = repository.Q.CrawlingRecord.WithContext(ctx).Updates(data)
+
+	return errors.WithStack(err)
+}
+
+// UpdateCrawlingRecordQuantity update crawling record quantity
+func (s *crawlingService) UpdateCrawlingRecordQuantity(ctx context.Context, id uint, quantity int64) error {
+	repo := repository.Q.CrawlingRecord
+
+	_, err := repo.WithContext(ctx).Where(repo.ID.Eq(id)).Update(repo.Quantity, quantity)
 
 	return errors.WithStack(err)
 }
