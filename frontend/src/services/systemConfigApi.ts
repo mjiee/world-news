@@ -1,5 +1,5 @@
-import { call, post, useRemoteService } from "@/utils/http";
-import { isWeb } from "@/utils/platform";
+import { useRemoteService } from "@/stores";
+import { call, post } from "@/utils/http";
 import { GetSystemConfig, SaveSystemConfig } from "wailsjs/go/adapter/App";
 import { dto } from "wailsjs/go/models";
 

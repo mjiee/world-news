@@ -1,4 +1,5 @@
-import { call, post, useRemoteService } from "@/utils/http";
+import { useRemoteService } from "@/stores";
+import { call, post } from "@/utils/http";
 import { QueryNews, GetNewsDetail, DeleteNews } from "wailsjs/go/adapter/App";
 import { dto, httpx } from "wailsjs/go/models";
 

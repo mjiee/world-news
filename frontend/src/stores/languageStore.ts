@@ -17,3 +17,10 @@ export const useLanguageStore = create<LanguageState>((set) => {
     },
   };
 });
+
+// get language
+export const useLanguage = () => {
+  const state = useLanguageStore.getState();
+
+  return state.language;
+};
