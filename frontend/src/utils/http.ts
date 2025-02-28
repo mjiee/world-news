@@ -1,25 +1,15 @@
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useRemoteServiceStore, useLanguageStore } from "@/stores";
+import { useLanguage, useServiceToken } from "@/stores";
 import { httpx } from "wailsjs/go/models";
 import { LogError } from "wailsjs/runtime";
 import { isWeb } from "./platform";
+import { setHost } from "./url";
 
 export interface Response<R> {
   code?: number;
   message?: string;
   result?: R;
-}
-
-// useRemoteService is used to check if the remote service is enabled
-export function useRemoteService(forceLocal = false): boolean {
-  if (isWeb()) return true;
-
-  if (forceLocal) return false;
-
-  const { enable, host } = useRemoteServiceStore.getState();
-
-  return enable && host !== null && !!host;
 }
 
 // call is used to handle the results returned by wails.
@@ -50,7 +40,7 @@ export async function call<R>(resp: Promise<httpx.Response>): Promise<R | undefi
 // post http request
 export async function post<P, R>(url: string, params?: P): Promise<R | undefined> {
   try {
-    return await serviceAxios.post(urlHandle(url), params);
+    return await serviceAxios.post(setHost(url), params);
   } catch (error: any) {
     return undefined;
   }
@@ -59,7 +49,7 @@ export async function post<P, R>(url: string, params?: P): Promise<R | undefined
 // get http request
 export async function get<P, R>(url: string, params?: P): Promise<R | undefined> {
   try {
-    return await serviceAxios.get(urlHandle(url), { params: params });
+    return await serviceAxios.get(setHost(url), { params: params });
   } catch (error: any) {
     return undefined;
   }
@@ -71,26 +61,14 @@ const serviceAxios = axios.create({
   withCredentials: false,
 });
 
-// get language
-const getLanguage = () => {
-  const state = useLanguageStore.getState();
-  return state.language;
-};
-
-// get service token
-const getServiceToken = () => {
-  const state = useRemoteServiceStore.getState();
-  return state.token;
-};
-
 // request interceptor
 serviceAxios.interceptors.request.use(
   (config) => {
     // set language
-    config.headers["Accept-Language"] = getLanguage();
+    config.headers["Accept-Language"] = useLanguage();
 
     // set service token
-    const authorizationBasic = btoa("token:" + getServiceToken());
+    const authorizationBasic = btoa("token:" + useServiceToken());
 
     config.headers["Authorization"] = "Basic " + authorizationBasic;
 
@@ -126,23 +104,6 @@ serviceAxios.interceptors.response.use(
     else LogError(error instanceof Error ? error.toString() : String(error));
   },
 );
-
-// get remote service host
-const getRemoteServiceHost = () => {
-  const state = useRemoteServiceStore.getState();
-  return state.host;
-};
-
-// urlHandle is used to handle the url
-function urlHandle(url: string): string {
-  let host = getRemoteServiceHost();
-
-  if (!host) host = import.meta.env.VITE_SERVICE_HOST;
-
-  if (!host) return url;
-
-  return new URL(url, host).href;
-}
 
 // notificationError is used to show notification error
 function notificationError(message?: string | undefined) {
