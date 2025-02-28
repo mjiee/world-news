@@ -47,3 +47,27 @@ export const useRemoteServiceStore = create<RemoteServiceState>((set) => ({
       return data;
     }),
 }));
+
+// useRemoteService is used to check if the remote service is enabled
+export function useRemoteService(forceLocal = false): boolean {
+  if (isWeb()) return true;
+
+  if (forceLocal) return false;
+
+  const { enable, host } = useRemoteServiceStore.getState();
+
+  return enable && host !== null && !!host;
+}
+
+// get service token
+export function useServiceToken(): string {
+  const state = useRemoteServiceStore.getState();
+
+  return state.token ?? "";
+}
+
+// get service host
+export function useServiceHost(): string | undefined {
+  const state = useRemoteServiceStore.getState();
+  return state.host;
+}

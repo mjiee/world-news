@@ -1,4 +1,5 @@
-import { call, post, useRemoteService } from "@/utils/http";
+import { useRemoteService } from "@/stores";
+import { call, post } from "@/utils/http";
 import {
   CrawlingNews,
   CrawlingWebsite,
@@ -80,7 +81,8 @@ export async function crawlingWebsite() {
 
 // getCrawlingRecord to get crawling record
 export async function getCrawlingRecord(data: GetCrawlingRecordRequest) {
-  if (useRemoteService()) return await post<GetCrawlingRecordRequest, CrawlingRecord>("/api/crawling/record/detail", data);
+  if (useRemoteService())
+    return await post<GetCrawlingRecordRequest, CrawlingRecord>("/api/crawling/record/detail", data);
 
   return await call<CrawlingRecord>(GetCrawlingRecord(data));
 }
@@ -90,7 +92,10 @@ export async function queryCrawlingRecords(data: QueryCrawlingRecordsRequest) {
   const request = new dto.QueryCrawlingRecordsRequest(data);
 
   if (useRemoteService())
-    return await post<dto.QueryCrawlingRecordsRequest, QueryCrawlingRecordResult>("/api/crawling/record/query", request);
+    return await post<dto.QueryCrawlingRecordsRequest, QueryCrawlingRecordResult>(
+      "/api/crawling/record/query",
+      request,
+    );
 
   return await call<QueryCrawlingRecordResult>(QueryCrawlingRecords(request));
 }
@@ -111,7 +116,8 @@ export async function hasCrawlingTask() {
 
 // updateCrawlingRecordStatus to update crawling record status
 export async function updateCrawlingRecordStatus(data: UpdateCrawlingRecordStatusRequest) {
-  if (useRemoteService()) return await post<UpdateCrawlingRecordStatusRequest, any>("/api/crawling/record/status", data);
+  if (useRemoteService())
+    return await post<UpdateCrawlingRecordStatusRequest, any>("/api/crawling/record/status", data);
 
   return await call(UpdateCrawlingRecordStatus(data));
 }
