@@ -123,8 +123,6 @@ func (c *CrawlingNewsCommand) getNewsTopics(ctx context.Context) ([]string, erro
 
 // crawlingHandle crawling news
 func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
-	var err error
-
 	for _, website := range record.Config.Sources {
 		select {
 		case <-c.ctx.Done():
@@ -132,24 +130,32 @@ func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
 
 			return
 		default:
+			// crawling news
+			newsQuantity, err := c.crawlingNews(website, record)
+			if err != nil {
+				logx.WithContext(c.ctx).Error("crawlingNews", err)
+
+				return
+			}
+
+			// update crawling record quantity
 			record, err = c.crawlingSvc.GetCrawlingRecord(c.ctx, record.Id)
 			if err != nil {
 				logx.WithContext(c.ctx).Error("GetCrawlingRecord", err)
 
-				record.CrawlingFailed()
+				return
+			}
+
+			record.Quantity += newsQuantity
+
+			if err := c.crawlingSvc.UpdateCrawlingRecordQuantity(c.ctx, record.Id, record.Quantity); err != nil {
+				logx.WithContext(c.ctx).Error("UpdateCrawlingRecord", err)
 
 				return
 			}
 
+			// check crawling record status, if not processing, interrupt handling
 			if !record.Status.IsProcessing() {
-				return
-			}
-
-			if err = c.crawlingNews(website, record); err != nil {
-				logx.WithContext(c.ctx).Error("crawlingNews", err)
-
-				record.CrawlingFailed()
-
 				return
 			}
 		}
@@ -164,13 +170,13 @@ func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
 }
 
 // crawlingNews crawling news
-func (c *CrawlingNewsCommand) crawlingNews(website *valueobject.NewsWebsite, record *entity.CrawlingRecord) error {
+func (c *CrawlingNewsCommand) crawlingNews(website *valueobject.NewsWebsite, record *entity.CrawlingRecord) (int64, error) {
 	// crawling news topic page
 	topicPageUrls, err := c.crawlingNewsTopicPage(website, record.Config.Topics)
 	if err != nil {
 		logx.WithContext(c.ctx).Error("crawlingNewsTopicPage", err)
 
-		return nil
+		return 0, nil
 	}
 
 	// crawling newsData
@@ -197,13 +203,10 @@ func (c *CrawlingNewsCommand) crawlingNews(website *valueobject.NewsWebsite, rec
 
 	// save news
 	if err := c.newsSvc.CreateNews(c.ctx, newsDetails...); err != nil {
-		return err
+		return 0, err
 	}
 
-	record.Quantity += int64(len(newsDetails))
-
-	// update record
-	return c.crawlingSvc.UpdateCrawlingRecord(c.ctx, record)
+	return int64(len(newsDetails)), nil
 }
 
 // crawlingNewsTopicPage crawling news topic page
