@@ -25,6 +25,7 @@ import {
   NewsDetail,
   NewsWebsiteValue,
 } from "@/services";
+import { useRemoteServiceStore } from "@/stores";
 import { getPageNumber } from "@/utils/pagination";
 import { getHost } from "@/utils/url";
 import { httpx } from "wailsjs/go/models";
@@ -38,14 +39,15 @@ interface NewsListProps {
 }
 
 export function NewsList({ recordId }: NewsListProps) {
+  const [newsList, setNewsList] = useState<NewsDetail[]>([]);
+  const [pagination, setPagination] = useState<httpx.Pagination>({ page: 1, limit: 25, total: 0 });
+  const [loading, setLoading] = useState<boolean>(true);
+  const enableService = useRemoteServiceStore((state) => state.enable);
+
   const searchFrom = useForm({
     mode: "uncontrolled",
     initialValues: { source: "", topic: "" },
   });
-
-  const [newsList, setNewsList] = useState<NewsDetail[]>([]);
-  const [pagination, setPagination] = useState<httpx.Pagination>({ page: 1, limit: 25, total: 0 });
-  const [loading, setLoading] = useState<boolean>(true);
 
   // fetch news
   const fetchNews = async () => {
@@ -63,7 +65,7 @@ export function NewsList({ recordId }: NewsListProps) {
 
   useEffect(() => {
     fetchNews();
-  }, [loading]);
+  }, [loading, enableService]);
 
   // update page
   const updatePageHandler = (page: number) => {
