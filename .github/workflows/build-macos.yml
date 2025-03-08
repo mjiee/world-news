@@ -1,4 +1,4 @@
-name: Build Wails App for macOS
+name: Build World-News App for macOS
 
 on:
   workflow_dispatch
@@ -31,5 +31,5 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: macOS-build
+          name: world-news-macos
           path: ./build/bin/*
