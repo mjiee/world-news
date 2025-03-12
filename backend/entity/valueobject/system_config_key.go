@@ -3,6 +3,8 @@ package valueobject
 import (
 	"encoding/json"
 
+	"github.com/mjiee/world-news/backend/pkg/openai"
+
 	"github.com/pkg/errors"
 )
 
@@ -15,6 +17,7 @@ const (
 	NewsWebsiteKey           SystemConfigKey = "newsWebsites"           // news website
 	NewsTopicKey             SystemConfigKey = "newsTopics"             // news topic
 	LanguageKey              SystemConfigKey = "language"               // language
+	OpenAIKey                SystemConfigKey = "openAI"                 // openai
 )
 
 func (s SystemConfigKey) String() string {
@@ -46,6 +49,13 @@ func (s SystemConfigKey) UnmarshalValue(value string) (any, error) {
 	case NewsTopicKey:
 		var (
 			data []string
+			err  = json.Unmarshal([]byte(value), &data)
+		)
+
+		return data, errors.WithStack(err)
+	case OpenAIKey:
+		var (
+			data openai.Config
 			err  = json.Unmarshal([]byte(value), &data)
 		)
 
