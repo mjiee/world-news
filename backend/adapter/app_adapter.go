@@ -180,3 +180,15 @@ func (a *App) DeleteNews(req *dto.DeleteNewsRequest) *httpx.Response {
 
 	return httpx.AppResp(ctx, "DeleteNews", req, nil, a.newsSvc.DeleteNews(ctx, req.Id))
 }
+
+// CritiqueNews handles the request to critique a news detail.
+func (a *App) CritiqueNews(req *dto.CritiqueNewsRequest) *httpx.Response {
+	var (
+		ctx = tracex.InjectTraceInContext(a.ctx)
+		cmd = command.NewCritiqueNewsCommand(req.Id, a.newsSvc, a.systemConfigSvc)
+	)
+
+	data, err := cmd.Execute(ctx)
+
+	return httpx.AppResp(ctx, "CritiqueNews", req, data, err)
+}

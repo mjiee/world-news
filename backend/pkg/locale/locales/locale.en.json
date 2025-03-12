@@ -13,6 +13,7 @@
     "hasProcessingTasks": "There are still processing tasks. Please try again later",
     "newsWebsiteConfigNotFound": "Please complete the website configuration first",
     "newsTopicConfigNotFound": "Please complete the news topic configuration first",
-    "updateRecordStatusNotAllowed": "Record status update not allowed"
+    "updateRecordStatusNotAllowed": "Record status update not allowed",
+    "openaiConfigNotFound": "Please complete the OpenAI configuration first"
   }
 }

@@ -113,3 +113,8 @@ type GetNewsDetailResponse struct {
 type DeleteNewsRequest struct {
 	Id uint `json:"id"`
 }
+
+// CritiqueNewsRequest critique news detail request
+type CritiqueNewsRequest struct {
+	Id uint `json:"id"`
+}

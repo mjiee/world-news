@@ -16,7 +16,8 @@ var (
 
 // news error
 var (
-	NewsNotFound = NewBasicError(102011, "error.newsNotFound")
+	NewsNotFound         = NewBasicError(102011, "error.newsNotFound")
+	OpenaiConfigNotFound = NewBasicError(102012, "error.openaiConfigNotFound")
 )
 
 // crawling error

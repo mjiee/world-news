@@ -246,3 +246,26 @@ func (a *WebAadapter) DeleteNews(c *gin.Context) {
 
 	httpx.WebResp(c, nil, a.newsSvc.DeleteNews(ctx, req.Id))
 }
+
+// CritiqueNews handles the request to critique a news detail.
+func (a *WebAadapter) CritiqueNews(c *gin.Context) {
+	var (
+		ctx    = c.Request.Context()
+		cmdCtx = tracex.CopyTraceContext(ctx, context.Background())
+		req    dto.CritiqueNewsRequest
+	)
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		httpx.WebResp(c, nil, err)
+		return
+	}
+
+	var (
+		ctx = tracex.InjectTraceInContext(a.ctx)
+		cmd = command.NewCritiqueNewsCommand(req.Id, a.newsSvc, a.systemConfigSvc)
+	)
+
+	data, err := cmd.Execute(ctx)
+
+	httpx.WebResp(c, data, err)
+}
