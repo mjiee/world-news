@@ -15,7 +15,7 @@ type ChatCompletionRequest struct {
 	MaxTokens int        `json:"max_tokens"`
 }
 
-// NewChatCompletionRequest
+// NewChatCompletionRequest creates a new ChatCompletionRequest
 func NewChatCompletionRequest(conf *Config, userMsg string) *ChatCompletionRequest {
 	req := &ChatCompletionRequest{
 		Model:     conf.Model,

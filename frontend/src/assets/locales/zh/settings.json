@@ -12,6 +12,10 @@
       "label": "新闻网站",
       "description": "从新闻网站集中获取的全球新闻网址。"
     },
+    "critique": {
+      "label": "新闻点评",
+      "description": "配置与 OpenAI API 兼容的 AI 服务，用于分析和评估新闻内容。"
+    },
     "service": {
       "label": "远程服务",
       "description": "启用云端部署的服务获取全球新闻，当本地网络无法使用时开启。"
@@ -51,5 +55,22 @@
       "required": "请输入新闻主题。",
       "duplicate": "该新闻主题已存在。"
     }
+  },
+  "news_critique": {
+    "label": {
+      "ai_platform": "AI 平台",
+      "model": "AI 大模型",
+      "api_key": "API 密钥",
+      "api_url": "API 地址",
+      "max_toknes": "最大令牌数",
+      "system_prompt": "系统提示",
+      "assistant_prompt": "回复提示"
+    },
+    "validate": {
+      "required": "请输入 {{ label }}。",
+      "invalid_url": "API 地址无效。",
+      "invalid_api_key": "API 密钥无效。"
+    },
+    "default_system_prompt": "你是一名新闻评论员，你将根据以下新闻内容，为新闻提供客观的评价。"
   }
 }
