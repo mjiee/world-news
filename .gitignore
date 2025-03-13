@@ -6,3 +6,4 @@ go.sum
 frontend/package-lock.json
 *.md5
 *.drawio
+.DS_Store

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Button, Stack, Switch, TextInput } from "@mantine/core";
 import { useTranslation } from "react-i18next";
+import { Button, Stack, Switch, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useRemoteServiceStore } from "@/stores";
 import { isWeb } from "@/utils/platform";
@@ -37,36 +37,35 @@ export function RemoteService() {
     },
   });
 
-  // save remote service
-  const saveServiceHandler = () => {
-    if (!serviceFrom.validate()) return;
-
-    saveService(checked, serviceFrom.getValues().host, serviceFrom.getValues().token);
-
-    toast.success("ok");
-  };
-
   return isWeb() ? (
     <p>{t("remote_service.web_not_support", { ns: "settings" })}</p>
   ) : (
-    <Stack>
-      <TextInput
-        key={serviceFrom.key("host")}
-        {...serviceFrom.getInputProps("host")}
-        label={t("remote_service.lable.service_host", { ns: "settings" })}
-      />
-      <TextInput
-        key={serviceFrom.key("token")}
-        {...serviceFrom.getInputProps("token")}
-        label={t("remote_service.lable.service_token", { ns: "settings" })}
-        placeholder="0123456"
-      />
-      <Switch
-        checked={checked}
-        onChange={(event) => setChecked(event.currentTarget.checked)}
-        label={t("remote_service.lable.enable_remote_service", { ns: "settings" })}
-      />
-      <Button onClick={saveServiceHandler}>{t("button.save")}</Button>
-    </Stack>
+    <form
+      onSubmit={serviceFrom.onSubmit((values) => {
+        saveService(checked, values.host, values.token);
+
+        toast.success("ok");
+      })}
+    >
+      <Stack>
+        <TextInput
+          key={serviceFrom.key("host")}
+          {...serviceFrom.getInputProps("host")}
+          label={t("remote_service.lable.service_host", { ns: "settings" })}
+        />
+        <TextInput
+          key={serviceFrom.key("token")}
+          {...serviceFrom.getInputProps("token")}
+          label={t("remote_service.lable.service_token", { ns: "settings" })}
+          placeholder="0123456"
+        />
+        <Switch
+          checked={checked}
+          onChange={(event) => setChecked(event.currentTarget.checked)}
+          label={t("remote_service.lable.enable_remote_service", { ns: "settings" })}
+        />
+        <Button type="submit">{t("button.save")}</Button>
+      </Stack>
+    </form>
   );
 }
