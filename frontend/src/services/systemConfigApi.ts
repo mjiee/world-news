@@ -9,6 +9,7 @@ export enum SystemConfigKey {
   NewsWebsites = "newsWebsites",
   Language = "language",
   RemoteService = "remoteService",
+  OpenAI = "openAI",
 }
 
 interface SystemConfig<T> {
@@ -38,6 +39,16 @@ export interface NewsSelector {
   author?: string; // news author selector
 
   child?: NewsSelector;
+}
+
+export interface OpenAIConfig {
+  description: string;
+  apiKey: string;
+  apiUrl: string;
+  model: string;
+  maxTokens?: number;
+  systemPrompt?: string;
+  assistantPrompt?: string;
 }
 
 // getSystemConfig to get system config

@@ -12,6 +12,10 @@
       "label": "News Website",
       "description": "The URLs of global news websites obtained from the news website collection."
     },
+    "critique": {
+      "label": "News Critique",
+      "description": "Configure AI services compatible with OpenAI API for the analysis and evaluation of news content."
+    },
     "service": {
       "label": "Remote service",
       "description": "Enable cloud-deployed services for global news crawling, and use this feature when the local network is poor."
@@ -51,5 +55,22 @@
       "required": "Please enter a news topic.",
       "duplicate": "The news topic already exists."
     }
+  },
+  "news_critique": {
+    "label": {
+      "ai_platform": "AI Platform",
+      "model": "Model",
+      "api_key": "Api Key",
+      "api_url": "Api Url",
+      "max_toknes": "Max Tokens",
+      "system_prompt": "System Prompt",
+      "assistant_prompt": "Assistant Prompt"
+    },
+    "validate": {
+      "required": "Please enter {{ label }}.",
+      "invalid_url": "Please enter a valid url.",
+      "invalid_api_key": "Please enter a valid api key."
+    },
+    "default_system_prompt": "You are a news critic."
   }
 }
