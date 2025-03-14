@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Button, Container, Group, Table, Modal, LoadingOverlay, Pagination, Box } from "@mantine/core";
+import { Button, Center, Group, Table, Modal, Loader, Pagination } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { BackHeader } from "@/components/BackHeader";
 import {
   queryCrawlingRecords,
   deleteCrawlingRecord,
@@ -17,18 +16,6 @@ import { httpx } from "wailsjs/go/models";
 
 // crawling record page
 export function CrawlingRecordPage() {
-  return (
-    <>
-      <BackHeader />
-      <Container size="md">
-        <CrawlingRecords />
-      </Container>
-    </>
-  );
-}
-
-// crawling records
-function CrawlingRecords() {
   const { t } = useTranslation();
   const [records, setRecords] = useState<CrawlingRecord[]>([]);
   const [pagination, setPagination] = useState<httpx.Pagination>({ page: 1, limit: 25, total: 0 });
@@ -64,13 +51,13 @@ function CrawlingRecords() {
 
   return (
     <>
-      <Button variant="default" onClick={() => setLoading(true)}>
+      <Button variant="default" mb="md" onClick={() => setLoading(true)}>
         {t("button.refresh")}
       </Button>
       {loading ? (
-        <Box pos="relative">
-          <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
-        </Box>
+        <Center h={200}>
+          <Loader color="blue" size="xl" type="bars" />
+        </Center>
       ) : (
         <Table>
           <RecordTableHeader />

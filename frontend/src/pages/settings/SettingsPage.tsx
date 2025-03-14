@@ -1,6 +1,5 @@
-import { Container, Accordion, Text, Space, Avatar, Group, Flex } from "@mantine/core";
+import { Accordion, Text, Avatar, Group } from "@mantine/core";
 import { useTranslation } from "react-i18next";
-import { BackHeader } from "@/components/BackHeader";
 import { NewsTopics } from "./NewsTopics";
 import { NewsWebsite, NewsWebsiteCollection } from "./NewsWebsite";
 import { RemoteService } from "./RemoteService";
@@ -21,24 +20,17 @@ const settingsItems = [
 
 // Application settings page
 export function SettingsPage() {
-  const items = settingsItems.map((item) => (
-    <Accordion.Item key={item.id} value={item.id}>
-      <Accordion.Control>
-        <SettingsLabel {...item} />
-      </Accordion.Control>
-      <Accordion.Panel mx="md">{item.content}</Accordion.Panel>
-    </Accordion.Item>
-  ));
-
   return (
-    <>
-      <BackHeader />
-      <Container size="md">
-        <Accordion chevronPosition="right" variant="contained">
-          {items}
-        </Accordion>
-      </Container>
-    </>
+    <Accordion chevronPosition="right" variant="contained">
+      {settingsItems.map((item) => (
+        <Accordion.Item key={item.id} value={item.id}>
+          <Accordion.Control>
+            <SettingsLabel {...item} />
+          </Accordion.Control>
+          <Accordion.Panel mx="md">{item.content}</Accordion.Panel>
+        </Accordion.Item>
+      ))}
+    </Accordion>
   );
 }
 

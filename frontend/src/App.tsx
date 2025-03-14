@@ -19,12 +19,15 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route index element={<HomePage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="records" element={<CrawlingRecordPage />} />
+        <Route path="/" element={<HomePage />}>
+          <Route index element={<NewsListPage />} />
+          <Route path="records" element={<CrawlingRecordPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="news/list/:recordId" element={<NewsListPage />} />
+          <Route path="news/detail/:newsId" element={<NewsDetailPage />} />
+        </Route>
+
         <Route path="login" element={<LoginPage />} />
-        <Route path="news/list/:recordId" element={<NewsListPage />} />
-        <Route path="news/detail/:newsId" element={<NewsDetailPage />} />
       </Routes>
       <Toaster
         toastOptions={{
