@@ -1,6 +1,7 @@
 {
   "header": {
     "button": {
+      "home": "Home",
       "settings": "Settings",
       "fetch_news": "Fetch News",
       "records": "History"

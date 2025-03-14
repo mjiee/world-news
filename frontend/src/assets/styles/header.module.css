@@ -1,13 +1,9 @@
 .header {
-    height: 56px;
-    margin-bottom: 20px;
-    background-color: var(--mantine-color-body);
-    border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  background: linear-gradient(135deg, #007bff, #00d4ff);
+  padding: 20px 50px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.inner {
-    height: 56px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.container {
+  margin: 20px;
 }

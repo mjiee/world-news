@@ -14,7 +14,7 @@ db:
 
 # manually generate the wailsjs directory
 .PHONY: module
-module:
+module: check-dependency
 	@wails generate module
 
 # build web static

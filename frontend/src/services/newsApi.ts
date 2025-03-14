@@ -1,16 +1,16 @@
 import { useRemoteService } from "@/stores";
 import { call, post } from "@/utils/http";
-import { QueryNews, GetNewsDetail, DeleteNews } from "wailsjs/go/adapter/App";
+import { QueryNews, GetNewsDetail, DeleteNews, CritiqueNews } from "wailsjs/go/adapter/App";
 import { dto, httpx } from "wailsjs/go/models";
 
-export interface QueryNewsRequest {
+interface QueryNewsRequest {
   recordId: number;
   source: string;
   topic: string;
   pagination: httpx.Pagination;
 }
 
-export interface QueryNewsResult {
+interface QueryNewsResult {
   data: NewsDetail[];
   total: number;
 }
@@ -26,11 +26,15 @@ export interface NewsDetail {
   publishedAt: string;
 }
 
-export interface GetNewsDetailRequest {
+interface GetNewsDetailRequest {
   id: number;
 }
 
-export interface DeleteNewsRequest {
+interface DeleteNewsRequest {
+  id: number;
+}
+
+interface CritiqueNewsRequest {
   id: number;
 }
 
@@ -55,4 +59,11 @@ export async function deleteNews(data: DeleteNewsRequest) {
   if (useRemoteService()) return await post<DeleteNewsRequest, any>("/api/news/delete", data);
 
   return await call(DeleteNews(data));
+}
+
+// critiqueNews to critique news
+export async function critiqueNews(data: CritiqueNewsRequest) {
+  if (useRemoteService()) return await post<CritiqueNewsRequest, string[]>("/api/news/critique", data);
+
+  return await call<string[]>(CritiqueNews(data));
 }

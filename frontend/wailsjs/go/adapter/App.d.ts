@@ -7,6 +7,8 @@ export function CrawlingNews(arg1:dto.CrawlingNewsRequest):Promise<httpx.Respons
 
 export function CrawlingWebsite():Promise<httpx.Response>;
 
+export function CritiqueNews(arg1:dto.CritiqueNewsRequest):Promise<httpx.Response>;
+
 export function DeleteCrawlingRecord(arg1:dto.DeleteCrawlingRecordRequest):Promise<httpx.Response>;
 
 export function DeleteNews(arg1:dto.DeleteNewsRequest):Promise<httpx.Response>;

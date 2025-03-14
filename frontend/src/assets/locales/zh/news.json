@@ -6,5 +6,8 @@
     },
     "delete_label": "是否想要删除该新闻？"
   },
-  "news_detail": {}
+  "news_detail": {
+    "translation": "新闻翻译",
+    "critique": "AI 点评"
+  }
 }
