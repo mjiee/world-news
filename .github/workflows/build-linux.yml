@@ -1,0 +1,31 @@
+name: Build World-News App for Linux
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
+
+      - name: Install dependencies
+        run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@latest
+          go mod tidy
+
+      - name: Build Wails app for Linux
+        run: |
+          wails build -clean -platform linux/amd64
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-news-linux
+          path: ./build/bin/*
