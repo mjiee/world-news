@@ -8,7 +8,8 @@
     "submit": "提交",
     "save": "保存",
     "upload": "上传",
-    "refresh": "刷新"
+    "refresh": "刷新",
+    "search": "查询"
   },
   "message": {
     "internal_error": "服务器内部错误",

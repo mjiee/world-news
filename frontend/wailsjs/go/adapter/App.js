@@ -10,6 +10,10 @@ export function CrawlingWebsite() {
   return window['go']['adapter']['App']['CrawlingWebsite']();
 }
 
+export function CritiqueNews(arg1) {
+  return window['go']['adapter']['App']['CritiqueNews'](arg1);
+}
+
 export function DeleteCrawlingRecord(arg1) {
   return window['go']['adapter']['App']['DeleteCrawlingRecord'](arg1);
 }

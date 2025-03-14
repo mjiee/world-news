@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
+  Center,
   Container,
   Title,
   ActionIcon,
@@ -9,12 +10,14 @@ import {
   Text,
   Flex,
   Box,
-  LoadingOverlay,
   Image,
   Divider,
+  Loader,
+  Paper,
+  Group,
+  Button,
 } from "@mantine/core";
-import { BackHeader } from "@/components/BackHeader";
-import { getNewsDetail, NewsDetail } from "@/services";
+import { getNewsDetail, NewsDetail, critiqueNews } from "@/services";
 import IconCopy from "@/assets/icons/IconCopy.svg?react";
 import IconCheck from "@/assets/icons/IconCheck.svg?react";
 
@@ -42,22 +45,23 @@ export function NewsDetailPage() {
 
   return (
     <>
-      <BackHeader />
-      <>
-        {loading || newsDetail === undefined ? (
-          <Box pos="relative">
-            <LoadingOverlay visible={true} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
-          </Box>
-        ) : (
-          <Container size="md">
-            <Title mb="md">{newsDetail?.title}</Title>
-            <Text c="dimmed">{newsDetail?.publishedAt}</Text>
-            <NewsLink link={newsDetail?.link} />
-            <Divider my="md" />
-            {newsBody(newsDetail?.contents, newsDetail?.images)}
-          </Container>
-        )}
-      </>
+      {loading || newsDetail === undefined ? (
+        <Center h={200}>
+          <Loader color="blue" size="xl" type="bars" />
+        </Center>
+      ) : (
+        <Container size="md">
+          <Title mb="md" c="blue">
+            {newsDetail?.title}
+          </Title>
+          <Text c="dimmed">{newsDetail?.publishedAt}</Text>
+          <NewsLink link={newsDetail?.link} />
+          <Divider my="md" />
+          <Paper shadow="md" radius="md" withBorder p="lg">
+            {newsBody(newsDetail?.contents, newsDetail?.images)} <NewsExtension newsId={newsDetail.id} />
+          </Paper>
+        </Container>
+      )}
     </>
   );
 }
@@ -95,5 +99,54 @@ function NewsLink({ link }: NewsLinkProps) {
         )}
       </CopyButton>
     </Flex>
+  );
+}
+
+// news extension
+interface NewsExtensionProps {
+  newsId: number;
+}
+
+function NewsExtension({ newsId }: NewsExtensionProps) {
+  const { t } = useTranslation("news");
+  const [extension, setExtension] = useState<string>("");
+  const [contents, setContents] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // critique news
+  const critiqueNewsHandle = async () => {
+    setLoading(true);
+    const resp = await critiqueNews({ id: newsId });
+
+    if (!resp) {
+      setLoading(false);
+      return;
+    }
+
+    setExtension("critique");
+    setContents(resp);
+    setLoading(false);
+  };
+
+  return (
+    <>
+      <Group>
+        <Button loading={loading}>{t("news_detail.translation")}</Button>
+        <Button loading={loading} onClick={critiqueNewsHandle}>
+          {t("news_detail.critique")}
+        </Button>
+      </Group>
+
+      {extension !== "" && (
+        <Container mt="md" p="md" bg="#f4f6f9">
+          <Title order={4} c="blue">
+            {t("news_detail." + extension)}
+          </Title>
+          {contents.map((item, idx) => (
+            <p key={idx}>{item}</p>
+          ))}
+        </Container>
+      )}
+    </>
   );
 }

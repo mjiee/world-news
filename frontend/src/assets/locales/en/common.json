@@ -8,7 +8,8 @@
     "submit": "Submit",
     "save": "Save",
     "upload": "Upload",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "search": "Search"
   },
   "message": {
     "internal_error": "Internal Server Error",

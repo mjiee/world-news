@@ -1,38 +1,15 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Button, Container, Avatar, Group, Modal } from "@mantine/core";
+import { Button, Group, Modal } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import dayjs from "dayjs";
 import "dayjs/locale/en";
 import "dayjs/locale/zh";
-import { LanguageSwitcher } from "@/components";
 import { hasCrawlingTask, crawlingNews } from "@/services";
-import styles from "@/assets/styles/header.module.css";
-import appicon from "@/assets/images/appicon.png";
-
-export function HomeHeader() {
-  let navigate = useNavigate();
-  const { t } = useTranslation("home");
-
-  return (
-    <header className={styles.header}>
-      <Container size="md" className={styles.inner}>
-        <Avatar src={appicon} variant="default" radius="sm" />
-        <Group>
-          <LanguageSwitcher />
-          <FetchNewsButton />
-          <Button onClick={() => navigate("/records")}>{t("header.button.records")}</Button>
-          <Button onClick={() => navigate("/settings")}>{t("header.button.settings")}</Button>
-        </Group>
-      </Container>
-    </header>
-  );
-}
 
 // fetch news button
-function FetchNewsButton() {
+export function FetchNewsButton() {
   const { t, i18n } = useTranslation();
   const [opened, { open, close }] = useDisclosure(false);
   const [startTime, setStartTime] = useState<Date | null>(null);

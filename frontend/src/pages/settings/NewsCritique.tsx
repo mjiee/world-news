@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { Button, Stack, Textarea, TextInput, Autocomplete, PasswordInput, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -74,6 +75,8 @@ export function NewsCritique() {
     <form
       onSubmit={aiform.onSubmit((values) => {
         saveSystemConfig({ key: SystemConfigKey.OpenAI, value: values });
+
+        toast.success("ok");
       })}
     >
       <Stack align="stretch">
