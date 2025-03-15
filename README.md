@@ -17,14 +17,15 @@ Welcome to **World-News** — your one-stop desktop application for viewing glob
 ## 🚀 Key Features
 
 - Fetch the latest news in real-time from multiple global news sources.
+- AI-powered news analysis and commentary, providing insightful perspectives on key topics.
+- Flexible data source configuration, allowing users to customize their news sources.
 - Offline reading support once the news is downloaded — read anytime, anywhere.
 - Simple, intuitive user interface for seamless and convenient news browsing.
-- Flexible data source configuration, allowing users to customize their news sources.
 - Available for both desktop installation and web deployment, catering to different platform needs.
 
 ## 🖥️ User Interface
 
-<p><img width="100%" src="./doc/images/app.png" alt="world-news ui"></p>
+<p><img width="100%" src="./doc/images/app_home.png" alt="world-news ui"></p>
 
 ## ⚙️ Tech Stack
 
