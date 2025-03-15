@@ -4,12 +4,14 @@ import { useField } from "@mantine/form";
 import { useTranslation } from "react-i18next";
 import { getSystemConfig, saveSystemConfig, SystemConfigKey } from "@/services";
 
+export const topicKey = "topic";
+
 // save news topics
 const saveNewsTopics = async (newTopics: string[]) => {
   await saveSystemConfig({ key: SystemConfigKey.NewsTopics, value: newTopics });
 };
 
-export function NewsTopics() {
+export function NewsTopics({ item }: { item: string | null }) {
   const { t } = useTranslation("settings");
   const [topics, setTopics] = useState<string[]>([]);
 
@@ -36,8 +38,9 @@ export function NewsTopics() {
   };
 
   useEffect(() => {
-    fetchNewsTopics();
-  }, []);
+    if (item === topicKey) fetchNewsTopics();
+    else setTopics([]);
+  }, [item]);
 
   // add news topic
   const addNewsTopicHandle = () => {

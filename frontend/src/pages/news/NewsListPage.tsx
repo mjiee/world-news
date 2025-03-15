@@ -28,7 +28,7 @@ import {
   NewsWebsiteValue,
   translateNews,
 } from "@/services";
-import { useLanguageStore, useRemoteServiceStore } from "@/stores";
+import { GolbalLanguage, useRemoteServiceStore } from "@/stores";
 import { getPageNumber } from "@/utils/pagination";
 import { getHost } from "@/utils/url";
 import { httpx } from "wailsjs/go/models";
@@ -168,11 +168,10 @@ interface NewsCardProps {
 function NewsCard({ news, updatePage }: NewsCardProps) {
   const navigate = useNavigate();
   const [title, setTitle] = useState(news.title);
-  const language = useLanguageStore((state) => state.language);
 
   // translate title
   const translateTitle = async () => {
-    const resp = await translateNews({ id: 0, texts: [title], toLang: language });
+    const resp = await translateNews({ id: 0, texts: [title], toLang: GolbalLanguage.getLanguage() });
 
     if (resp && resp.length > 0) setTitle(resp[0]);
   };

@@ -14,7 +14,10 @@ import {
 import { getPageData, getPageNumber } from "@/utils/pagination";
 import { validateUrl } from "@/utils/url";
 
-export function NewsWebsiteCollection() {
+export const collectionKey = "collection";
+export const websiteKey = "website";
+
+export function NewsWebsiteCollection({ item }: { item: string | null }) {
   const [data, setData] = useState<NewsWebsiteValue[]>([]);
 
   const fetchData = async () => {
@@ -27,13 +30,14 @@ export function NewsWebsiteCollection() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (item === collectionKey) fetchData();
+    else setData([]);
+  }, [item]);
 
   return <WebsiteTable websites={data} />;
 }
 
-export function NewsWebsite() {
+export function NewsWebsite({ item }: { item: string | null }) {
   const [data, setData] = useState<NewsWebsiteValue[]>([]);
   const { t } = useTranslation("settings");
   const [loading, setLoading] = useState(true);
@@ -53,8 +57,9 @@ export function NewsWebsite() {
   };
 
   useEffect(() => {
-    fetchNewsWebsite();
-  }, []);
+    if (item === websiteKey) fetchNewsWebsite();
+    else setData([]);
+  }, [item]);
 
   // refresh data
   const refreshData = async () => {
