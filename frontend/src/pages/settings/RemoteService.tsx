@@ -7,6 +7,8 @@ import { useRemoteServiceStore } from "@/stores";
 import { isWeb } from "@/utils/platform";
 import { validateUrl } from "@/utils/url";
 
+export const serviceKey = "service";
+
 // remote service settings
 export function RemoteService() {
   const { t } = useTranslation();
