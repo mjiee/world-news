@@ -6,6 +6,8 @@ import { useForm } from "@mantine/form";
 import { getSystemConfig, saveSystemConfig, SystemConfigKey, OpenAIConfig } from "@/services";
 import { validateUrl } from "@/utils/url";
 
+export const critiqueKey = "critique";
+
 const defaultAiConfigs: OpenAIConfig[] = [
   { description: "ChatGPT-GPT-4o", model: "gpt-4o", apiKey: "", apiUrl: "https://api.openai.com/v1/chat/completions" },
   {
@@ -29,7 +31,7 @@ const defaultAiConfigs: OpenAIConfig[] = [
 ];
 
 // news critique
-export function NewsCritique() {
+export function NewsCritique({ item }: { item: string | null }) {
   const { t } = useTranslation();
 
   const aiform = useForm<OpenAIConfig>({
@@ -73,8 +75,9 @@ export function NewsCritique() {
   };
 
   useEffect(() => {
-    fetchAiConfig();
-  }, []);
+    if (item === critiqueKey) fetchAiConfig();
+    else aiform.reset();
+  }, [item]);
 
   return (
     <form

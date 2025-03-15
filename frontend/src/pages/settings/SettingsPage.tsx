@@ -1,10 +1,11 @@
+import { useState } from "react";
 import { Accordion, Text, Avatar, Group } from "@mantine/core";
 import { useTranslation } from "react-i18next";
-import { NewsTopics } from "./NewsTopics";
-import { NewsWebsite, NewsWebsiteCollection } from "./NewsWebsite";
-import { RemoteService } from "./RemoteService";
-import { NewsCritique } from "./NewsCritique";
-import { NewsTranslation } from "./NewsTranslation";
+import { NewsTopics, topicKey } from "./NewsTopics";
+import { NewsWebsite, NewsWebsiteCollection, collectionKey, websiteKey } from "./NewsWebsite";
+import { RemoteService, serviceKey } from "./RemoteService";
+import { NewsCritique, critiqueKey } from "./NewsCritique";
+import { NewsTranslation, translateKey } from "./NewsTranslation";
 import settingsTopic from "@/assets/images/settings_topic.png";
 import settingsService from "@/assets/images/settings_service.png";
 import settingsCollection from "@/assets/images/settings_collection.png";
@@ -13,24 +14,30 @@ import settingsCritique from "@/assets/images/settings_critique.png";
 import settingsTranslate from "@/assets/images/settings_translate.png";
 
 const settingsItems = [
-  { id: "topic", image: settingsTopic, content: <NewsTopics /> },
-  { id: "collection", image: settingsCollection, content: <NewsWebsiteCollection /> },
-  { id: "website", image: settingsWebsite, content: <NewsWebsite /> },
-  { id: "service", image: settingsService, content: <RemoteService /> },
-  { id: "critique", image: settingsCritique, content: <NewsCritique /> },
-  { id: "translate", image: settingsTranslate, content: <NewsTranslation /> },
+  { id: topicKey, image: settingsTopic, content: (value: string | null) => <NewsTopics item={value} /> },
+  {
+    id: collectionKey,
+    image: settingsCollection,
+    content: (value: string | null) => <NewsWebsiteCollection item={value} />,
+  },
+  { id: websiteKey, image: settingsWebsite, content: (value: string | null) => <NewsWebsite item={value} /> },
+  { id: serviceKey, image: settingsService, content: (_: string | null) => <RemoteService /> },
+  { id: critiqueKey, image: settingsCritique, content: (value: string | null) => <NewsCritique item={value} /> },
+  { id: translateKey, image: settingsTranslate, content: (value: string | null) => <NewsTranslation item={value} /> },
 ];
 
 // Application settings page
 export function SettingsPage() {
+  const [value, setValue] = useState<string | null>(null);
+
   return (
-    <Accordion chevronPosition="right" variant="contained">
+    <Accordion chevronPosition="right" variant="contained" value={value} onChange={setValue}>
       {settingsItems.map((item) => (
         <Accordion.Item key={item.id} value={item.id}>
           <Accordion.Control>
             <SettingsLabel {...item} />
           </Accordion.Control>
-          <Accordion.Panel mx="md">{item.content}</Accordion.Panel>
+          <Accordion.Panel mx="md">{item.content(value)}</Accordion.Panel>
         </Accordion.Item>
       ))}
     </Accordion>

@@ -23,7 +23,7 @@ func Run(assets embed.FS) {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  adapter.AppName,
+		Title:  "World News",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{

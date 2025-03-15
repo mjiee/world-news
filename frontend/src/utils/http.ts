@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useLanguage, useServiceToken } from "@/stores";
+import { GolbalLanguage, useServiceToken } from "@/stores";
 import { httpx } from "wailsjs/go/models";
 import { LogError } from "wailsjs/runtime";
 import { isWeb } from "./platform";
@@ -65,7 +65,7 @@ const serviceAxios = axios.create({
 serviceAxios.interceptors.request.use(
   (config) => {
     // set language
-    config.headers["Accept-Language"] = useLanguage();
+    config.headers["Accept-Language"] = GolbalLanguage.getLanguage();
 
     // set service token
     const authorizationBasic = btoa("token:" + useServiceToken());

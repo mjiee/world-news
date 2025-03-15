@@ -1,26 +1,12 @@
-import { create } from "zustand";
-import { saveSystemConfig, SystemConfigKey } from "@/services";
-import { isWeb } from "@/utils/platform";
+// global store for language
+export class GolbalLanguage {
+  static language: string = "en";
 
-interface LanguageState {
-  language: string;
-  setLanguage: (newLanguage: string) => void;
+  public static getLanguage() {
+    return GolbalLanguage.language;
+  }
+
+  public static setLanguage(language: string) {
+    GolbalLanguage.language = language;
+  }
 }
-
-export const useLanguageStore = create<LanguageState>((set) => {
-  return {
-    language: "en",
-    setLanguage: (newLanguage: string) => {
-      if (!isWeb()) return saveSystemConfig({ key: SystemConfigKey.Language, value: newLanguage }, true);
-
-      set({ language: newLanguage });
-    },
-  };
-});
-
-// get language
-export const useLanguage = () => {
-  const state = useLanguageStore.getState();
-
-  return state.language;
-};

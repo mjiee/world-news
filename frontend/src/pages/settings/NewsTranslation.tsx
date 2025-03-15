@@ -5,10 +5,11 @@ import { Button, Stack, TextInput, Autocomplete, PasswordInput } from "@mantine/
 import { useForm } from "@mantine/form";
 import { getSystemConfig, saveSystemConfig, SystemConfigKey, TranslaterConfig } from "@/services";
 
+export const translateKey = "translate";
 const translationPlatforms = ["google", "microsoft", "aliyun", "baidu"];
 
 // news translation
-export function NewsTranslation() {
+export function NewsTranslation({ item }: { item: string | null }) {
   const { t } = useTranslation();
 
   const form = useForm<TranslaterConfig>({
@@ -38,8 +39,9 @@ export function NewsTranslation() {
   };
 
   useEffect(() => {
-    fetchTranslateConfig();
-  }, []);
+    if (item === translateKey) fetchTranslateConfig();
+    else form.reset();
+  }, [item]);
 
   return (
     <form
