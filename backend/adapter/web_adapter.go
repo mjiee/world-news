@@ -105,7 +105,7 @@ func (a *WebAadapter) CrawlingNews(c *gin.Context) {
 		return
 	}
 
-	cmd := command.NewCrawlingNewsCommand(cmdCtx, a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
+	cmd := command.NewCrawlingNewsCommand(cmdCtx, req.StartTime, a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
 
 	httpx.WebResp(c, nil, cmd.Execute(ctx))
 }
@@ -261,6 +261,26 @@ func (a *WebAadapter) CritiqueNews(c *gin.Context) {
 
 	var (
 		cmd       = command.NewCritiqueNewsCommand(req.Id, a.newsSvc, a.systemConfigSvc)
+		data, err = cmd.Execute(ctx)
+	)
+
+	httpx.WebResp(c, data, err)
+}
+
+// TranslateNews handles the request to translate a news detail.
+func (a *WebAadapter) TranslateNews(c *gin.Context) {
+	var (
+		ctx = c.Request.Context()
+		req dto.TranslateNewsRequest
+	)
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		httpx.WebResp(c, nil, err)
+		return
+	}
+
+	var (
+		cmd       = command.NewTranslateNewsCommand(req.Id, req.Texts, req.ToLang, a.newsSvc, a.systemConfigSvc)
 		data, err = cmd.Execute(ctx)
 	)
 

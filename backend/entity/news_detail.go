@@ -98,8 +98,13 @@ func (n *NewsDetail) ToModel() (*model.NewsDetail, error) {
 }
 
 // Validate validates the NewsDetail entity.
-func (n *NewsDetail) Validate() error {
+func (n *NewsDetail) Validate(startTime time.Time) error {
 	if n == nil {
+		return errorx.NewsNotFound
+	}
+
+	// published at must be after start time
+	if !n.PublishedAt.IsZero() && !startTime.IsZero() && n.PublishedAt.Before(startTime) {
 		return errorx.NewsNotFound
 	}
 

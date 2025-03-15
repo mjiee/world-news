@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/mjiee/world-news/backend/pkg/openai"
+	"github.com/mjiee/world-news/backend/pkg/translate"
 
 	"github.com/pkg/errors"
 )
@@ -18,6 +19,7 @@ const (
 	NewsTopicKey             SystemConfigKey = "newsTopics"             // news topic
 	LanguageKey              SystemConfigKey = "language"               // language
 	OpenAIKey                SystemConfigKey = "openAI"                 // openai
+	TranslaterKey            SystemConfigKey = "translater"             // translater
 )
 
 func (s SystemConfigKey) String() string {
@@ -59,6 +61,12 @@ func (s SystemConfigKey) UnmarshalValue(value string) (any, error) {
 			err  = json.Unmarshal([]byte(value), &data)
 		)
 
+		return data, errors.WithStack(err)
+	case TranslaterKey:
+		var (
+			data translate.Config
+			err  = json.Unmarshal([]byte(value), &data)
+		)
 		return data, errors.WithStack(err)
 	case LanguageKey:
 		return value, nil

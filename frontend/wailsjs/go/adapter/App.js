@@ -50,6 +50,10 @@ export function SaveSystemConfig(arg1) {
   return window['go']['adapter']['App']['SaveSystemConfig'](arg1);
 }
 
+export function TranslateNews(arg1) {
+  return window['go']['adapter']['App']['TranslateNews'](arg1);
+}
+
 export function UpdateCrawlingRecordStatus(arg1) {
   return window['go']['adapter']['App']['UpdateCrawlingRecordStatus'](arg1);
 }

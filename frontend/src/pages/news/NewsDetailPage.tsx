@@ -17,7 +17,7 @@ import {
   Group,
   Button,
 } from "@mantine/core";
-import { getNewsDetail, NewsDetail, critiqueNews } from "@/services";
+import { getNewsDetail, NewsDetail, critiqueNews, translateNews } from "@/services";
 import IconCopy from "@/assets/icons/IconCopy.svg?react";
 import IconCheck from "@/assets/icons/IconCheck.svg?react";
 
@@ -107,23 +107,32 @@ interface NewsExtensionProps {
   newsId: number;
 }
 
+const critique = "critique";
+const translate = "translate";
+
 function NewsExtension({ newsId }: NewsExtensionProps) {
-  const { t } = useTranslation("news");
+  const { t, i18n } = useTranslation("news");
   const [extension, setExtension] = useState<string>("");
   const [contents, setContents] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // critique news
-  const critiqueNewsHandle = async () => {
+  const onClickHandle = async (obj: string) => {
     setLoading(true);
-    const resp = await critiqueNews({ id: newsId });
+
+    let resp: string[] | undefined;
+
+    if (obj === critique) {
+      resp = await critiqueNews({ id: newsId });
+    } else if (obj === translate) {
+      resp = await translateNews({ id: newsId, toLang: i18n.language, texts: [] });
+    }
 
     if (!resp) {
       setLoading(false);
       return;
     }
 
-    setExtension("critique");
+    setExtension(obj);
     setContents(resp);
     setLoading(false);
   };
@@ -131,9 +140,11 @@ function NewsExtension({ newsId }: NewsExtensionProps) {
   return (
     <>
       <Group>
-        <Button loading={loading}>{t("news_detail.translation")}</Button>
-        <Button loading={loading} onClick={critiqueNewsHandle}>
-          {t("news_detail.critique")}
+        <Button loading={loading} onClick={() => onClickHandle(translate)}>
+          {t("news_detail." + translate)}
+        </Button>
+        <Button loading={loading} onClick={() => onClickHandle(critique)}>
+          {t("news_detail." + critique)}
         </Button>
       </Group>
 

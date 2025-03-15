@@ -26,13 +26,15 @@ import {
   SystemConfigKey,
   NewsDetail,
   NewsWebsiteValue,
+  translateNews,
 } from "@/services";
-import { useRemoteServiceStore } from "@/stores";
+import { useLanguageStore, useRemoteServiceStore } from "@/stores";
 import { getPageNumber } from "@/utils/pagination";
 import { getHost } from "@/utils/url";
 import { httpx } from "wailsjs/go/models";
 import classes from "./styles/newsList.module.css";
 import IconTrash from "@/assets/icons/IconTrash.svg?react";
+import IconLanguage from "@/assets/icons/IconLanguage.svg?react";
 
 // news list page
 export function NewsListPage() {
@@ -165,44 +167,71 @@ interface NewsCardProps {
 
 function NewsCard({ news, updatePage }: NewsCardProps) {
   const navigate = useNavigate();
+  const [title, setTitle] = useState(news.title);
+  const language = useLanguageStore((state) => state.language);
+
+  // translate title
+  const translateTitle = async () => {
+    const resp = await translateNews({ id: 0, texts: [title], toLang: language });
+
+    if (resp && resp.length > 0) setTitle(resp[0]);
+  };
 
   return (
-    <Card key={news.id} p="md" radius="md" className={classes.card}>
-      <div onClick={() => navigate("/news/detail/" + news.id)}>
-        {news.images.length === 0 ? (
-          <p>{news.contents[0]}</p>
-        ) : (
-          <AspectRatio ratio={1920 / 1080}>
-            <Image src={news.images[0]} fallbackSrc="https://placehold.co/200x100?text=Placeholder" />
-          </AspectRatio>
-        )}
+    <Card key={news.id} p="md" radius="md" className={classes.card} onClick={() => navigate("/news/detail/" + news.id)}>
+      <NewsCardContent news={news} />
 
-        <Title order={4} c="blue" mt="md">
-          {news.title}
-        </Title>
-      </div>
-      <Group justify="space-between" mt={5} mb="xs">
+      <Title order={4} c="blue" mt="md">
+        {title}
+      </Title>
+
+      <Group justify="space-between" mt={5} mb="xs" onClick={(event) => event.stopPropagation()}>
+        <NewsCardFooter news={news} />
+
         <Group gap="xs">
-          {newsCardfooter(news.source)}
-          {newsCardfooter(news.topic)}
-          {newsCardfooter(news.publishedAt)}
+          <ActionIcon variant="subtle" color="gray" size="sm" onClick={translateTitle}>
+            <IconLanguage />
+          </ActionIcon>
+          <DeleteNewsButton newsId={news.id} updatePage={updatePage} />
         </Group>
-
-        <DeleteNewsButton newsId={news.id} updatePage={updatePage} />
       </Group>
     </Card>
   );
 }
 
-// news card footer
-const newsCardfooter = (txt: string) => {
+// news card content
+function NewsCardContent({ news }: { news: NewsDetail }) {
   return (
+    <div>
+      {news.images.length === 0 ? (
+        <p>{news.contents[0]}</p>
+      ) : (
+        <AspectRatio ratio={1920 / 1080}>
+          <Image src={news.images[0]} fallbackSrc="https://placehold.co/200x100?text=Placeholder" />
+        </AspectRatio>
+      )}
+    </div>
+  );
+}
+
+// news card footer
+function NewsCardFooter({ news }: { news: NewsDetail }) {
+  const newsCardfooter = (txt: string) => (
     <Text c="dimmed" size="xs" fw={600}>
       {txt}
     </Text>
   );
-};
 
+  return (
+    <Group gap="xs">
+      {newsCardfooter(news.source)}
+      {newsCardfooter(news.topic)}
+      {newsCardfooter(news.publishedAt)}
+    </Group>
+  );
+}
+
+// delete news button
 interface DeleteNewsButtonProps {
   newsId: number;
   updatePage: (page: number) => void;

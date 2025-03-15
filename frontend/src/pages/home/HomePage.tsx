@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Flex, Group, Avatar, Title, Text, Button, Menu, Burger, Container } from "@mantine/core";
+import { Flex, Group, Avatar, Title, Text, Button, Menu, Burger } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { LanguageSwitcher } from "@/components";
 import styles from "@/assets/styles/header.module.css";

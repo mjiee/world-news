@@ -14,6 +14,7 @@
     "newsWebsiteConfigNotFound": "Please complete the website configuration first",
     "newsTopicConfigNotFound": "Please complete the news topic configuration first",
     "updateRecordStatusNotAllowed": "Record status update not allowed",
-    "openaiConfigNotFound": "Please complete the OpenAI configuration first"
+    "openaiConfigNotFound": "Please complete the OpenAI configuration first",
+    "translaterConfigNotFound": "Please complete the translation service configuration first"
   }
 }

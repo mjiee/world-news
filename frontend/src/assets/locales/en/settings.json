@@ -16,6 +16,10 @@
       "label": "News Critique",
       "description": "Configure AI services compatible with OpenAI API for the analysis and evaluation of news content."
     },
+    "translate": {
+      "label": "News Translation",
+      "description": "Configure translation services for translating news content into other languages."
+    },
     "service": {
       "label": "Remote service",
       "description": "Enable cloud-deployed services for global news crawling, and use this feature when the local network is poor."
@@ -72,5 +76,15 @@
       "invalid_api_key": "Please enter a valid api key."
     },
     "default_system_prompt": "You are a news critic."
+  },
+  "translate": {
+    "label": {
+      "platform": "Platform",
+      "app_id": "App ID",
+      "app_secret": "App Secret"
+    },
+    "validate": {
+      "required": "Please enter {{ label }}。"
+    }
   }
 }

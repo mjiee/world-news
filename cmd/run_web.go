@@ -98,4 +98,5 @@ func ApiRouter(r *gin.RouterGroup, webAdapter *adapter.WebAadapter) {
 	r.POST("/news/detail", webAdapter.GetNewsDetail)
 	r.POST("/news/delete", webAdapter.DeleteNews)
 	r.POST("/news/critique", webAdapter.CritiqueNews)
+	r.POST("/news/translate", webAdapter.TranslateNews)
 }
