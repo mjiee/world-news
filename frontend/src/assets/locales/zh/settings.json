@@ -16,6 +16,10 @@
       "label": "新闻点评",
       "description": "配置与 OpenAI API 兼容的 AI 服务，用于分析和评估新闻内容。"
     },
+    "translate": {
+      "label": "新闻翻译",
+      "description": "配置翻译服务，用于将新闻内容翻译成其他语言。"
+    },
     "service": {
       "label": "远程服务",
       "description": "启用云端部署的服务获取全球新闻，当本地网络无法使用时开启。"
@@ -72,5 +76,15 @@
       "invalid_api_key": "API 密钥无效。"
     },
     "default_system_prompt": "你是一名新闻评论员，你将根据以下新闻内容，为新闻提供客观的评价。"
+  },
+  "translate": {
+    "label": {
+      "platform": "服务商",
+      "app_id": "应用 ID",
+      "app_secret": "应用密钥"
+    },
+    "validate": {
+      "required": "请输入 {{ label }}。"
+    }
   }
 }

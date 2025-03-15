@@ -27,4 +27,6 @@ export function QueryNews(arg1:dto.QueryNewsRequest):Promise<httpx.Response>;
 
 export function SaveSystemConfig(arg1:dto.SystemConfig):Promise<httpx.Response>;
 
+export function TranslateNews(arg1:dto.TranslateNewsRequest):Promise<httpx.Response>;
+
 export function UpdateCrawlingRecordStatus(arg1:dto.UpdateCrawlingRecordStatusRequest):Promise<httpx.Response>;

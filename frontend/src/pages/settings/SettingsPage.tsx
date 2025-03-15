@@ -4,11 +4,13 @@ import { NewsTopics } from "./NewsTopics";
 import { NewsWebsite, NewsWebsiteCollection } from "./NewsWebsite";
 import { RemoteService } from "./RemoteService";
 import { NewsCritique } from "./NewsCritique";
+import { NewsTranslation } from "./NewsTranslation";
 import settingsTopic from "@/assets/images/settings_topic.png";
 import settingsService from "@/assets/images/settings_service.png";
 import settingsCollection from "@/assets/images/settings_collection.png";
 import settingsWebsite from "@/assets/images/settings_website.png";
 import settingsCritique from "@/assets/images/settings_critique.png";
+import settingsTranslate from "@/assets/images/settings_translate.png";
 
 const settingsItems = [
   { id: "topic", image: settingsTopic, content: <NewsTopics /> },
@@ -16,6 +18,7 @@ const settingsItems = [
   { id: "website", image: settingsWebsite, content: <NewsWebsite /> },
   { id: "service", image: settingsService, content: <RemoteService /> },
   { id: "critique", image: settingsCritique, content: <NewsCritique /> },
+  { id: "translate", image: settingsTranslate, content: <NewsTranslation /> },
 ];
 
 // Application settings page

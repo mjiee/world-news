@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Table, Pill, Stack, Pagination, Modal, Group, JsonInput, Flex } from "@mantine/core";
+import { Button, Table, Stack, Pagination, Modal, Group, JsonInput, Flex } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useField } from "@mantine/form";
 import {
@@ -123,7 +123,11 @@ function WebsiteTable({ websites }: WebsiteTableProps) {
         <Table.Thead>{tableHeader}</Table.Thead>
         <Table.Tbody>{tableBody}</Table.Tbody>
       </Table>
-      <Pagination value={page} onChange={updatePageHandle} total={getPageNumber({ limit: 25, total: websites.length })} />
+      <Pagination
+        value={page}
+        onChange={updatePageHandle}
+        total={getPageNumber({ limit: 25, total: websites.length })}
+      />
     </Stack>
   );
 }

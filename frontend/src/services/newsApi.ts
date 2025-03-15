@@ -1,6 +1,6 @@
 import { useRemoteService } from "@/stores";
 import { call, post } from "@/utils/http";
-import { QueryNews, GetNewsDetail, DeleteNews, CritiqueNews } from "wailsjs/go/adapter/App";
+import { QueryNews, GetNewsDetail, DeleteNews, CritiqueNews, TranslateNews } from "wailsjs/go/adapter/App";
 import { dto, httpx } from "wailsjs/go/models";
 
 interface QueryNewsRequest {
@@ -38,6 +38,12 @@ interface CritiqueNewsRequest {
   id: number;
 }
 
+interface TranslateNewsRequest {
+  id: number;
+  texts: string[];
+  toLang: string;
+}
+
 // queryNews to query news
 export async function queryNews(data: QueryNewsRequest) {
   const request = new dto.QueryNewsRequest(data);
@@ -66,4 +72,11 @@ export async function critiqueNews(data: CritiqueNewsRequest) {
   if (useRemoteService()) return await post<CritiqueNewsRequest, string[]>("/api/news/critique", data);
 
   return await call<string[]>(CritiqueNews(data));
+}
+
+// translateNews to translate news
+export async function translateNews(data: TranslateNewsRequest) {
+  if (useRemoteService()) return await post<TranslateNewsRequest, string[]>("/api/news/translate", data);
+
+  return await call<string[]>(TranslateNews(data));
 }

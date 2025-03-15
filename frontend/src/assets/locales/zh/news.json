@@ -7,7 +7,7 @@
     "delete_label": "是否想要删除该新闻？"
   },
   "news_detail": {
-    "translation": "新闻翻译",
+    "translate": "翻译新闻",
     "critique": "AI 点评"
   }
 }

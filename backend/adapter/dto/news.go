@@ -83,7 +83,7 @@ func NewNewsDetailFromEntity(data *entity.NewsDetail) *NewsDetail {
 	publishedAt := ""
 
 	if !data.PublishedAt.IsZero() {
-		publishedAt = data.PublishedAt.Format(time.DateTime)
+		publishedAt = data.PublishedAt.Format(time.DateOnly)
 	}
 
 	return &NewsDetail{
@@ -117,4 +117,11 @@ type DeleteNewsRequest struct {
 // CritiqueNewsRequest critique news detail request
 type CritiqueNewsRequest struct {
 	Id uint `json:"id"`
+}
+
+// TranslateNewsRequest translate news detail request
+type TranslateNewsRequest struct {
+	Id     uint     `json:"id"`
+	Texts  []string `json:"texts"`
+	ToLang string   `json:"toLang"`
 }

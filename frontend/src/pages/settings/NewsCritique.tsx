@@ -7,16 +7,21 @@ import { getSystemConfig, saveSystemConfig, SystemConfigKey, OpenAIConfig } from
 import { validateUrl } from "@/utils/url";
 
 const defaultAiConfigs: OpenAIConfig[] = [
-  { description: "ChatGPT", model: "gpt-4o", apiKey: "", apiUrl: "https://api.openai.com/v1/chat/completions" },
-  { description: "DeepSeek", model: "deepseek-chat", apiKey: "", apiUrl: "https://api.deepseek.com/chat/completions" },
+  { description: "ChatGPT-GPT-4o", model: "gpt-4o", apiKey: "", apiUrl: "https://api.openai.com/v1/chat/completions" },
   {
-    description: "Aliyun-DeepSeek",
+    description: "DeepSeek-chat",
+    model: "deepseek-chat",
+    apiKey: "",
+    apiUrl: "https://api.deepseek.com/chat/completions",
+  },
+  {
+    description: "Aliyun-DeepSeek-R1",
     model: "deepseek-r1",
     apiKey: "",
     apiUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
   },
   {
-    description: "Aliyun-Qwen",
+    description: "Aliyun-Qwen-Plus",
     model: "qwen-plus",
     apiKey: "",
     apiUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
@@ -27,7 +32,7 @@ const defaultAiConfigs: OpenAIConfig[] = [
 export function NewsCritique() {
   const { t } = useTranslation();
 
-  const aiform = useForm({
+  const aiform = useForm<OpenAIConfig>({
     mode: "uncontrolled",
     initialValues: {
       description: "",
@@ -122,7 +127,7 @@ export function NewsCritique() {
           key={aiform.key("assistantPrompt")}
           {...aiform.getInputProps("assistantPrompt")}
         />
-        <Button type="submit">{t("button.save")}</Button>{" "}
+        <Button type="submit">{t("button.save")}</Button>
       </Stack>
     </form>
   );

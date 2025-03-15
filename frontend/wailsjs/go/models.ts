@@ -168,6 +168,22 @@ export namespace dto {
 	        this.value = source["value"];
 	    }
 	}
+	export class TranslateNewsRequest {
+	    id: number;
+	    texts: string[];
+	    toLang: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new TranslateNewsRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.texts = source["texts"];
+	        this.toLang = source["toLang"];
+	    }
+	}
 	export class UpdateCrawlingRecordStatusRequest {
 	    id: number;
 	    status: string;
