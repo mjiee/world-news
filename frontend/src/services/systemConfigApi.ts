@@ -10,6 +10,7 @@ export enum SystemConfigKey {
   Language = "language",
   RemoteService = "remoteService",
   OpenAI = "openAI",
+  Translater = "translater",
 }
 
 interface SystemConfig<T> {
@@ -49,6 +50,12 @@ export interface OpenAIConfig {
   maxTokens?: number;
   systemPrompt?: string;
   assistantPrompt?: string;
+}
+
+export interface TranslaterConfig {
+  platform: string;
+  appId: string;
+  appSecret?: string;
 }
 
 // getSystemConfig to get system config

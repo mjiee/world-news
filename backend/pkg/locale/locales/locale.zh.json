@@ -14,6 +14,7 @@
     "newsWebsiteConfigNotFound": "请先完成网站配置",
     "newsTopicConfigNotFound": "请先完成新闻主题配置",
     "updateRecordStatusNotAllowed": "不允许更新该记录的状态",
-    "openaiConfigNotFound": "请先完成AI点评配置"
+    "openaiConfigNotFound": "请先完成AI点评配置",
+    "translaterConfigNotFound": "请先完成翻译服务配置"
   }
 }

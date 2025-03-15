@@ -99,7 +99,7 @@ func (a *App) SaveSystemConfig(req *dto.SystemConfig) *httpx.Response {
 func (a *App) CrawlingNews(req *dto.CrawlingNewsRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
 
-	cmd := command.NewCrawlingNewsCommand(a.ctx, a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
+	cmd := command.NewCrawlingNewsCommand(a.ctx, req.StartTime, a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
 
 	return httpx.AppResp(ctx, "CrawlingNews", req, nil, cmd.Execute(ctx))
 }
@@ -191,4 +191,16 @@ func (a *App) CritiqueNews(req *dto.CritiqueNewsRequest) *httpx.Response {
 	data, err := cmd.Execute(ctx)
 
 	return httpx.AppResp(ctx, "CritiqueNews", req, data, err)
+}
+
+// TranslateNews handles the request to translate a news detail.
+func (a *App) TranslateNews(req *dto.TranslateNewsRequest) *httpx.Response {
+	var (
+		ctx = tracex.InjectTraceInContext(a.ctx)
+		cmd = command.NewTranslateNewsCommand(req.Id, req.Texts, req.ToLang, a.newsSvc, a.systemConfigSvc)
+	)
+
+	data, err := cmd.Execute(ctx)
+
+	return httpx.AppResp(ctx, "TranslateNews", req, data, err)
 }

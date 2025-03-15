@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Avatar, Button, Container, Paper, TextInput, Title } from "@mantine/core";
+import { Avatar, Button, Container, Paper, TextInput, Title, Group } from "@mantine/core";
 import { LanguageSwitcher } from "@/components";
 import { useRemoteServiceStore } from "@/stores";
 import styles from "@/assets/styles/header.module.css";
@@ -16,10 +16,10 @@ export function LoginPage() {
   return (
     <>
       <header className={styles.header}>
-        <Container size="md" className={styles.inner}>
+        <Group justify="space-between">
           <Avatar src={appicon} variant="default" radius="sm" />
           <LanguageSwitcher />
-        </Container>
+        </Group>
       </header>
       <Container size={460} my={30}>
         <Title className={classes.title} ta="center">

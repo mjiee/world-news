@@ -4,6 +4,7 @@ import (
 	"context"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
@@ -19,21 +20,28 @@ import (
 
 // CrawlingNewsCommand is a command for crawling news.
 type CrawlingNewsCommand struct {
-	ctx context.Context
+	ctx       context.Context
+	startTime time.Time
 
 	crawlingSvc     service.CrawlingService
 	newsSvc         service.NewsService
 	systemConfigSvc service.SystemConfigService
 }
 
-func NewCrawlingNewsCommand(ctx context.Context, crawlingSvc service.CrawlingService, newsSvc service.NewsService,
-	systemConfigSvc service.SystemConfigService) *CrawlingNewsCommand {
-	return &CrawlingNewsCommand{
+func NewCrawlingNewsCommand(ctx context.Context, startTime string, crawlingSvc service.CrawlingService,
+	newsSvc service.NewsService, systemConfigSvc service.SystemConfigService) *CrawlingNewsCommand {
+	cmd := &CrawlingNewsCommand{
 		ctx:             ctx,
 		crawlingSvc:     crawlingSvc,
 		newsSvc:         newsSvc,
 		systemConfigSvc: systemConfigSvc,
 	}
+
+	if startTime != "" {
+		cmd.startTime, _ = time.Parse(time.DateTime, startTime)
+	}
+
+	return cmd
 }
 
 func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
@@ -350,7 +358,7 @@ func (c *CrawlingNewsCommand) crawlingNewsDetail(news *entity.NewsDetail, select
 	}
 
 	// validate news
-	return news.Validate()
+	return news.Validate(c.startTime)
 }
 
 // removeDuplicateImage removes duplicate elements.
