@@ -1,7 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { Button, Stack, Switch, TextInput } from "@mantine/core";
+import { Button, Stack, Switch, TextInput, PasswordInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useRemoteServiceStore } from "@/stores";
 import { isWeb } from "@/utils/platform";
@@ -55,7 +55,7 @@ export function RemoteService() {
           {...serviceFrom.getInputProps("host")}
           label={t("remote_service.lable.service_host", { ns: "settings" })}
         />
-        <TextInput
+        <PasswordInput
           key={serviceFrom.key("token")}
           {...serviceFrom.getInputProps("token")}
           label={t("remote_service.lable.service_token", { ns: "settings" })}
