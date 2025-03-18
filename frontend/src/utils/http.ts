@@ -57,7 +57,7 @@ export async function get<P, R>(url: string, params?: P): Promise<R | undefined>
 
 // serviceAxios is used to handle the results returned by http request
 const serviceAxios = axios.create({
-  timeout: 10000,
+  timeout: 120000,
   withCredentials: false,
 });
 
