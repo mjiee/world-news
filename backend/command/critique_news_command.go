@@ -50,7 +50,7 @@ func (c CritiqueNewsCommand) Execute(ctx context.Context) ([]string, error) {
 	}
 
 	// news critique
-	data, err := openai.NewOpenaiClient(&config).ChatCompletion(ctx, strings.Join(news.Contents, "\n"))
+	data, err := openai.NewOpenaiClient(&config).ChatCompletion(ctx, news.Title, strings.Join(news.Contents, "\n"))
 	if err != nil {
 		return nil, err
 	}

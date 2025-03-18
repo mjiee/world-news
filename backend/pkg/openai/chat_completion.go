@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/pkg/errors"
 )
 
@@ -16,7 +17,7 @@ type ChatCompletionRequest struct {
 }
 
 // NewChatCompletionRequest creates a new ChatCompletionRequest
-func NewChatCompletionRequest(conf *Config, userMsg string) *ChatCompletionRequest {
+func NewChatCompletionRequest(conf *Config, userMsg []string) *ChatCompletionRequest {
 	req := &ChatCompletionRequest{
 		Model:     conf.Model,
 		MaxTokens: conf.MaxTokens,
@@ -28,7 +29,9 @@ func NewChatCompletionRequest(conf *Config, userMsg string) *ChatCompletionReque
 		req.Messages = append(req.Messages, SystemMessage(conf.SystemPrompt))
 	}
 
-	req.Messages = append(req.Messages, UserMessage(userMsg))
+	for _, msg := range userMsg {
+		req.Messages = append(req.Messages, UserMessage(msg))
+	}
 
 	if conf.AssistantPrompt != "" {
 		req.Messages = append(req.Messages, AssistantMessage(conf.AssistantPrompt))
@@ -64,7 +67,7 @@ type ChatCompletionChoice struct {
 }
 
 // ChatCompletion is the chat completion endpoint for the OpenAI API
-func (c *OpenaiClient) ChatCompletion(ctx context.Context, userMessage string) (*ChatCompletionResponse, error) {
+func (c *OpenaiClient) ChatCompletion(ctx context.Context, userMessage ...string) (*ChatCompletionResponse, error) {
 	reqBody, err := json.Marshal(NewChatCompletionRequest(c.config, userMessage))
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -85,6 +88,11 @@ func (c *OpenaiClient) ChatCompletion(ctx context.Context, userMessage string) (
 
 	if err = json.Unmarshal(body, &result); err != nil {
 		return nil, errors.WithStack(err)
+	}
+
+	if result.Error != nil && result.Error.Code != "" {
+		return nil, errorx.InternalError.SetErr(errors.Errorf("%s: %s", result.Error.Code, result.Error.Message)).
+			SetMessage(result.Error.Message)
 	}
 
 	return &result, nil
