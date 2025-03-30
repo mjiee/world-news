@@ -61,15 +61,22 @@ func WebLogger() gin.HandlerFunc {
 
 		c.Next()
 
+		logFlag := false
+
+		for _, err := range c.Errors {
+			WithContext(c.Request.Context()).Error(c.Request.URL.Path, err.Err)
+			logFlag = true
+		}
+
+		if !logFlag {
+			return
+		}
+
 		if isJsonBody(c.Writer.Header()) && respWriter.body != nil {
 			logData.Response = respWriter.body.String()
 		}
 
 		logData.Duration = time.Since(startTime).Milliseconds()
-
-		for _, err := range c.Errors {
-			WithContext(c.Request.Context()).Error(c.Request.URL.Path, err.Err)
-		}
 
 		WithContext(c.Request.Context()).Info(c.Request.URL.Path, logData)
 	}

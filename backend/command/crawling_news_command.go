@@ -204,6 +204,8 @@ func (c *CrawlingNewsCommand) crawlingNews(website *valueobject.NewsWebsite, rec
 		}
 
 		newsDetails = append(newsDetails, detail)
+
+		time.Sleep(time.Second * 1)
 	}
 
 	// remove duplicate
