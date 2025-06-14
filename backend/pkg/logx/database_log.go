@@ -14,6 +14,7 @@ import (
 )
 
 const databaseMsg string = "database"
+const slowThreshold = 200
 
 // dbLog is a struct that implements the gorm/logger.Interface interface
 type dbLog struct{}
@@ -67,6 +68,16 @@ func (l *dbLog) Trace(ctx context.Context, begin time.Time, fc func() (sql strin
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		defaultLog.Error(databaseMsg, tracex.LogField(ctx), zap.Any(dataField, data))
 
+		return
+	}
+
+	if elapsed > slowThreshold {
+		defaultLog.Warn(databaseMsg, tracex.LogField(ctx), zap.Any(dataField, data))
+
+		return
+	}
+
+	if defaultLog.Level() > zap.DebugLevel {
 		return
 	}
 
