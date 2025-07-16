@@ -2,7 +2,8 @@
   "news_list": {
     "search": {
       "source": "来源",
-      "topic": "主题"
+      "topic": "主题",
+      "publish_date": "发布时间"
     },
     "delete_label": "是否想要删除该新闻？"
   },

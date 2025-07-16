@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Group, Modal } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import dayjs from "dayjs";
-import "dayjs/locale/en";
-import "dayjs/locale/zh";
 import { hasCrawlingTask, crawlingNews } from "@/services";
+import { DateInput } from "./DateInput";
 
 // fetch news button
 export function FetchNewsButton() {
@@ -43,14 +41,7 @@ export function FetchNewsButton() {
   return (
     <>
       <Modal opened={opened} onClose={close} withCloseButton={false}>
-        <DateInput
-          maxDate={new Date()}
-          locale={i18n.language}
-          label={t("header.label.start_time", { ns: "home" })}
-          valueFormat="YYYY-MM-DD"
-          value={startTime}
-          onChange={setStartTime}
-        />
+        <DateInput label={t("header.label.start_time", { ns: "home" })} value={startTime} onChange={setStartTime} />
         <Group justify="flex-end" mt="md">
           <Button disabled={disabled} type="submit" onClick={clickOkHandler}>
             {t("button.ok")}

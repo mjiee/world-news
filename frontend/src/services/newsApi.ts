@@ -7,6 +7,7 @@ interface QueryNewsRequest {
   recordId: number;
   source: string;
   topic: string;
+  publishDate: string;
   pagination: httpx.Pagination;
 }
 
