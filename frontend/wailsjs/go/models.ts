@@ -122,6 +122,7 @@ export namespace dto {
 	    recordId: number;
 	    source: string;
 	    topic: string;
+	    publishDate: string;
 	    pagination?: httpx.Pagination;
 	
 	    static createFrom(source: any = {}) {
@@ -133,6 +134,7 @@ export namespace dto {
 	        this.recordId = source["recordId"];
 	        this.source = source["source"];
 	        this.topic = source["topic"];
+	        this.publishDate = source["publishDate"];
 	        this.pagination = this.convertValues(source["pagination"], httpx.Pagination);
 	    }
 	

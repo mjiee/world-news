@@ -28,6 +28,8 @@ import {
   NewsWebsiteValue,
   translateNews,
 } from "@/services";
+import dayjs from "dayjs";
+import { DateInput } from "@/components";
 import { GolbalLanguage, useRemoteServiceStore } from "@/stores";
 import { getPageNumber } from "@/utils/pagination";
 import { getHost } from "@/utils/url";
@@ -48,7 +50,7 @@ export function NewsListPage() {
 
   const searchFrom = useForm({
     mode: "uncontrolled",
-    initialValues: { source: "", topic: "" },
+    initialValues: { source: "", topic: "", publishDate: "" },
   });
 
   // fetch news
@@ -97,7 +99,7 @@ export function NewsListPage() {
 // search news component
 interface SearchNewsProps {
   recordId: number;
-  searchFrom: UseFormReturnType<{ source: string; topic: string }>;
+  searchFrom: UseFormReturnType<{ source: string; topic: string; publishDate: string }>;
   searchHandler: () => void;
 }
 
@@ -105,6 +107,12 @@ function SearchNews({ recordId, searchFrom, searchHandler }: SearchNewsProps) {
   const { t } = useTranslation();
   const [sources, setSources] = useState<string[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
+  const [publishDate, setPublishDate] = useState<Date | null>(null);
+
+  const setSearchPublishDate = (date: Date | null) => {
+    setPublishDate(date);
+    searchFrom.setFieldValue("publishDate", date ? dayjs(date).format("YYYY-MM-DD HH:mm:ss") : "");
+  };
 
   // fetch data
   const fetchData = async () => {
@@ -151,6 +159,11 @@ function SearchNews({ recordId, searchFrom, searchHandler }: SearchNewsProps) {
     <Group gap="sm" p="md" mb="md" align="flex-end" justify="center">
       {select("source", sources)}
       {select("topic", topics)}
+      <DateInput
+        placeholder={t("news_list.search.publish_date", { ns: "news" })}
+        value={publishDate}
+        onChange={setSearchPublishDate}
+      />
       <Button onClick={searchHandler} variant="filled" aria-label="Settings">
         {t("button.search")}
       </Button>
