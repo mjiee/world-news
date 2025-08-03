@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/mjiee/gokit/slicex"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/textx"
@@ -158,34 +159,9 @@ func (n *NewsDetail) ExtractTitle(doc *goquery.Selection) {
 	return
 }
 
-// isNewsTitle checks if a given news title is valid.
-func isNewsTitle(title string) bool {
-	return len(title) >= 5 && len(title) <= 500
-}
-
 // ExtractSummary extracts the summary from the news detail.
 func (n *NewsDetail) ExtractSummary(doc *goquery.Selection) {
-	n.extractContents(doc, valueobject.NewsSummarySelectors)
-
-	if len(n.Contents) > 2 {
-		n.Contents = n.Contents[:1]
-	}
-
-	return
-}
-
-// ExtractContents extracts the contents from the news detail.
-func (n *NewsDetail) ExtractContents(doc *goquery.Selection) {
-	n.extractContents(doc, valueobject.NewsContentSelectors)
-
-	return
-}
-
-// extractContents extracts the contents from the news detail.
-func (n *NewsDetail) extractContents(doc *goquery.Selection, selectors []string) {
-	contents := make([]string, 0)
-
-	for _, selector := range selectors {
+	for _, selector := range valueobject.NewsSummarySelectors {
 		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
 			if len(n.Contents) > 0 {
 				return
@@ -197,19 +173,88 @@ func (n *NewsDetail) extractContents(doc *goquery.Selection, selectors []string)
 			}
 
 			if isNewsContent(text) {
-				contents = append(contents, text)
+				n.Contents = append(n.Contents, text)
 			}
 		})
 	}
 
-	if len(contents) > 0 {
-		n.Contents = contents
+	if len(n.Contents) > 2 {
+		n.Contents = n.Contents[:1]
+	}
+
+	return
+}
+
+// ExtractNewsDetail extracts the news detail from the document.
+func (n *NewsDetail) ExtractNewsDetail(doc *goquery.Selection) {
+	var ok bool
+
+	for _, selector := range valueobject.NewsMainBodySelectors {
+		bodyDoc := doc.Find(selector)
+
+		ok = n.extractContents(bodyDoc, valueobject.NewsContentSelectors)
+		if !ok {
+			continue
+		}
+
+		n.ExtractAuthor(bodyDoc)
+
+		if len(n.Images) == 0 {
+			n.ExtractImages(bodyDoc)
+		}
+
+		break
+	}
+
+	if !ok {
+		_ = n.extractContents(doc, valueobject.NewsContentSelectors)
+
+		n.ExtractAuthor(doc)
+
+		if len(n.Images) == 0 {
+			n.ExtractImages(doc)
+		}
+	}
+
+	if len(n.Images) > 3 {
+		if images := slicex.Filter(n.Images, n.isValidImage); len(images) > 0 {
+			n.Images = images[:min(3, len(images))]
+		} else {
+			n.Images = n.Images[:3]
+		}
 	}
 }
 
-// isNewsContent checks if a given news content is valid.
-func isNewsContent(content string) bool {
-	return len(content) >= 20
+// extractContents extracts the contents from the news detail.
+func (n *NewsDetail) extractContents(doc *goquery.Selection, selectors []string) bool {
+	var contents []string
+
+	for _, selector := range selectors {
+		contents = make([]string, 0)
+
+		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+			text := textx.CleanText(s.Text())
+			if textx.SimilarText(text, n.Title) {
+				return
+			}
+
+			if isNewsContent(text) {
+				contents = append(contents, text)
+			}
+		})
+
+		if len(contents) > 2 {
+			break
+		}
+	}
+
+	if len(contents) == 0 {
+		return false
+	}
+
+	n.Contents = contents
+
+	return true
 }
 
 // ExtractLink extracts the link from the news detail.
@@ -247,6 +292,8 @@ func (n *NewsDetail) ExtractImages(doc *goquery.Selection) {
 			n.extractImageLinks(s)
 		})
 	}
+
+	n.Images = slicex.Distinct(n.Images, func(item string) string { return urlx.RemoveQueryParams(item) })
 }
 
 // extractImageLinks extracts the image links from the news detail.
@@ -346,6 +393,34 @@ func (n *NewsDetail) ExtractAuthor(doc *goquery.Selection) {
 			}
 		})
 	}
+}
+
+// isValidImage checks if a given image is valid.
+func (n *NewsDetail) isValidImage(imageLink string) bool {
+	if imageLink == "" {
+		return false
+	}
+
+	if n.PublishedAt.IsZero() {
+		return true
+	}
+
+	var (
+		imageTime   = timex.ParseTime(imageLink)
+		publishTime = n.PublishedAt.Add(-(valueobject.MaxValidityPeriod))
+	)
+
+	return !imageTime.IsZero() && imageTime.After(publishTime)
+}
+
+// isNewsTitle checks if a given news title is valid.
+func isNewsTitle(title string) bool {
+	return len(title) >= 20 && len(title) <= 500
+}
+
+// isNewsContent checks if a given news content is valid.
+func isNewsContent(content string) bool {
+	return len(content) >= 50
 }
 
 // isAuthor checks if a given news author is valid.

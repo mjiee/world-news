@@ -136,9 +136,7 @@ func (s *newsService) crawlingNewsDetail(ctx context.Context, news *entity.NewsD
 			doc.Find(selector).Remove()
 		}
 
-		news.ExtractAuthor(doc)
-		news.ExtractContents(doc)
-		news.ExtractImages(doc)
+		news.ExtractNewsDetail(doc)
 	})
 
 	if err := s.collector.Visit(news.Link); err != nil {
