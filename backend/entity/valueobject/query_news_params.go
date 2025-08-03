@@ -1,13 +1,18 @@
 package valueobject
 
-import "github.com/mjiee/world-news/backend/pkg/httpx"
+import (
+	"time"
+
+	"github.com/mjiee/world-news/backend/pkg/httpx"
+)
 
 // QueryNewsParams query news params
 type QueryNewsParams struct {
-	RecordId uint
-	Source   string
-	Topic    string
-	Page     *httpx.Pagination
+	RecordId    uint
+	Source      string
+	Topic       string
+	PublishDate time.Time
+	Page        *httpx.Pagination
 }
 
 // NewQueryNewsParams creates a new QueryNewsParams instance.

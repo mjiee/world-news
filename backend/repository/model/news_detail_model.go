@@ -15,6 +15,7 @@ type NewsDetail struct {
 	Contents    string
 	Images      string
 	Video       string
+	Scraped     bool
 	CreatedAt   time.Time
 }
 
