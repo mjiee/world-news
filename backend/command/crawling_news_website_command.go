@@ -192,13 +192,10 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(collectionUrl string,
 	return append(newsWebsitesData, newsWebsites...), nil
 }
 
-// maximum validity period
-const maxValidityPeriod = 7 * 24 * time.Hour
-
 // isInvalidateNewsSite check news site is invalidate
 func (c *CrawlingNewsWebsiteCommand) isInvalidateNewsSite(sourceUrl string) func(v *valueobject.NewsWebsite) bool {
 	return func(v *valueobject.NewsWebsite) bool {
-		newsCmd := NewCrawlingNewsCommand(c.ctx, time.Now().Add(-maxValidityPeriod).Format(time.DateTime),
+		newsCmd := NewCrawlingNewsCommand(c.ctx, time.Now().Add(-valueobject.MaxValidityPeriod).Format(time.DateTime),
 			c.crawlingSvc, nil, c.systemConfigSvc)
 
 		news, err := newsCmd.extractNewsList(0, valueobject.NewNewsTopicLink("", sourceUrl))

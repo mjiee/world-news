@@ -52,27 +52,56 @@ func NormalizeURL(baseURL, href string) string {
 		href = hrefs[0]
 	}
 
-	// replace relative url
-	if strings.HasPrefix(href, "/") {
-		return resetHref(baseURL, strings.TrimPrefix(href, "/"))
+	if strings.HasPrefix(href, "http") {
+		return href
 	}
 
-	// replace relative url
-	if !strings.HasPrefix(href, "http") {
-		return resetHref(baseURL, href)
-	}
-
-	return href
-}
-
-// resetHref reset href
-func resetHref(base, href string) string {
-	baseURL, err := url.Parse(base)
+	base, err := url.Parse(baseURL)
 	if err != nil {
 		return href
 	}
 
-	return fmt.Sprintf("%s://%s/%s", baseURL.Scheme, baseURL.Host, strings.TrimPrefix(href, "/"))
+	if strings.HasPrefix(href, ":") {
+		return fmt.Sprintf("%s%s", base.Scheme, href)
+	}
+
+	if strings.HasPrefix(href, "//") {
+		return fmt.Sprintf("%s:%s", base.Scheme, href)
+	}
+
+	if strings.HasPrefix(href, "/") {
+		return fmt.Sprintf("%s://%s%s", base.Scheme, base.Host, href)
+	}
+
+	for _, prefix := range buildHostPrefix(base.Host, ExtractDomainFromURL(baseURL), "com") {
+		paths := strings.Split(prefix, "/")
+
+		if strings.Contains(paths[0], prefix) || strings.Contains(prefix, paths[0]) {
+			return fmt.Sprintf("%s://%s", base.Scheme, href)
+		}
+	}
+
+	strings.Split(base.Host, ".")
+
+	return href
+}
+
+// buildHostPrefix build host prefix
+func buildHostPrefix(hosts ...string) []string {
+	prefixs := make([]string, 0, len(hosts))
+
+	for _, host := range hosts {
+		prefixs = append(prefixs, host)
+
+		parts := strings.Split(host, ".")
+		if len(parts) < 2 {
+			continue
+		}
+
+		prefixs = append(prefixs, strings.Join(parts[:len(parts)-1], "."))
+	}
+
+	return prefixs
 }
 
 // invalidNewsLinkPrefixes invalid news link prefixes

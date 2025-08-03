@@ -1,6 +1,8 @@
 package valueobject
 
-import "net/url"
+import (
+	"net/url"
+)
 
 // NewsWebsite represents a news website.
 type NewsWebsite struct {

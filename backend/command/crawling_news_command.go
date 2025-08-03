@@ -281,7 +281,9 @@ func removeDuplicateNews(data []*entity.NewsDetail) []*entity.NewsDetail {
 		news := slices.MaxFunc(newsData, func(a, b *entity.NewsDetail) int { return a.Compare(b) })
 
 		news.Images = slicex.Filter(news.Images, func(v string) bool {
-			if !slices.Contains(images, v) {
+			v = urlx.RemoveQueryParams(v)
+
+			if slices.Contains(images, v) {
 				return false
 			}
 
