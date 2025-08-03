@@ -48,8 +48,10 @@ func SetWebAdapter(conf *config.WebConfig) (*WebAadapter, error) {
 	}
 
 	// init service
-	web.crawlingSvc = service.NewCrawlingService(collector.NewCollector())
-	web.newsSvc = service.NewNewsService()
+	c := collector.NewCollector()
+
+	web.crawlingSvc = service.NewCrawlingService(c)
+	web.newsSvc = service.NewNewsService(c)
 	web.systemConfigSvc = service.NewSystemConfigService()
 
 	// init system config

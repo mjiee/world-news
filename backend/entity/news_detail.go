@@ -2,15 +2,16 @@ package entity
 
 import (
 	"encoding/json"
-	"strings"
 	"time"
 
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
+	"github.com/mjiee/world-news/backend/pkg/textx"
+	"github.com/mjiee/world-news/backend/pkg/timex"
 	"github.com/mjiee/world-news/backend/pkg/urlx"
 	"github.com/mjiee/world-news/backend/repository/model"
 
-	"github.com/gocolly/colly/v2"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/pkg/errors"
 )
 
@@ -27,6 +28,7 @@ type NewsDetail struct {
 	Contents    []string
 	Images      []string
 	Video       string
+	Scraped     bool
 	CreatedAt   time.Time
 }
 
@@ -60,9 +62,19 @@ func NewNewsDetailFromModel(m *model.NewsDetail) (*NewsDetail, error) {
 		Contents:    contents,
 		Images:      images,
 		Video:       m.Video,
+		Scraped:     m.Scraped,
 		PublishedAt: m.PublishedAt,
 		CreatedAt:   m.CreatedAt,
 	}, nil
+}
+
+// NewNewsDetailFromTopicLink creates a NewsDetail entity from a NewsTopicLink.
+func NewNewsDetailFromTopicLink(recordId uint, link *valueobject.NewsTopicLink) *NewsDetail {
+	return &NewsDetail{
+		RecordId: recordId,
+		Source:   urlx.ExtractDomainFromURL(link.URL),
+		Topic:    link.Topic,
+	}
 }
 
 // ToModel converts the NewsDetail entity to a NewsDetailModel.
@@ -92,106 +104,251 @@ func (n *NewsDetail) ToModel() (*model.NewsDetail, error) {
 		Contents:    string(contents),
 		Images:      string(images),
 		Video:       n.Video,
+		Scraped:     n.Scraped,
 		PublishedAt: n.PublishedAt,
 		CreatedAt:   n.CreatedAt,
 	}, nil
 }
 
-// Validate validates the NewsDetail entity.
-func (n *NewsDetail) Validate(startTime time.Time) error {
-	if n == nil {
-		return errorx.NewsNotFound
+// IsValid checks if the news detail is valid.
+func (n *NewsDetail) IsValid(minPublishTime time.Time) bool {
+	if n.PublishedAt.IsZero() {
+		return false
 	}
 
-	// published at must be after start time
-	if !n.PublishedAt.IsZero() && !startTime.IsZero() && n.PublishedAt.Before(startTime) {
-		return errorx.NewsNotFound
+	if !minPublishTime.IsZero() && n.PublishedAt.Before(minPublishTime) {
+		return false
 	}
 
-	if n.Title == "" { // title is required
-		return errorx.NewsNotFound
-	}
-
-	if len(n.Contents) == 0 { // contents is required
-		return errorx.NewsNotFound
-	}
-
-	return nil
+	return isNewsTitle(n.Title) && n.Link != ""
 }
 
-// ExtractTitle extracts the title from the news detail page.
-func (n *NewsDetail) ExtractTitle(selector *valueobject.Selector) (string, colly.HTMLCallback) {
-	titleSelector := valueobject.Html_h1
-
-	if selector != nil && selector.Title != "" {
-		titleSelector = selector.Title
+// Compare compare the priorities of news.
+func (n *NewsDetail) Compare(other *NewsDetail) int {
+	if len(n.Images) > len(other.Images) && len(n.Contents) > len(other.Contents) {
+		return 1
 	}
 
-	return titleSelector, func(h *colly.HTMLElement) {
-		n.Title = strings.TrimSpace(h.Text)
+	if len(n.Images) < len(other.Images) && len(n.Contents) < len(other.Contents) {
+		return -1
+	}
+
+	return 0
+}
+
+// ExtractTitle extracts the title from the news detail.
+func (n *NewsDetail) ExtractTitle(doc *goquery.Selection) {
+	for _, selector := range valueobject.NewsTitleSelectors {
+		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+			if n.Title != "" {
+				return
+			}
+
+			text := textx.CleanText(s.Text())
+			if isNewsTitle(text) {
+				n.Title = text
+			}
+		})
+
+		if n.Title != "" {
+			break
+		}
+	}
+
+	return
+}
+
+// isNewsTitle checks if a given news title is valid.
+func isNewsTitle(title string) bool {
+	return len(title) >= 5 && len(title) <= 500
+}
+
+// ExtractSummary extracts the summary from the news detail.
+func (n *NewsDetail) ExtractSummary(doc *goquery.Selection) {
+	n.extractContents(doc, valueobject.NewsSummarySelectors)
+
+	if len(n.Contents) > 2 {
+		n.Contents = n.Contents[:1]
+	}
+
+	return
+}
+
+// ExtractContents extracts the contents from the news detail.
+func (n *NewsDetail) ExtractContents(doc *goquery.Selection) {
+	n.extractContents(doc, valueobject.NewsContentSelectors)
+
+	return
+}
+
+// extractContents extracts the contents from the news detail.
+func (n *NewsDetail) extractContents(doc *goquery.Selection, selectors []string) {
+	contents := make([]string, 0)
+
+	for _, selector := range selectors {
+		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+			if len(n.Contents) > 0 {
+				return
+			}
+
+			text := textx.CleanText(s.Text())
+			if textx.SimilarText(text, n.Title) {
+				return
+			}
+
+			if isNewsContent(text) {
+				contents = append(contents, text)
+			}
+		})
+	}
+
+	if len(contents) > 0 {
+		n.Contents = contents
 	}
 }
 
-// ExtractPublishTime extracts the publish time from the news detail page.
-func (n *NewsDetail) ExtractPublishTime(selector *valueobject.Selector) (string, colly.HTMLCallback) {
-	timeSelector := valueobject.Html_time
+// isNewsContent checks if a given news content is valid.
+func isNewsContent(content string) bool {
+	return len(content) >= 20
+}
 
-	if selector != nil && selector.Time != "" {
-		timeSelector = selector.Time
-	}
-
-	return timeSelector, func(h *colly.HTMLElement) {
-		publishedStr := h.Attr(valueobject.Attr_datetime)
-
-		data := strings.Split(publishedStr, "T")
-
-		if len(data) < 1 {
+// ExtractLink extracts the link from the news detail.
+func (n *NewsDetail) ExtractLink(baseURL string, doc *goquery.Selection) {
+	doc.Find(valueobject.LinkSelector).Each(func(i int, s *goquery.Selection) {
+		if n.Link != "" {
 			return
 		}
 
-		publishedAt, err := time.Parse(time.DateOnly, data[0])
-		if err != nil {
+		href, exists := s.Attr(valueobject.Attr_href)
+		if !exists {
 			return
 		}
 
-		n.PublishedAt = publishedAt
+		if valueobject.IsNewsLink(href) {
+			n.Link = urlx.NormalizeURL(baseURL, href)
+		}
+	})
+
+	if n.Link != "" || !doc.Is(valueobject.Html_a) {
+		return
+	}
+
+	if href, exists := doc.Attr(valueobject.Attr_href); exists {
+		n.Link = urlx.NormalizeURL(baseURL, href)
+	}
+
+	return
+}
+
+// ExtractImages extracts the images from the news detail.
+func (n *NewsDetail) ExtractImages(doc *goquery.Selection) {
+	for _, selector := range valueobject.NewsImageSelectors {
+		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+			n.extractImageLinks(s)
+		})
 	}
 }
 
-// ExtractContent extracts the content from the news detail page.
-func (n *NewsDetail) ExtractContent(selector *valueobject.Selector) (string, colly.HTMLCallback) {
-	contentSelector := valueobject.Html_p
+// extractImageLinks extracts the image links from the news detail.
+func (n *NewsDetail) extractImageLinks(doc *goquery.Selection) {
+	for _, attr := range valueobject.ImageAttrs {
+		link, _ := doc.Attr(attr)
 
-	if selector != nil && selector.Content != "" {
-		contentSelector = selector.Content
-	}
+		imageUrl := urlx.NormalizeURL(n.Link, link)
 
-	return contentSelector, func(h *colly.HTMLElement) {
-		content := strings.TrimSpace(h.Text)
-
-		if len(content) == 0 {
-			return
+		if valueobject.IsNewsImageLink(imageUrl) {
+			n.Images = append(n.Images, imageUrl)
 		}
-
-		n.Contents = append(n.Contents, content)
 	}
 }
 
-// ExtractImage extracts the image from the news detail page.
-func (n *NewsDetail) ExtractImage(selector *valueobject.Selector) (string, colly.HTMLCallback) {
-	imgSelector := valueobject.Html_img
+// ExtractPublishTime extracts the publish time from the news detail.
+func (n *NewsDetail) ExtractPublishTime(doc *goquery.Selection) {
+	// try to extract publish time from selector
+	for _, selector := range valueobject.NewsTimeSelectors {
+		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+			if !n.PublishedAt.IsZero() {
+				return
+			}
 
-	if selector != nil && selector.Image != "" {
-		imgSelector = selector.Image
+			n.PublishedAt = getTimeFromElement(s)
+		})
 	}
 
-	return imgSelector, func(h *colly.HTMLElement) {
-		imgUrl := strings.TrimSpace(h.Attr(valueobject.Attr_src))
-
-		if len(imgUrl) == 0 {
+	// try to extract publish time from text
+	doc.Each(func(i int, s *goquery.Selection) {
+		if !n.PublishedAt.IsZero() {
 			return
 		}
 
-		n.Images = append(n.Images, urlx.UrlPrefixHandle(imgUrl, h.Request.URL))
+		n.PublishedAt = timex.ParseTime(s.Text())
+	})
+
+	if !n.PublishedAt.IsZero() {
+		return
 	}
+
+	// try to extract publish time from link
+	if n.Link != "" {
+		n.PublishedAt = timex.ParseTime(n.Link)
+	}
+
+	if !n.PublishedAt.IsZero() {
+		return
+	}
+
+	if n.Video != "" {
+		n.PublishedAt = timex.ParseTime(n.Video)
+	}
+
+	if !n.PublishedAt.IsZero() {
+		return
+	}
+
+	for _, link := range n.Images {
+		n.PublishedAt = timex.ParseTime(link)
+	}
+}
+
+// getTimeFromElement get time from element
+func getTimeFromElement(s *goquery.Selection) time.Time {
+	for _, attr := range valueobject.TimeAttributes {
+		val, _ := s.Attr(attr)
+
+		date := timex.ParseTime(val)
+		if !date.IsZero() {
+			return date
+		}
+	}
+
+	return timex.ParseTime(s.Text())
+}
+
+// ExtractAuthor extracts the author from the news detail.
+func (n *NewsDetail) ExtractAuthor(doc *goquery.Selection) {
+	for _, selector := range valueobject.NewsAuthorSelectors {
+		if n.Author != "" {
+			return
+		}
+
+		doc.Filter(selector).Each(func(i int, s *goquery.Selection) {
+			if n.Author != "" {
+				return
+			}
+
+			text := textx.CleanText(s.Text())
+			if s.Is(valueobject.Html_meta) {
+				text, _ = s.Attr(valueobject.Attr_content)
+			}
+
+			if isAuthor(text) {
+				n.Author = text
+			}
+		})
+	}
+}
+
+// isAuthor checks if a given news author is valid.
+func isAuthor(author string) bool {
+	return author != "" && len(author) >= 1 && len(author) <= 100
 }

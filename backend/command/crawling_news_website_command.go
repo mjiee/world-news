@@ -2,8 +2,9 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"slices"
-	"strings"
+	"time"
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
@@ -13,6 +14,7 @@ import (
 	"github.com/mjiee/world-news/backend/service"
 
 	"github.com/gocolly/colly/v2"
+	"github.com/mjiee/gokit/slicex"
 	"github.com/pkg/errors"
 )
 
@@ -85,6 +87,8 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 		case <-c.ctx.Done():
 			record.CrawlingPaused()
 
+			logx.WithContext(c.ctx).Info("crawlingHandle", "crawling news website paused")
+
 			return
 		default:
 			// check crawling record
@@ -109,17 +113,16 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 				continue
 			}
 
-			websites = slices.DeleteFunc(websites, func(v *valueobject.NewsWebsite) bool {
-				return strings.HasPrefix(v.Url, item.Url)
-			})
+			// remove invalid website
+			websites = slices.DeleteFunc(websites, c.isInvalidateNewsSite(item.Url))
 
 			newsWebsites = append(newsWebsites, websites...)
 		}
 	}
 
 	// remove duplicate
-	newsWebsites = slices.CompactFunc(newsWebsites, func(a, b *valueobject.NewsWebsite) bool {
-		return a.GetHost() == b.GetHost()
+	newsWebsites = slicex.Distinct(newsWebsites, func(v *valueobject.NewsWebsite) string {
+		return v.GetHost()
 	})
 
 	// save news website
@@ -138,12 +141,13 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 	if err := c.crawlingSvc.UpdateCrawlingRecord(c.ctx, record); err != nil {
 		logx.WithContext(c.ctx).Error("SaveSystemConfig", err)
 	}
+
+	logx.WithContext(c.ctx).Info("crawlingHandle", fmt.Sprintf("crawling news website completed, quantity: %d", record.Quantity))
 }
 
 // crawlingNewsWebsite crawling news website
 func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(collectionUrl string,
 	selector *valueobject.Selector) ([]*valueobject.NewsWebsite, error) {
-
 	var newsWebsites []*valueobject.NewsWebsite
 
 	if selector == nil {
@@ -186,4 +190,24 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(collectionUrl string,
 	}
 
 	return append(newsWebsitesData, newsWebsites...), nil
+}
+
+// maximum validity period
+const maxValidityPeriod = 7 * 24 * time.Hour
+
+// isInvalidateNewsSite check news site is invalidate
+func (c *CrawlingNewsWebsiteCommand) isInvalidateNewsSite(sourceUrl string) func(v *valueobject.NewsWebsite) bool {
+	return func(v *valueobject.NewsWebsite) bool {
+		newsCmd := NewCrawlingNewsCommand(c.ctx, time.Now().Add(-maxValidityPeriod).Format(time.DateTime),
+			c.crawlingSvc, nil, c.systemConfigSvc)
+
+		news, err := newsCmd.extractNewsList(0, valueobject.NewNewsTopicLink("", sourceUrl))
+		if err != nil {
+			logx.WithContext(c.ctx).Error("extractNewsList", err)
+
+			return true
+		}
+
+		return len(news) == 0
+	}
 }

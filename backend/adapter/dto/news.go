@@ -6,24 +6,43 @@ import (
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
+	"github.com/mjiee/world-news/backend/pkg/logx"
+
+	"github.com/pkg/errors"
 )
 
 // QueryNewsRequest get news detail list request
 type QueryNewsRequest struct {
-	RecordId   uint              `json:"recordId"`
-	Source     string            `json:"source"`
-	Topic      string            `json:"topic"`
-	Pagination *httpx.Pagination `json:"pagination"`
+	RecordId    uint              `json:"recordId"`
+	Source      string            `json:"source"`
+	Topic       string            `json:"topic"`
+	PublishDate string            `json:"publishDate"`
+	Pagination  *httpx.Pagination `json:"pagination"`
 }
 
 // ToValueobject query news params
 func (q *QueryNewsRequest) ToValueobject() *valueobject.QueryNewsParams {
-	return &valueobject.QueryNewsParams{
+	query := &valueobject.QueryNewsParams{
 		RecordId: q.RecordId,
 		Source:   q.Source,
 		Topic:    q.Topic,
 		Page:     q.Pagination,
 	}
+
+	if q.PublishDate == "" {
+		return query
+	}
+
+	publishDate, err := time.Parse(time.DateTime, q.PublishDate)
+	if err != nil {
+		logx.Error("parse publish date error", errors.WithStack(err))
+
+		return nil
+	}
+
+	query.PublishDate = publishDate
+
+	return query
 }
 
 // QueryNewsResult get news detail list result

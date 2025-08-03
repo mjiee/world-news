@@ -2,8 +2,8 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/mjiee/world-news/backend/entity"
@@ -11,10 +11,13 @@ import (
 	pkgCollector "github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
+	"github.com/mjiee/world-news/backend/pkg/textx"
 	"github.com/mjiee/world-news/backend/pkg/urlx"
 	"github.com/mjiee/world-news/backend/service"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
+	"github.com/mjiee/gokit/slicex"
 	"github.com/pkg/errors"
 )
 
@@ -136,6 +139,8 @@ func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
 		case <-c.ctx.Done():
 			record.CrawlingPaused()
 
+			logx.WithContext(c.ctx).Info("crawlingHandle", "crawling news website paused")
+
 			return
 		default:
 			// crawling news
@@ -175,12 +180,16 @@ func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
 	if err := c.crawlingSvc.UpdateCrawlingRecord(c.ctx, record); err != nil {
 		logx.WithContext(c.ctx).Error("UpdateCrawlingRecord", err)
 	}
+
+	logx.WithContext(c.ctx).Info("crawlingHandle", fmt.Sprintf("crawling news website completed, quantity: %d",
+		record.Quantity))
 }
 
 // crawlingNews crawling news
-func (c *CrawlingNewsCommand) crawlingNews(website *valueobject.NewsWebsite, record *entity.CrawlingRecord) (int64, error) {
+func (c *CrawlingNewsCommand) crawlingNews(website *valueobject.NewsWebsite, record *entity.CrawlingRecord,
+) (int64, error) {
 	// crawling news topic page
-	topicPageUrls, err := c.crawlingNewsTopicPage(website, record.Config.Topics)
+	topicLinks, err := c.extractNewsTopicLinks(website, record)
 	if err != nil {
 		logx.WithContext(c.ctx).Error("crawlingNewsTopicPage", err)
 
@@ -188,204 +197,170 @@ func (c *CrawlingNewsCommand) crawlingNews(website *valueobject.NewsWebsite, rec
 	}
 
 	// crawling newsData
-	newsData := c.crawlingNewsInTopicPage(topicPageUrls, website.Selector)
+	newsData := c.crawlingNewsInTopicPage(record, topicLinks)
 
-	// crawling news detail
-	newsDetails := make([]*entity.NewsDetail, 0, len(newsData))
+	// save news
+	if err := c.newsSvc.CreateNews(c.ctx, newsData...); err != nil {
+		return 0, err
+	}
 
-	for _, detail := range newsData {
-		detail.RecordId = record.Id
-		detail.Source = website.GetHost()
+	return int64(len(newsData)), nil
+}
 
-		if err := c.crawlingNewsDetail(detail, website.Selector); err != nil {
-			logx.WithContext(c.ctx).Error("crawlingNewsDetail", err)
+// extractNewsTopicLinks extract news topic links
+func (c *CrawlingNewsCommand) extractNewsTopicLinks(website *valueobject.NewsWebsite, record *entity.CrawlingRecord,
+) ([]*valueobject.NewsTopicLink, error) {
+	var (
+		collector = c.crawlingSvc.GetCollector()
+		result    []*valueobject.NewsTopicLink
+	)
+
+	for _, selector := range valueobject.NewsTopicLinkSelectors {
+		collector.OnHTML(selector, func(e *colly.HTMLElement) {
+			href := e.Attr(valueobject.Attr_href)
+			if !urlx.IsValidURL(href) {
+				return
+			}
+
+			linkText := textx.CleanText(e.Text)
+			if linkText == "" {
+				linkText = textx.CleanText(e.Attr(valueobject.Attr_title))
+			}
+
+			topic, matches := textx.MatchesKeyword(linkText, record.Config.Topics)
+			if !matches {
+				return
+			}
+
+			data := valueobject.NewNewsTopicLink(topic, urlx.NormalizeURL(website.Url, href))
+
+			if slices.ContainsFunc(result, data.Compare) {
+				return
+			}
+
+			result = append(result, data)
+		})
+	}
+
+	err := collector.Visit(website.Url)
+	if pkgCollector.IgnorableError(err) {
+		return result, nil
+	}
+
+	return result, errors.WithStack(err)
+}
+
+// crawlingNewsInTopicPage crawling news in topic page
+func (c *CrawlingNewsCommand) crawlingNewsInTopicPage(record *entity.CrawlingRecord, topicLinks []*valueobject.NewsTopicLink,
+) []*entity.NewsDetail {
+	result := []*entity.NewsDetail{}
+
+	for _, link := range topicLinks {
+		newsList, err := c.extractNewsList(record.Id, link)
+		if err != nil {
+			logx.WithContext(c.ctx).Error("extractNewsList", err)
 
 			continue
 		}
 
-		newsDetails = append(newsDetails, detail)
-
-		time.Sleep(time.Second * 1)
+		result = append(result, newsList...)
 	}
 
-	// remove duplicate
-	removeDuplicateImage(newsDetails)
-
-	// save news
-	if err := c.newsSvc.CreateNews(c.ctx, newsDetails...); err != nil {
-		return 0, err
-	}
-
-	return int64(len(newsDetails)), nil
+	return removeDuplicateNews(result)
 }
 
-// crawlingNewsTopicPage crawling news topic page
-func (c *CrawlingNewsCommand) crawlingNewsTopicPage(website *valueobject.NewsWebsite, topics []string) (
-	map[string][]string, error) {
+// removeDuplicateNews removes duplicate elements.
+func removeDuplicateNews(data []*entity.NewsDetail) []*entity.NewsDetail {
 	var (
-		collector     = c.crawlingSvc.GetCollector()
-		topicPageData = map[string][]string{}
-		selector      = valueobject.Html_a
+		images  = make([]string, 0)
+		newsMap = slicex.GroupBy(data, func(item *entity.NewsDetail) string { return item.Link })
+		result  = make([]*entity.NewsDetail, 0, len(data))
 	)
 
-	if website.Selector != nil && website.Selector.Topic != "" {
-		selector = website.Selector.Topic
-	}
+	for _, newsData := range newsMap {
+		news := slices.MaxFunc(newsData, func(a, b *entity.NewsDetail) int { return a.Compare(b) })
 
-	collector.OnHTML(selector, func(h *colly.HTMLElement) {
-		for _, topic := range topics {
-			if !strings.EqualFold(h.Text, topic) {
-				continue
+		news.Images = slicex.Filter(news.Images, func(v string) bool {
+			if !slices.Contains(images, v) {
+				return false
 			}
 
-			link := urlx.UrlPrefixHandle(h.Attr(valueobject.Attr_href), h.Request.URL)
+			images = append(images, v)
 
-			if len(link) == 0 {
-				continue
-			}
-
-			topicPageData[topic] = append(topicPageData[topic], link)
-		}
-	})
-
-	if err := collector.Visit(website.Url); err != nil {
-		if pkgCollector.IgnorableError(err) {
-			return topicPageData, nil
-		}
-
-		return nil, errors.WithStack(err)
-	}
-
-	return topicPageData, nil
-}
-
-// crawlingNewsInTopicPage crawling news in topic page
-func (c *CrawlingNewsCommand) crawlingNewsInTopicPage(topicPages map[string][]string,
-	selector *valueobject.Selector) []*entity.NewsDetail {
-	var (
-		isVisited = map[string]struct{}{}
-		news      = []*entity.NewsDetail{}
-	)
-
-	for topic, urls := range topicPages {
-		for _, pageUrl := range urls {
-			if _, ok := isVisited[pageUrl]; ok {
-				continue
-			}
-
-			isVisited[pageUrl] = struct{}{}
-
-			data, err := c.crawlingNewsLink(pageUrl, topic, selector)
-			if err != nil {
-				logx.WithContext(c.ctx).Error("crawlingNewsLink", err)
-
-				continue
-			}
-
-			news = append(news, data...)
-		}
-	}
-
-	// remove duplicate
-	news = slices.CompactFunc(news, func(a, b *entity.NewsDetail) bool {
-		return a.Link == b.Link
-	})
-
-	return news
-}
-
-// crawlingNewsLink crawling news link
-func (c *CrawlingNewsCommand) crawlingNewsLink(pageUrl, topic string, selector *valueobject.Selector) (
-	[]*entity.NewsDetail, error) {
-	var (
-		collector    = c.crawlingSvc.GetCollector()
-		news         = []*entity.NewsDetail{}
-		linkSelector = valueobject.Html_a
-	)
-
-	if selector != nil && selector.Link != "" {
-		linkSelector = selector.Link
-	}
-
-	collector.OnHTML(linkSelector, func(h *colly.HTMLElement) {
-		headers := strings.Fields(h.Text)
-
-		if len(headers) < 5 { // news title length must be greater than 5
-			return
-		}
-
-		link := urlx.UrlPrefixHandle(h.Attr(valueobject.Attr_href), h.Request.URL)
-
-		if len(link) == 0 {
-			return
-		}
-
-		news = append(news, &entity.NewsDetail{
-			Link:  link,
-			Topic: topic,
+			return true
 		})
+
+		result = append(result, news)
+	}
+
+	return result
+}
+
+// extractNewsList extract news list
+func (c *CrawlingNewsCommand) extractNewsList(recordId uint, link *valueobject.NewsTopicLink,
+) (result []*entity.NewsDetail, err error) {
+	collector := c.crawlingSvc.GetCollector()
+
+	collector.OnHTML(valueobject.Html, func(e *colly.HTMLElement) {
+		items := c.findNewsItems(e.DOM)
+
+		if len(items) == 0 {
+			items = c.findNewsLink(e.DOM)
+		}
+
+		newsList := slicex.Map(items, func(item *goquery.Selection) *entity.NewsDetail {
+			detail := entity.NewNewsDetailFromTopicLink(recordId, link)
+
+			detail.ExtractTitle(item)
+			detail.ExtractSummary(item)
+			detail.ExtractLink(link.URL, item)
+			detail.ExtractImages(item)
+			detail.ExtractPublishTime(item)
+
+			return detail
+		})
+
+		result = append(result, newsList...)
 	})
 
-	if err := collector.Visit(pageUrl); err != nil {
-		if pkgCollector.IgnorableError(err) {
-			return news, nil
-		}
-
-		return nil, errors.WithStack(err)
+	err = collector.Visit(link.URL)
+	if pkgCollector.IgnorableError(err) {
+		return
 	}
 
-	return news, nil
+	return slicex.Filter(result, func(v *entity.NewsDetail) bool { return v != nil && v.IsValid(c.startTime) }),
+		errors.WithStack(err)
 }
 
-// crawlingNewsDetail crawling news detail
-func (c *CrawlingNewsCommand) crawlingNewsDetail(news *entity.NewsDetail, selector *valueobject.Selector) error {
-	var (
-		collector = c.crawlingSvc.GetCollector()
-	)
+// findNewsItems find news items
+func (c *CrawlingNewsCommand) findNewsItems(doc *goquery.Selection) []*goquery.Selection {
+	var items []*goquery.Selection
 
-	// publish time
-	collector.OnHTML(news.ExtractPublishTime(selector))
-
-	// title
-	collector.OnHTML(news.ExtractTitle(selector))
-
-	// content
-	collector.OnHTML(news.ExtractContent(selector))
-
-	// images
-	collector.OnHTML(news.ExtractImage(selector))
-
-	if err := collector.Visit(news.Link); err != nil && !pkgCollector.IgnorableError(err) {
-		return errors.WithStack(err)
+	for _, selector := range valueobject.ExcludeSelectors {
+		doc.Find(selector).Remove()
 	}
 
-	// validate news
-	return news.Validate(c.startTime)
-}
-
-// removeDuplicateImage removes duplicate elements.
-func removeDuplicateImage(data []*entity.NewsDetail) {
-	// count image
-	imageCount := map[string]int{}
-
-	for _, item := range data {
-		for _, image := range item.Images {
-			imageCount[image]++
-		}
-	}
-
-	// remove duplicate image
-	for _, item := range data {
-		newImages := make([]string, 0, len(item.Images))
-
-		for _, image := range item.Images {
-			if imageCount[image] > 1 {
-				continue
+	for _, selector := range valueobject.NewsItemSelectors {
+		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+			if s.Find(valueobject.LinkSelector).Length() > 0 {
+				items = append(items, s)
 			}
-
-			newImages = append(newImages, image)
-		}
-
-		item.Images = newImages
+		})
 	}
+
+	return items
+}
+
+// findNewsLink find news from link
+func (c *CrawlingNewsCommand) findNewsLink(doc *goquery.Selection) []*goquery.Selection {
+	var items []*goquery.Selection
+
+	doc.Find(valueobject.LinkSelector).Each(func(i int, s *goquery.Selection) {
+		href, _ := s.Attr(valueobject.Attr_href)
+		if valueobject.IsNewsLink(href) {
+			items = append(items, s)
+		}
+	})
+
+	return items
 }

@@ -5,10 +5,12 @@ import (
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
+	pkgCollector "github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/repository"
 	"github.com/mjiee/world-news/backend/repository/model"
 
+	"github.com/gocolly/colly/v2"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -22,10 +24,11 @@ type NewsService interface {
 }
 
 type newsService struct {
+	collector *colly.Collector
 }
 
-func NewNewsService() NewsService {
-	return &newsService{}
+func NewNewsService(c *colly.Collector) NewsService {
+	return &newsService{collector: c}
 }
 
 // CreateNews creates a new news detail.
@@ -68,6 +71,13 @@ func (s *newsService) QueryNews(ctx context.Context, params *valueobject.QueryNe
 		query = query.Where(repo.Topic.Eq(params.Topic))
 	}
 
+	if !params.PublishDate.IsZero() {
+		query = query.Where(
+			repo.PublishedAt.Gte(params.PublishDate),
+			repo.PublishedAt.Lte(params.PublishDate.AddDate(0, 0, 1)),
+		)
+	}
+
 	data, total, err := query.Order(repo.ID.Desc()).FindByPage(params.Page.GetOffset(), params.Page.GetLimit())
 	if err != nil {
 		return nil, 0, errors.WithStack(err)
@@ -89,7 +99,7 @@ func (s *newsService) QueryNews(ctx context.Context, params *valueobject.QueryNe
 func (s *newsService) GetNewsDetail(ctx context.Context, id uint) (*entity.NewsDetail, error) {
 	repo := repository.Q.NewsDetail
 
-	news, err := repo.WithContext(ctx).Where(repo.ID.Eq(id)).First()
+	data, err := repo.WithContext(ctx).Where(repo.ID.Eq(id)).First()
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errorx.NewsNotFound
 	}
@@ -98,7 +108,16 @@ func (s *newsService) GetNewsDetail(ctx context.Context, id uint) (*entity.NewsD
 		return nil, errors.WithStack(err)
 	}
 
-	return entity.NewNewsDetailFromModel(news)
+	news, err := entity.NewNewsDetailFromModel(data)
+	if err != nil {
+		return nil, err
+	}
+
+	if news.Scraped {
+		return news, nil
+	}
+
+	return s.crawlingNewsDetail(ctx, news)
 }
 
 // DeleteNews deletes the news detail based on the provided ID.
@@ -106,4 +125,42 @@ func (s *newsService) DeleteNews(ctx context.Context, id uint) error {
 	_, err := repository.Q.NewsDetail.WithContext(ctx).Where(repository.Q.NewsDetail.ID.Eq(id)).Delete()
 
 	return errors.WithStack(err)
+}
+
+// crawlingNewsDetail crawls the news detail.
+func (s *newsService) crawlingNewsDetail(ctx context.Context, news *entity.NewsDetail) (*entity.NewsDetail, error) {
+	s.collector.OnHTML(valueobject.Html, func(e *colly.HTMLElement) {
+		doc := e.DOM
+
+		for _, selector := range valueobject.ExcludeSelectors {
+			doc.Find(selector).Remove()
+		}
+
+		news.ExtractAuthor(doc)
+		news.ExtractContents(doc)
+		news.ExtractImages(doc)
+	})
+
+	if err := s.collector.Visit(news.Link); err != nil {
+		if pkgCollector.IgnorableError(err) {
+			return news, nil
+		}
+
+		return nil, errors.WithStack(err)
+	}
+
+	// update news
+	news.Scraped = true
+
+	data, err := news.ToModel()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = repository.Q.NewsDetail.WithContext(ctx).Updates(data)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return news, nil
 }

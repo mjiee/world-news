@@ -52,8 +52,10 @@ func NewApp() *App {
 	}
 
 	// init service
-	app.crawlingSvc = service.NewCrawlingService(collector.NewCollector())
-	app.newsSvc = service.NewNewsService()
+	c := collector.NewCollector()
+
+	app.crawlingSvc = service.NewCrawlingService(c)
+	app.newsSvc = service.NewNewsService(c)
 	app.systemConfigSvc = service.NewSystemConfigService()
 
 	return app

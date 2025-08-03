@@ -43,5 +43,5 @@ func NewCollector() *colly.Collector {
 
 // IgnorableError ignore the error
 func IgnorableError(err error) bool {
-	return errors.Is(err, colly.ErrAlreadyVisited) || errors.Is(err, context.DeadlineExceeded)
+	return err != nil && (errors.Is(err, colly.ErrAlreadyVisited) || errors.Is(err, context.DeadlineExceeded))
 }
