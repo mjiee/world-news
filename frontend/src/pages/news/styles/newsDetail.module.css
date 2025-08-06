@@ -1,0 +1,26 @@
+.translation {
+  text-align: justify;
+  word-break: break-all;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background-color: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #dee2e6;
+}
+
+.content {
+  text-align: justify;
+  word-break: break-word;
+  margin-bottom: 0.5rem;
+}
+
+.critique {
+  line-height: "1.6";
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}

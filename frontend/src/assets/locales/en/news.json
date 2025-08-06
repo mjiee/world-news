@@ -9,6 +9,7 @@
   },
   "news_detail": {
     "translate": "Translate News",
-    "critique": "AI Critique"
+    "critique": "AI Review",
+    "link": "Original link: "
   }
 }

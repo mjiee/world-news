@@ -12,8 +12,8 @@ export function HomePage() {
     <>
       <header className={styles.header}>
         <Group justify="space-between">
-          <Flex align="center">
-            <Avatar pr="10" src={appicon} variant="default" radius="sm" />
+          <Flex align="center" gap="md">
+            <Avatar src={appicon} variant="default" radius="sx" />
             <Title c="white" fw={700} order={2} visibleFrom="xs">
               World News
             </Title>

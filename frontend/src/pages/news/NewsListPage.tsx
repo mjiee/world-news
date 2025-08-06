@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
+  Stack,
   AspectRatio,
   Modal,
   Button,
@@ -14,6 +15,7 @@ import {
   Title,
   ActionIcon,
   Pagination,
+  Badge,
 } from "@mantine/core";
 import { useForm, UseFormReturnType } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
@@ -28,8 +30,7 @@ import {
   NewsWebsiteValue,
   translateNews,
 } from "@/services";
-import dayjs from "dayjs";
-import { DateInput } from "@/components";
+import { DateInput, Loading } from "@/components";
 import { GolbalLanguage, useRemoteServiceStore } from "@/stores";
 import { getPageNumber } from "@/utils/pagination";
 import { getHost } from "@/utils/url";
@@ -86,12 +87,14 @@ export function NewsListPage() {
   return (
     <>
       <SearchNews recordId={recordID} searchFrom={searchFrom} searchHandler={searchHandler} />
-      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }}>
-        {newsList.map((item) => (
-          <NewsCard key={item.id} news={item} updatePage={updatePageHandler} />
-        ))}
-      </SimpleGrid>
-      <Pagination p="md" value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
+      {loading ? (
+        <Loading />
+      ) : (
+        <Stack gap="lg" p="md">
+          <NewsList newsList={newsList} updatePage={updatePageHandler} />
+          <Pagination p="md" value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
+        </Stack>
+      )}
     </>
   );
 }
@@ -107,11 +110,9 @@ function SearchNews({ recordId, searchFrom, searchHandler }: SearchNewsProps) {
   const { t } = useTranslation();
   const [sources, setSources] = useState<string[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
-  const [publishDate, setPublishDate] = useState<Date | null>(null);
 
-  const setSearchPublishDate = (date: Date | null) => {
-    setPublishDate(date);
-    searchFrom.setFieldValue("publishDate", date ? dayjs(date).format("YYYY-MM-DD HH:mm:ss") : "");
+  const setSearchPublishDate = (date: string | null) => {
+    searchFrom.setFieldValue("publishDate", date ?? "");
   };
 
   // fetch data
@@ -159,16 +160,43 @@ function SearchNews({ recordId, searchFrom, searchHandler }: SearchNewsProps) {
     <Group gap="sm" p="md" mb="md" align="flex-end" justify="center">
       {select("source", sources)}
       {select("topic", topics)}
-      <DateInput
-        placeholder={t("news_list.search.publish_date", { ns: "news" })}
-        value={publishDate}
-        onChange={setSearchPublishDate}
-      />
+      <DateInput placeholder={t("news_list.search.publish_date", { ns: "news" })} onChange={setSearchPublishDate} />
       <Button onClick={searchHandler} variant="filled" aria-label="Settings">
         {t("button.search")}
       </Button>
       <FetchNewsButton />
     </Group>
+  );
+}
+
+// news list component
+interface NewsListProps {
+  newsList: NewsDetail[];
+  updatePage: (page: number) => void;
+}
+
+function NewsList({ newsList, updatePage }: NewsListProps) {
+  const newsWithImages = newsList.filter((item) => item.images && item.images?.length > 0);
+  const newsWithoutImages = newsList.filter((item) => !item.images || item.images?.length === 0);
+
+  return (
+    <>
+      {newsWithImages.length > 0 && (
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="lg">
+          {newsWithImages.map((item) => (
+            <NewsCard key={item.id} news={item} updatePage={updatePage} />
+          ))}
+        </SimpleGrid>
+      )}
+
+      {newsWithoutImages.length > 0 && (
+        <Stack gap="md">
+          {newsWithoutImages.map((item) => (
+            <NewsCard key={item.id} news={item} updatePage={updatePage} />
+          ))}
+        </Stack>
+      )}
+    </>
   );
 }
 
@@ -191,11 +219,13 @@ function NewsCard({ news, updatePage }: NewsCardProps) {
 
   return (
     <Card key={news.id} p="md" radius="md" className={classes.card} onClick={() => navigate("/news/detail/" + news.id)}>
-      <NewsCardContent news={news} />
+      <NewsCardImage news={news} />
 
-      <Title order={4} c="blue" mt="md">
+      <Title order={4} c="blue.7" mt="md" lineClamp={2}>
         {title}
       </Title>
+
+      <NewsCardContent news={news} />
 
       <Group justify="space-between" mt={5} mb="xs" onClick={(event) => event.stopPropagation()}>
         <NewsCardFooter news={news} />
@@ -212,33 +242,47 @@ function NewsCard({ news, updatePage }: NewsCardProps) {
 }
 
 // news card content
-function NewsCardContent({ news }: { news: NewsDetail }) {
+function NewsCardImage({ news }: { news: NewsDetail }) {
+  if (!news.images || news.images?.length === 0) {
+    return <></>;
+  }
+
   return (
-    <div>
-      {news.images.length === 0 ? (
-        <p>{news.contents[0]}</p>
-      ) : (
-        <AspectRatio ratio={1920 / 1080}>
-          <Image src={news.images[0]} fallbackSrc="https://placehold.co/200x100?text=Placeholder" />
-        </AspectRatio>
-      )}
-    </div>
+    <AspectRatio ratio={16 / 9}>
+      <Image src={news.images[0]} fallbackSrc="https://placehold.co/200x100?text=Placeholder" />
+    </AspectRatio>
+  );
+}
+
+function NewsCardContent({ news }: { news: NewsDetail }) {
+  if (news.images && news.images?.length > 0) return <></>;
+
+  if (!news.contents || news.contents?.length === 0) return <></>;
+
+  return (
+    <Text c="dimmed" size="sm" lineClamp={2}>
+      {news.contents[0]}
+    </Text>
   );
 }
 
 // news card footer
 function NewsCardFooter({ news }: { news: NewsDetail }) {
-  const newsCardfooter = (txt: string) => (
-    <Text c="dimmed" size="xs" fw={600}>
+  const newsCardfooter = (txt: string, color: string = "dimmed") => (
+    <Badge variant="light" color={color} size="sm">
       {txt}
-    </Text>
+    </Badge>
   );
 
   return (
     <Group gap="xs">
-      {newsCardfooter(news.source)}
-      {newsCardfooter(news.topic)}
-      {newsCardfooter(news.publishedAt)}
+      {news.source && newsCardfooter(news.source, "blue")}
+      {news.topic && newsCardfooter(news.topic, "green")}
+      {news.publishedAt && (
+        <Text size="xs" c="dimmed">
+          {news.publishedAt}
+        </Text>
+      )}
     </Group>
   );
 }

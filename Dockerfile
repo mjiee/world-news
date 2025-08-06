@@ -10,7 +10,7 @@ RUN npm install && \
     npm run build-web
 
 # build backend
-FROM golang:1.23.6-alpine3.21 as go-builder
+FROM golang:1.24.5-alpine3.22 as go-builder
 
 WORKDIR /build
 
@@ -22,7 +22,7 @@ RUN go mod tidy && \
     go build -tags web -o world-news main.go
 
 # runtime stage
-FROM alpine:3.21
+FROM alpine:3.22
 
 WORKDIR /app
 COPY --from=go-builder /build/world-news /app/world-news
