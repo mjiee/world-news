@@ -1,7 +1,7 @@
 package valueobject
 
 import (
-	"net/url"
+	"github.com/mjiee/world-news/backend/pkg/urlx"
 )
 
 // NewsWebsite represents a news website.
@@ -41,10 +41,5 @@ var (
 
 // GetHost returns the host of the news website.
 func (nw *NewsWebsite) GetHost() string {
-	data, err := url.Parse(nw.Url)
-	if err != nil {
-		return nw.Url
-	}
-
-	return data.Host
+	return urlx.ExtractHostFromURL(nw.Url)
 }
