@@ -41,7 +41,7 @@ func NewCrawlingNewsCommand(ctx context.Context, startTime string, crawlingSvc s
 	}
 
 	if startTime != "" {
-		cmd.startTime, _ = time.Parse(time.DateTime, startTime)
+		cmd.startTime, _ = time.Parse(time.DateOnly, startTime)
 	}
 
 	return cmd

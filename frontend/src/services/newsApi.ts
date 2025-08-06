@@ -20,11 +20,11 @@ export interface NewsDetail {
   id: number;
   title: string;
   source: string;
-  topic: string;
+  topic?: string;
   link: string;
-  contents: string[];
-  images: string[];
-  publishedAt: string;
+  contents?: string[];
+  images?: string[];
+  publishedAt?: string;
 }
 
 interface GetNewsDetailRequest {

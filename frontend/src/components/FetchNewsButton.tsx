@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Group, Modal } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import dayjs from "dayjs";
 import { hasCrawlingTask, crawlingNews } from "@/services";
 import { DateInput } from "./DateInput";
 
@@ -10,12 +9,12 @@ import { DateInput } from "./DateInput";
 export function FetchNewsButton() {
   const { t, i18n } = useTranslation();
   const [opened, { open, close }] = useDisclosure(false);
-  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [startTime, setStartTime] = useState<string | null>(null);
   const [disabled, setDisabled] = useState<boolean>(false);
 
   // click ok handler
   const clickOkHandler = () => {
-    crawlingNews({ startTime: startTime ? dayjs(startTime).format("YYYY-MM-DD HH:mm:ss") : "" });
+    crawlingNews({ startTime: startTime ?? "" });
     setStartTime(null);
     close();
   };
@@ -41,7 +40,7 @@ export function FetchNewsButton() {
   return (
     <>
       <Modal opened={opened} onClose={close} withCloseButton={false}>
-        <DateInput label={t("header.label.start_time", { ns: "home" })} value={startTime} onChange={setStartTime} />
+        <DateInput label={t("header.label.start_time", { ns: "home" })} onChange={setStartTime} />
         <Group justify="flex-end" mt="md">
           <Button disabled={disabled} type="submit" onClick={clickOkHandler}>
             {t("button.ok")}

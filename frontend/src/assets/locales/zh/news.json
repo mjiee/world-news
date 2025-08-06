@@ -9,6 +9,7 @@
   },
   "news_detail": {
     "translate": "翻译新闻",
-    "critique": "AI 点评"
+    "critique": "AI点评",
+    "link": "原文链接: "
   }
 }

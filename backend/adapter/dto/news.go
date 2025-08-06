@@ -33,7 +33,7 @@ func (q *QueryNewsRequest) ToValueobject() *valueobject.QueryNewsParams {
 		return query
 	}
 
-	publishDate, err := time.Parse(time.DateTime, q.PublishDate)
+	publishDate, err := time.Parse(time.DateOnly, q.PublishDate)
 	if err != nil {
 		logx.Error("parse publish date error", errors.WithStack(err))
 
