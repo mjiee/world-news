@@ -16,12 +16,7 @@ func ExtractDomainFromURL(urlStr string) string {
 		return ""
 	}
 
-	host := u.Host
-	if strings.HasPrefix(host, "www.") {
-		host = host[4:]
-	}
-
-	return host
+	return u.Host
 }
 
 // RemoveQueryParams removes the query parameters from a URL string
@@ -73,7 +68,7 @@ func NormalizeURL(baseURL, href string) string {
 		return fmt.Sprintf("%s://%s%s", base.Scheme, base.Host, href)
 	}
 
-	for _, prefix := range buildHostPrefix(base.Host, ExtractDomainFromURL(baseURL), "com") {
+	for _, prefix := range buildHostPrefix(base.Host, "com") {
 		paths := strings.Split(prefix, "/")
 
 		if strings.Contains(paths[0], prefix) || strings.Contains(prefix, paths[0]) {
@@ -92,6 +87,12 @@ func buildHostPrefix(hosts ...string) []string {
 
 	for _, host := range hosts {
 		prefixs = append(prefixs, host)
+
+		if strings.HasPrefix(host, "www.") && len(host) > 4 {
+			host = host[4:]
+
+			prefixs = append(prefixs, host)
+		}
 
 		parts := strings.Split(host, ".")
 		if len(parts) < 2 {
