@@ -9,8 +9,8 @@ import (
 	"github.com/mjiee/world-news/backend/pkg/textx"
 )
 
-// ExtractDomainFromURL extract domain from url
-func ExtractDomainFromURL(urlStr string) string {
+// ExtractHostFromURL extract host from url
+func ExtractHostFromURL(urlStr string) string {
 	u, err := url.Parse(urlStr)
 	if err != nil {
 		return ""

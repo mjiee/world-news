@@ -11,6 +11,7 @@ import (
 	pkgCollector "github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
+	"github.com/mjiee/world-news/backend/pkg/urlx"
 	"github.com/mjiee/world-news/backend/service"
 
 	"github.com/gocolly/colly/v2"
@@ -113,6 +114,10 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 				continue
 			}
 
+			websites = slicex.Distinct(websites, func(v *valueobject.NewsWebsite) string {
+				return v.GetHost()
+			})
+
 			// remove invalid website
 			websites = slices.DeleteFunc(websites, c.isInvalidateNewsSite(item.Url))
 
@@ -142,7 +147,8 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 		logx.WithContext(c.ctx).Error("SaveSystemConfig", err)
 	}
 
-	logx.WithContext(c.ctx).Info("crawlingHandle", fmt.Sprintf("crawling news website completed, quantity: %d", record.Quantity))
+	logx.WithContext(c.ctx).Info("crawlingHandle", fmt.Sprintf("crawling news website completed, quantity: %d",
+		record.Quantity))
 }
 
 // crawlingNewsWebsite crawling news website
@@ -160,7 +166,7 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(collectionUrl string,
 	collector.OnHTML(selector.Website, func(h *colly.HTMLElement) {
 		link := h.Attr(valueobject.Attr_href)
 
-		if len(link) > 0 {
+		if urlx.IsValidURL(link) && urlx.ExtractHostFromURL(collectionUrl) != urlx.ExtractHostFromURL(link) {
 			newsWebsites = append(newsWebsites, &valueobject.NewsWebsite{Url: link})
 		}
 	})
@@ -200,7 +206,7 @@ func (c *CrawlingNewsWebsiteCommand) isInvalidateNewsSite(sourceUrl string) func
 
 		news, err := newsCmd.extractNewsList(0, valueobject.NewNewsTopicLink("", sourceUrl))
 		if err != nil {
-			logx.WithContext(c.ctx).Error("extractNewsList", err)
+			logx.WithContext(c.ctx).Error(fmt.Sprintf("extractNewsList, sourceUrl: %s", sourceUrl), err)
 
 			return true
 		}
