@@ -14,7 +14,7 @@ import (
 // NewCollector creates a new collector instance.
 func NewCollector() *colly.Collector {
 	c := colly.NewCollector(
-	// colly.Async(true),
+		colly.AllowURLRevisit(),
 	)
 
 	c.Limit(&colly.LimitRule{
