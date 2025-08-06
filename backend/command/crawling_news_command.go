@@ -120,8 +120,10 @@ func (c *CrawlingNewsCommand) getNewsTopics(ctx context.Context) ([]string, erro
 		return nil, err
 	}
 
+	var newsTopics []string
+
 	if topicConfig.Id == 0 {
-		return nil, errorx.NewsTopicConfigNotFound
+		return newsTopics, nil
 	}
 
 	newsTopics, ok := topicConfig.Value.([]string)
@@ -210,6 +212,10 @@ func (c *CrawlingNewsCommand) crawlingNews(website *valueobject.NewsWebsite, rec
 // extractNewsTopicLinks extract news topic links
 func (c *CrawlingNewsCommand) extractNewsTopicLinks(website *valueobject.NewsWebsite, record *entity.CrawlingRecord,
 ) ([]*valueobject.NewsTopicLink, error) {
+	if len(record.Config.Topics) == 0 {
+		return []*valueobject.NewsTopicLink{valueobject.NewNewsTopicLink("", website.Url)}, nil
+	}
+
 	var (
 		collector = c.crawlingSvc.GetCollector()
 		result    []*valueobject.NewsTopicLink
