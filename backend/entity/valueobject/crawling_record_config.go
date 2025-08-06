@@ -3,6 +3,9 @@ package valueobject
 import (
 	"encoding/json"
 
+	"github.com/mjiee/world-news/backend/pkg/urlx"
+
+	"github.com/mjiee/gokit/slicex"
 	"github.com/pkg/errors"
 )
 
@@ -15,8 +18,11 @@ type CrawlingRecordConfig struct {
 // NewCrawlingRecordConfig creates a new CrawlingRecordConfig.
 func NewCrawlingRecordConfig(sources []*NewsWebsite, topics []string) *CrawlingRecordConfig {
 	return &CrawlingRecordConfig{
-		Sources: sources,
-		Topics:  topics,
+		Sources: slicex.Map(sources, func(item *NewsWebsite) *NewsWebsite {
+			item.Url = urlx.ExtractDomainFromURL(item.Url)
+			return item
+		}),
+		Topics: topics,
 	}
 }
 
