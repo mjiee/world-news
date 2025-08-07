@@ -5,7 +5,6 @@ import (
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
-	pkgCollector "github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/repository"
 	"github.com/mjiee/world-news/backend/repository/model"
@@ -140,10 +139,6 @@ func (s *newsService) crawlingNewsDetail(ctx context.Context, news *entity.NewsD
 	})
 
 	if err := s.collector.Visit(news.Link); err != nil {
-		if pkgCollector.IgnorableError(err) {
-			return news, nil
-		}
-
 		return nil, errors.WithStack(err)
 	}
 

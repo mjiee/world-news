@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
@@ -33,7 +33,7 @@ import {
 import { DateInput, Loading } from "@/components";
 import { GolbalLanguage, useRemoteServiceStore } from "@/stores";
 import { getPageNumber } from "@/utils/pagination";
-import { getHost } from "@/utils/url";
+import { getSecondLevelDomain } from "@/utils/url";
 import { httpx } from "wailsjs/go/models";
 import classes from "./styles/newsList.module.css";
 import IconTrash from "@/assets/icons/IconTrash.svg?react";
@@ -110,13 +110,18 @@ function SearchNews({ recordId, searchFrom, searchHandler }: SearchNewsProps) {
   const { t } = useTranslation();
   const [sources, setSources] = useState<string[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const setSearchPublishDate = (date: string | null) => {
-    searchFrom.setFieldValue("publishDate", date ?? "");
-  };
+  const setSearchPublishDate = useCallback(
+    (date: string | null) => {
+      searchFrom.setFieldValue("publishDate", date ?? "");
+    },
+    [searchFrom],
+  );
 
   // fetch data
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    setLoading(true);
     let sourceData: string[] = [];
     let topicsData: string[] = [];
 
@@ -125,43 +130,64 @@ function SearchNews({ recordId, searchFrom, searchHandler }: SearchNewsProps) {
 
       if (!resp || !resp.config) return;
 
-      sourceData = resp.config.sources;
-      topicsData = resp.config.topics;
+      sourceData = (resp.config.sources || []).map((item) => getSecondLevelDomain(item));
+      topicsData = resp.config.topics || [];
     } else {
-      const sourceConfig = await getSystemConfig<NewsWebsiteValue[]>({ key: SystemConfigKey.NewsWebsites });
-      const topicsConfig = await getSystemConfig<string[]>({ key: SystemConfigKey.NewsTopics });
+      const [sourceConfig, topicsConfig] = await Promise.all([
+        getSystemConfig<NewsWebsiteValue[]>({ key: SystemConfigKey.NewsWebsites }),
+        getSystemConfig<string[]>({ key: SystemConfigKey.NewsTopics }),
+      ]);
 
-      if (topicsConfig && topicsConfig.value) topicsData = topicsConfig?.value;
+      if (topicsConfig?.value) {
+        topicsData = topicsConfig.value;
+      }
 
-      if (sourceConfig && sourceConfig.value) sourceData = sourceConfig?.value?.map((item) => getHost(item.url));
+      if (sourceConfig?.value) {
+        sourceData = sourceConfig.value.map((item) => getSecondLevelDomain(item.url));
+      }
     }
 
-    setSources(sourceData.filter((item, index) => sourceData.indexOf(item) === index));
-    setTopics(topicsData.filter((item, index) => topicsData.indexOf(item) === index));
-  };
+    setSources([...new Set(sourceData.filter(Boolean))]);
+    setTopics([...new Set(topicsData.filter(Boolean))]);
+    setLoading(false);
+  }, [recordId]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
-  const select = (key: string, data: string[]) => (
-    <Select
-      placeholder={t("news_list.search." + key, { ns: "news" })}
-      limit={100}
-      data={data}
-      searchable
-      clearable
-      key={searchFrom.key(key)}
-      {...searchFrom.getInputProps(key)}
-    />
+  const select = useCallback(
+    (key: string, data: string[]) => (
+      <Select
+        placeholder={t("news_list.search." + key, { ns: "news" })}
+        limit={100}
+        data={data}
+        searchable
+        clearable
+        disabled={loading}
+        key={searchFrom.key(key)}
+        {...searchFrom.getInputProps(key)}
+      />
+    ),
+    [searchFrom, t, loading],
   );
 
   return (
     <Group gap="sm" p="md" mb="md" align="flex-end" justify="center">
       {select("source", sources)}
       {select("topic", topics)}
-      <DateInput placeholder={t("news_list.search.publish_date", { ns: "news" })} onChange={setSearchPublishDate} />
-      <Button onClick={searchHandler} variant="filled" aria-label="Settings">
+      <DateInput
+        placeholder={t("news_list.search.publish_date", { ns: "news" })}
+        onChange={setSearchPublishDate}
+        disabled={loading}
+      />
+      <Button
+        onClick={searchHandler}
+        variant="filled"
+        aria-label={t("button.search")}
+        disabled={loading}
+        loading={loading}
+      >
         {t("button.search")}
       </Button>
       <FetchNewsButton />

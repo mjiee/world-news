@@ -8,7 +8,6 @@ import (
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
-	pkgCollector "github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/pkg/urlx"
@@ -107,28 +106,24 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 			}
 
 			// crawling news website
-			websites, err := c.crawlingNewsWebsite(item.Url, item.Selector)
+			websites, err := c.crawlingNewsWebsite(item.Url, item.Selector, make(map[string]bool))
 			if err != nil {
-				logx.WithContext(c.ctx).Error("crawlingNewsWebsite", err)
+				logx.WithContext(c.ctx).Error("crawlingNewsWebsite: "+item.Url, err)
 
 				continue
 			}
 
-			websites = slicex.Distinct(websites, func(v *valueobject.NewsWebsite) string {
-				return v.GetHost()
-			})
+			websites = slicex.Distinct(websites, func(v *valueobject.NewsWebsite) string { return v.GetHost() })
 
 			// remove invalid website
-			websites = slices.DeleteFunc(websites, c.isInvalidateNewsSite(item.Url))
+			websites = slices.DeleteFunc(websites, c.isInvalidateNewsSite(item, newsWebsites))
 
 			newsWebsites = append(newsWebsites, websites...)
 		}
 	}
 
 	// remove duplicate
-	newsWebsites = slicex.Distinct(newsWebsites, func(v *valueobject.NewsWebsite) string {
-		return v.GetHost()
-	})
+	newsWebsites = slicex.Distinct(newsWebsites, func(v *valueobject.NewsWebsite) string { return v.GetHost() })
 
 	// save news website
 	if err := c.systemConfigSvc.SaveSystemConfig(c.ctx,
@@ -152,13 +147,15 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 }
 
 // crawlingNewsWebsite crawling news website
-func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(collectionUrl string,
-	selector *valueobject.Selector) ([]*valueobject.NewsWebsite, error) {
+func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(source string, selector *valueobject.Selector,
+	visited map[string]bool) ([]*valueobject.NewsWebsite, error) {
 	var newsWebsites []*valueobject.NewsWebsite
 
-	if selector == nil {
+	if selector == nil || visited[source] {
 		return newsWebsites, nil
 	}
+
+	visited[source] = true
 
 	// crawling website
 	collector := c.crawlingSvc.GetCollector()
@@ -166,16 +163,12 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(collectionUrl string,
 	collector.OnHTML(selector.Website, func(h *colly.HTMLElement) {
 		link := h.Attr(valueobject.Attr_href)
 
-		if urlx.IsValidURL(link) && urlx.ExtractHostFromURL(collectionUrl) != urlx.ExtractHostFromURL(link) {
+		if urlx.IsValidURL(link) {
 			newsWebsites = append(newsWebsites, &valueobject.NewsWebsite{Url: link})
 		}
 	})
 
-	if err := collector.Visit(collectionUrl); err != nil {
-		if pkgCollector.IgnorableError(err) {
-			return newsWebsites, nil
-		}
-
+	if err := collector.Visit(source); err != nil {
 		return nil, errors.WithStack(err)
 	}
 
@@ -187,9 +180,15 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(collectionUrl string,
 	newsWebsitesData := []*valueobject.NewsWebsite{}
 
 	for _, link := range newsWebsites {
-		data, err := c.crawlingNewsWebsite(link.Url, selector.Child)
+		if urlx.ExtractHostFromURL(source) != link.GetHost() {
+			continue
+		}
+
+		data, err := c.crawlingNewsWebsite(link.Url, selector.Child, visited)
 		if err != nil {
-			return nil, err
+			logx.WithContext(c.ctx).Error("crawlingChildNewsWebsite:"+link.Url, err)
+
+			continue
 		}
 
 		newsWebsitesData = append(newsWebsitesData, data...)
@@ -199,14 +198,23 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(collectionUrl string,
 }
 
 // isInvalidateNewsSite check news site is invalidate
-func (c *CrawlingNewsWebsiteCommand) isInvalidateNewsSite(sourceUrl string) func(v *valueobject.NewsWebsite) bool {
+func (c *CrawlingNewsWebsiteCommand) isInvalidateNewsSite(source *valueobject.NewsWebsite, exists []*valueobject.NewsWebsite,
+) func(v *valueobject.NewsWebsite) bool {
 	return func(v *valueobject.NewsWebsite) bool {
+		if source.GetHost() == v.GetHost() {
+			return true
+		}
+
+		if slices.ContainsFunc(exists, func(e *valueobject.NewsWebsite) bool { return e.GetHost() == v.GetHost() }) {
+			return true
+		}
+
 		newsCmd := NewCrawlingNewsCommand(c.ctx, time.Now().Add(-valueobject.MaxValidityPeriod).Format(time.DateTime),
 			c.crawlingSvc, nil, c.systemConfigSvc)
 
-		news, err := newsCmd.extractNewsList(0, valueobject.NewNewsTopicLink("", sourceUrl))
+		news, err := newsCmd.extractNewsList(0, valueobject.NewNewsTopicLink("", v.Url))
 		if err != nil {
-			logx.WithContext(c.ctx).Error(fmt.Sprintf("extractNewsList, sourceUrl: %s", sourceUrl), err)
+			logx.WithContext(c.ctx).Error(fmt.Sprintf("isInvalidateNewsSite.extractNewsList:%s", v.Url), err)
 
 			return true
 		}

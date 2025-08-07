@@ -13,10 +13,32 @@ import (
 func ExtractHostFromURL(urlStr string) string {
 	u, err := url.Parse(urlStr)
 	if err != nil {
-		return ""
+		return urlStr
 	}
 
-	return u.Host
+	if u.Host == "" {
+		return urlStr
+	}
+
+	return u.Hostname()
+}
+
+// ExtractSecondLevelDomain extract second level domain from url
+func ExtractSecondLevelDomain(urlStr string) string {
+	host := ExtractHostFromURL(urlStr)
+
+	parts := strings.Split(host, ".")
+	if len(parts) < 2 {
+		return host
+	}
+
+	parts = parts[:len(parts)-1]
+
+	if len(parts) < 2 {
+		return strings.Join(parts, ".")
+	}
+
+	return strings.Join(parts[1:], ".")
 }
 
 // RemoveQueryParams removes the query parameters from a URL string
