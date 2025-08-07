@@ -7,7 +7,7 @@ import { DateInput } from "./DateInput";
 
 // fetch news button
 export function FetchNewsButton() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [opened, { open, close }] = useDisclosure(false);
   const [startTime, setStartTime] = useState<string | null>(null);
   const [disabled, setDisabled] = useState<boolean>(false);

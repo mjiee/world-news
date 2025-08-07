@@ -8,7 +8,6 @@ import (
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
-	pkgCollector "github.com/mjiee/world-news/backend/pkg/collector"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/pkg/textx"
@@ -148,15 +147,15 @@ func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
 			// crawling news
 			newsQuantity, err := c.crawlingNews(website, record)
 			if err != nil {
-				logx.WithContext(c.ctx).Error("crawlingNews", err)
+				logx.WithContext(c.ctx).Error("crawlingHandle.crawlingNews:"+website.Url, err)
 
-				return
+				continue
 			}
 
 			// update crawling record quantity
 			record, err = c.crawlingSvc.GetCrawlingRecord(c.ctx, record.Id)
 			if err != nil {
-				logx.WithContext(c.ctx).Error("GetCrawlingRecord", err)
+				logx.WithContext(c.ctx).Error("GetCrawlingRecord:", err)
 
 				return
 			}
@@ -193,9 +192,7 @@ func (c *CrawlingNewsCommand) crawlingNews(website *valueobject.NewsWebsite, rec
 	// crawling news topic page
 	topicLinks, err := c.extractNewsTopicLinks(website, record)
 	if err != nil {
-		logx.WithContext(c.ctx).Error("crawlingNewsTopicPage", err)
-
-		return 0, nil
+		return 0, err
 	}
 
 	// crawling newsData
@@ -249,11 +246,8 @@ func (c *CrawlingNewsCommand) extractNewsTopicLinks(website *valueobject.NewsWeb
 	}
 
 	err := collector.Visit(website.Url)
-	if pkgCollector.IgnorableError(err) {
-		return result, nil
-	}
 
-	return result, errors.WithStack(err)
+	return slicex.Distinct(result, func(i *valueobject.NewsTopicLink) string { return i.URL }), errors.WithStack(err)
 }
 
 // crawlingNewsInTopicPage crawling news in topic page
@@ -332,9 +326,6 @@ func (c *CrawlingNewsCommand) extractNewsList(recordId uint, link *valueobject.N
 	})
 
 	err = collector.Visit(link.URL)
-	if pkgCollector.IgnorableError(err) {
-		return
-	}
 
 	return slicex.Filter(result, func(v *entity.NewsDetail) bool { return v != nil && v.IsValid(c.startTime) }),
 		errors.WithStack(err)

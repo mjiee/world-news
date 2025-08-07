@@ -19,10 +19,27 @@ export const getHost = (value: string | undefined) => {
 
   try {
     const url = new URL(value);
-    return url.host;
+    return url.hostname;
   } catch (_) {
     return value;
   }
+};
+
+// getSecondLevelDomain get second level domain
+export const getSecondLevelDomain = (value: string | undefined) => {
+  const host = getHost(value);
+
+  const parts = host.split(".");
+  if (parts.length < 2) {
+    return host;
+  }
+
+  const withoutTLD = parts.slice(0, -1);
+  if (withoutTLD.length < 2) {
+    return withoutTLD.join(".");
+  }
+
+  return withoutTLD.slice(1).join(".");
 };
 
 // setHost set host to url

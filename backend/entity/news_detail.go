@@ -73,7 +73,7 @@ func NewNewsDetailFromModel(m *model.NewsDetail) (*NewsDetail, error) {
 func NewNewsDetailFromTopicLink(recordId uint, link *valueobject.NewsTopicLink) *NewsDetail {
 	return &NewsDetail{
 		RecordId: recordId,
-		Source:   urlx.ExtractHostFromURL(link.URL),
+		Source:   urlx.ExtractSecondLevelDomain(link.URL),
 		Topic:    link.Topic,
 	}
 }
