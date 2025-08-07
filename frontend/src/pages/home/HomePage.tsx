@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Flex, Group, Avatar, Title, Text, Button, Menu, Burger } from "@mantine/core";
+import { Group, Avatar, Title, Text, Button, Menu, Burger } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { LanguageSwitcher } from "@/components";
 import styles from "@/assets/styles/header.module.css";
@@ -12,12 +12,12 @@ export function HomePage() {
     <>
       <header className={styles.header}>
         <Group justify="space-between">
-          <Flex align="center" gap="md">
-            <Avatar src={appicon} variant="default" radius="sx" />
+          <Group align="center">
+            <Avatar src={appicon} size={50} />
             <Title c="white" fw={700} order={2} visibleFrom="xs">
               World News
             </Title>
-          </Flex>
+          </Group>
 
           <Group>
             <DesktopNav />

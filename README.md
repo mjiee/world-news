@@ -1,4 +1,4 @@
-<p align="center"><a href="https://github.com/mjiee/world-news"><img width="200" src="https://github.com/mjiee/world-news/blob/master/build/appicon.png" alt="world news log"></a></p>
+<p align="center"><a href="https://github.com/mjiee/world-news"><img width="200" src="./build/appicon.png" alt="world news log"></a></p>
 
 <h1 align="center">World News</h1>
 
