@@ -41,6 +41,8 @@ func NewCrawlingNewsCommand(ctx context.Context, startTime string, crawlingSvc s
 
 	if startTime != "" {
 		cmd.startTime, _ = time.Parse(time.DateOnly, startTime)
+	} else {
+		cmd.startTime = time.Now().AddDate(0, 0, -1)
 	}
 
 	return cmd
@@ -317,7 +319,7 @@ func (c *CrawlingNewsCommand) extractNewsList(recordId uint, link *valueobject.N
 			detail.ExtractSummary(item)
 			detail.ExtractLink(link.URL, item)
 			detail.ExtractImages(item)
-			detail.ExtractPublishTime(item)
+			detail.ExtractPublishTime(c.startTime, item)
 
 			return detail
 		})

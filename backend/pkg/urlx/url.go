@@ -90,17 +90,15 @@ func NormalizeURL(baseURL, href string) string {
 		return fmt.Sprintf("%s://%s%s", base.Scheme, base.Host, href)
 	}
 
-	for _, prefix := range buildHostPrefix(base.Host, "com") {
-		paths := strings.Split(prefix, "/")
+	paths := strings.Split(href, "/")
 
+	for _, prefix := range buildHostPrefix(base.Host, "com") {
 		if strings.Contains(paths[0], prefix) || strings.Contains(prefix, paths[0]) {
 			return fmt.Sprintf("%s://%s", base.Scheme, href)
 		}
 	}
 
-	strings.Split(base.Host, ".")
-
-	return href
+	return fmt.Sprintf("%s://%s/%s", base.Scheme, base.Host, href)
 }
 
 // buildHostPrefix build host prefix
