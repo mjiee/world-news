@@ -164,7 +164,7 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(source string, selector
 		link := h.Attr(valueobject.Attr_href)
 
 		if urlx.IsValidURL(link) {
-			newsWebsites = append(newsWebsites, &valueobject.NewsWebsite{Url: link})
+			newsWebsites = append(newsWebsites, &valueobject.NewsWebsite{Url: urlx.NormalizeURL(source, link)})
 		}
 	})
 

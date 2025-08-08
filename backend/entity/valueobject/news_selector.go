@@ -22,11 +22,6 @@ var (
 		".related", ".related-posts", ".related-articles", ".recommend", ".hot", ".popular", ".trending",
 		".pagination", ".pager", ".next", ".prev", ".breadcrumb", ".breadcrumbs",
 		".widget", ".plugin", ".embed", ".iframe", ".video-ad",
-		"[class*='ad']", "[class*='advertisement']", "[class*='sponsor']",
-		"[class*='comment']", "[class*='share']", "[class*='social']",
-		"[class*='related']", "[class*='recommend']", "[class*='hot']",
-		"[class*='sidebar']", "[class*='aside']", "[class*='footer']", "[class*='footbot']",
-		"[class*='header']", "[class*='nav']", "[class*='menu']", "[class*='tag']",
 		"script", "style", "noscript", "iframe", "embed", "object",
 	}
 	LinkSelector = "a[href]"
@@ -48,15 +43,13 @@ var (
 		"[id*='item']", "[id*='news']", "[id*='article']",
 	}
 	NewsMainBodySelectors = []string{
-		// structured selector
 		"main", "article", "section[role='main']", "div[role='main']",
+		".article-content", ".article-text", ".article-body", ".story-content", ".content-body", ".main-article",
 
-		// id selector
 		"#main", "#main-content", "#primary", "#article", "#content", "#story", "#post", "#news-content",
 		"#article-content", "#story-content", "#post-content", "#content-body", "#main-article", "#primary-content",
 		"#page-content", "#site-content", "#entry-content",
 
-		// class selector
 		".wrapper article", ".page main", ".site-content article", ".content-area article", ".primary-content article",
 		"h1 + div", "h1 + section", "h1 + article", ".headline + div", ".title + div",
 		"div:has(p):not(:has(nav)):not(:has(.advertisement)):not(:has(.sidebar))",
@@ -71,14 +64,11 @@ var (
 		".primary:not(.primary-nav):not(.primary-sidebar)", ".container > .row > .col:first-child .content",
 		".wrapper > .main-content:first-of-type", ".page-container > .content-area > article",
 
-		// class selector
 		".main", ".main-content", ".content", ".primary", ".article", ".story", ".post", ".news-content",
-		".article-content", ".story-content", ".content-body", ".main-article", ".primary-content",
-		".page-content", ".site-content", ".entry-content", ".post-content", ".article-body", ".story-body",
-		".news-body", ".content-wrap", ".content-area", ".main-column", ".primary-column",
+		".primary-content", ".page-content", ".site-content", ".entry-content", ".post-content", ".article-body",
+		".story-body", ".news-body", ".content-wrap", ".content-area", ".main-column", ".primary-column",
 		".container .content", ".wrapper .main", ".page-wrapper .content", ".container main",
 
-		// standby selector
 		"div[class*='content']:not([class*='nav']):not([class*='sidebar']):not([class*='footer'])",
 		"div[id*='content']:not([id*='nav']):not([id*='sidebar']):not([id*='footer'])",
 		"section[class*='main']:not([class*='nav']):not([class*='sidebar'])",

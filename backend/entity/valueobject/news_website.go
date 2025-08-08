@@ -36,6 +36,13 @@ var (
 			Url:      "https://www.world-newspapers.com/",
 			Selector: &Selector{Website: "a.country-link, a.magazine-link", Child: &Selector{Website: "a.magazine-link"}},
 		},
+		{
+			Url: "https://onlinenewspapers.com/",
+			Selector: &Selector{
+				Website: ".t3b", Child: &Selector{Website: ".t3b", Child: &Selector{Website: ".t3b",
+					Child: &Selector{Website: ".t3b"}}},
+			},
+		},
 	}
 )
 

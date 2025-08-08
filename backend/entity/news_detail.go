@@ -113,15 +113,7 @@ func (n *NewsDetail) ToModel() (*model.NewsDetail, error) {
 
 // IsValid checks if the news detail is valid.
 func (n *NewsDetail) IsValid(minPublishTime time.Time) bool {
-	if n.PublishedAt.IsZero() {
-		return false
-	}
-
-	if !minPublishTime.IsZero() && n.PublishedAt.Before(minPublishTime) {
-		return false
-	}
-
-	return isNewsTitle(n.Title) && n.Link != ""
+	return isValidPublishTime(n.PublishedAt, minPublishTime) && isNewsTitle(n.Title) && n.Link != ""
 }
 
 // Compare compare the priorities of news.
@@ -185,44 +177,42 @@ func (n *NewsDetail) ExtractSummary(doc *goquery.Selection) {
 	return
 }
 
-// ExtractNewsDetail extracts the news detail from the document.
-func (n *NewsDetail) ExtractNewsDetail(doc *goquery.Selection) {
-	var ok bool
+// ExtractContents extracts the news content from the document.
+func (n *NewsDetail) ExtractContents(doc *goquery.Selection) {
+	items := n.findContentBody(doc)
+	items = append(items, doc)
 
-	for _, selector := range valueobject.NewsMainBodySelectors {
-		bodyDoc := doc.Find(selector)
-
-		ok = n.extractContents(bodyDoc, valueobject.NewsContentSelectors)
+	for idx, itemDoc := range items {
+		ok := n.extractContents(itemDoc, valueobject.NewsContentSelectors)
 		if !ok {
 			continue
 		}
 
-		n.ExtractAuthor(bodyDoc)
+		n.ExtractAuthor(itemDoc)
 
-		if len(n.Images) == 0 {
-			n.ExtractImages(bodyDoc)
+		if len(n.Images) == 0 && idx != len(items)-1 {
+			n.ExtractImages(itemDoc)
 		}
 
-		break
+		n.optimizeImages()
+
+		return
 	}
+}
 
-	if !ok {
-		_ = n.extractContents(doc, valueobject.NewsContentSelectors)
+// findContentBody finds the main body of the news detail.
+func (n *NewsDetail) findContentBody(doc *goquery.Selection) []*goquery.Selection {
+	var items []*goquery.Selection
 
-		n.ExtractAuthor(doc)
+	for _, selector := range valueobject.NewsMainBodySelectors {
+		itemDoc := doc.Find(selector)
 
-		if len(n.Images) == 0 {
-			n.ExtractImages(doc)
+		if itemDoc.Length() > 0 {
+			items = append(items, itemDoc)
 		}
 	}
 
-	if len(n.Images) > 3 {
-		if images := slicex.Filter(n.Images, n.isValidImage); len(images) > 0 {
-			n.Images = images[:min(3, len(images))]
-		} else {
-			n.Images = n.Images[:3]
-		}
-	}
+	return items
 }
 
 // extractContents extracts the contents from the news detail.
@@ -309,52 +299,92 @@ func (n *NewsDetail) extractImageLinks(doc *goquery.Selection) {
 	}
 }
 
+// optimizeImages optimizes the images.
+func (n *NewsDetail) optimizeImages() {
+	if len(n.Images) < 5 {
+		return
+	}
+
+	if images := slicex.Filter(n.Images, n.isValidImage); len(images) > 0 {
+		n.Images = images[:min(5, len(images))]
+	} else {
+		n.Images = n.Images[:5]
+	}
+}
+
 // ExtractPublishTime extracts the publish time from the news detail.
-func (n *NewsDetail) ExtractPublishTime(doc *goquery.Selection) {
-	// try to extract publish time from selector
-	for _, selector := range valueobject.NewsTimeSelectors {
-		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
-			if !n.PublishedAt.IsZero() {
+func (n *NewsDetail) ExtractPublishTime(minPublishTime time.Time, doc *goquery.Selection) {
+	// Early return if already found
+	if !n.PublishedAt.IsZero() {
+		return
+	}
+
+	// Define extraction strategies in order of priority
+	extractors := []func() []time.Time{
+		func() []time.Time { return n.extractTimeFromSelectors(doc) },
+		func() []time.Time { return n.extractTimeFromDocText(doc) },
+		func() []time.Time { return n.extractTimeFromLinks() },
+	}
+
+	// Try each extraction strategy until one succeeds
+	for _, extractor := range extractors {
+		for _, publishedAt := range extractor() {
+			if isValidPublishTime(publishedAt, minPublishTime) {
+				n.PublishedAt = publishedAt
+
 				return
 			}
+		}
+	}
+}
 
-			n.PublishedAt = getTimeFromElement(s)
+// extractTimeFromSelectors tries to extract publish time from predefined selectors
+func (n *NewsDetail) extractTimeFromSelectors(doc *goquery.Selection) []time.Time {
+	var results []time.Time
+
+	for _, selector := range valueobject.NewsTimeSelectors {
+		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+			if publishedAt := getTimeFromElement(s); !publishedAt.IsZero() {
+				results = append(results, publishedAt)
+			}
 		})
 	}
 
-	// try to extract publish time from text
-	doc.Each(func(i int, s *goquery.Selection) {
-		if !n.PublishedAt.IsZero() {
-			return
-		}
+	return results
+}
 
-		n.PublishedAt = timex.ParseTime(s.Text())
+// extractTimeFromDocText tries to extract publish time from document text
+func (n *NewsDetail) extractTimeFromDocText(doc *goquery.Selection) []time.Time {
+	var result []time.Time
+
+	doc.Each(func(i int, s *goquery.Selection) {
+		if publishedAt := timex.ParseTime(s.Text()); !publishedAt.IsZero() {
+			result = append(result, publishedAt)
+		}
 	})
 
-	if !n.PublishedAt.IsZero() {
-		return
-	}
+	return result
+}
 
-	// try to extract publish time from link
+// extractTimeFromLink tries to extract publish time from news link
+func (n *NewsDetail) extractTimeFromLinks() []time.Time {
+	var results []time.Time
+
 	if n.Link != "" {
-		n.PublishedAt = timex.ParseTime(n.Link)
-	}
-
-	if !n.PublishedAt.IsZero() {
-		return
+		results = append(results, timex.ParseTime(n.Link))
 	}
 
 	if n.Video != "" {
-		n.PublishedAt = timex.ParseTime(n.Video)
-	}
-
-	if !n.PublishedAt.IsZero() {
-		return
+		results = append(results, timex.ParseTime(n.Video))
 	}
 
 	for _, link := range n.Images {
-		n.PublishedAt = timex.ParseTime(link)
+		if publishedAt := timex.ParseTime(link); !publishedAt.IsZero() {
+			results = append(results, publishedAt)
+		}
 	}
+
+	return results
 }
 
 // getTimeFromElement get time from element
@@ -369,6 +399,26 @@ func getTimeFromElement(s *goquery.Selection) time.Time {
 	}
 
 	return timex.ParseTime(s.Text())
+}
+
+// isValidPublishTime checks if a given publish time is valid.
+func isValidPublishTime(publishTime time.Time, minPublishTime time.Time) bool {
+	// Check if time is zero (invalid)
+	if publishTime.IsZero() {
+		return false
+	}
+
+	// Check if time is before minimum allowed time
+	if !minPublishTime.IsZero() && publishTime.Before(minPublishTime) {
+		return false
+	}
+
+	// Check if time is too far in the future
+	if publishTime.After(time.Now().Add(valueobject.MaxValidityPeriod)) {
+		return false
+	}
+
+	return true
 }
 
 // ExtractAuthor extracts the author from the news detail.

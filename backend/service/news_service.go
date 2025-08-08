@@ -6,6 +6,7 @@ import (
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
+	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/repository"
 	"github.com/mjiee/world-news/backend/repository/model"
 
@@ -135,11 +136,13 @@ func (s *newsService) crawlingNewsDetail(ctx context.Context, news *entity.NewsD
 			doc.Find(selector).Remove()
 		}
 
-		news.ExtractNewsDetail(doc)
+		news.ExtractContents(doc)
 	})
 
 	if err := s.collector.Visit(news.Link); err != nil {
-		return nil, errors.WithStack(err)
+		logx.Error("crawlingNewsDetail:"+news.Link, err)
+
+		return news, nil
 	}
 
 	// update news
