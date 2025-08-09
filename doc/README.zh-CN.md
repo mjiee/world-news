@@ -13,7 +13,7 @@
 
 ## 🖥️ 用户界面
 
-<p><img width="100%" src="./images/app_home.png" alt="world-news ui"></p>
+<p><img width="100%" src="./app_home.png" alt="world-news ui"></p>
 
 ## ⚙️ 技术栈
 

@@ -25,7 +25,7 @@ Welcome to **World-News** — your one-stop desktop application for viewing glob
 
 ## 🖥️ User Interface
 
-<p><img width="100%" src="./doc/images/app_home.png" alt="world-news ui"></p>
+<p><img width="100%" src="./doc/app_home.png" alt="world-news ui"></p>
 
 ## ⚙️ Tech Stack
 
