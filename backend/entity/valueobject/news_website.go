@@ -39,8 +39,8 @@ var (
 		{
 			Url: "https://onlinenewspapers.com/",
 			Selector: &Selector{
-				Website: ".t3b", Child: &Selector{Website: ".t3b", Child: &Selector{Website: ".t3b",
-					Child: &Selector{Website: ".t3b"}}},
+				Website: ".t3b a", Child: &Selector{Website: ".t3b a", Child: &Selector{Website: ".t3b a",
+					Child: &Selector{Website: ".t3b a"}}},
 			},
 		},
 	}

@@ -13,16 +13,14 @@ const MaxValidityPeriod = 7 * 24 * time.Hour
 // common selectors
 var (
 	ExcludeSelectors = []string{
-		"header", ".header", "#header", "#footer", "#footbot", ".footer", ".footer", "aside", ".aside", ".sidebar",
-		".side-bar", "nav", ".nav", "navigation", ".navigation", ".menu", ".top-menu", ".main-menu",
-		".ad", ".advertisement", ".ads", ".sponsor", ".promoted", ".banner", ".tag", ".tags", ".tag-list", ".categories",
-		".popup", ".modal", ".overlay", ".newsletter", ".subscription", ".search", ".search-box", ".search-form",
-		".comment", ".comments", ".comment-section", ".reply", ".replies", ".discuss",
-		".social", ".social-share", ".share", ".sharing", ".follow", ".subscribe",
-		".related", ".related-posts", ".related-articles", ".recommend", ".hot", ".popular", ".trending",
-		".pagination", ".pager", ".next", ".prev", ".breadcrumb", ".breadcrumbs",
-		".widget", ".plugin", ".embed", ".iframe", ".video-ad",
-		"script", "style", "noscript", "iframe", "embed", "object",
+		"head", "script", "style", "noscript", "iframe", "embed", "object", "header", ".header", "#header", "#footer",
+		"#footbot", ".footer", "aside", ".aside", ".sidebar", ".side-bar", "nav", ".nav", "navigation", ".navigation",
+		".menu", ".top-menu", ".main-menu", ".ad", ".advertisement", ".ads", ".sponsor", ".promoted", ".banner",
+		".tag", ".tags", ".tag-list", ".categories", ".popup", ".modal", ".overlay", ".newsletter", ".subscription",
+		".search", ".search-box", ".search-form", ".comment", ".comments", ".comment-section", ".reply", ".replies",
+		".discuss", ".social", ".social-share", ".share", ".sharing", ".follow", ".subscribe", ".related",
+		".related-posts", ".related-articles", ".recommend", ".hot", ".popular", ".trending", ".pagination", ".pager",
+		".next", ".prev", ".breadcrumb", ".breadcrumbs",
 	}
 	LinkSelector = "a[href]"
 )
@@ -129,7 +127,7 @@ var (
 	NewsImageSelectors = []string{
 		".article-content img", ".news-content img", ".post-content img", ".content img",
 		".article-body img", ".news-body img", ".story-body img", ".entry-content img",
-		".main-content img", "article img", "main img", ".main img",
+		".main-content img", "article img", "main img", ".main img", ".item img", "li img",
 		"img[src]", "img", "picture[srcset]", "picture source",
 	}
 	NewsAuthorSelectors = []string{
@@ -162,7 +160,7 @@ var (
 
 // attributes list
 var (
-	ImageAttrs     = []string{Attr_src, Attr_srcset, Attr_data_src, Attr_data_original}
+	ImageAttrs     = []string{Attr_src, Attr_srcset, "data-src", "data-original", "data-s"}
 	TimeAttributes = []string{
 		"datetime", "data-timestamp", "data-time", "data-date", "timestamp", "content", "value", "title",
 	}

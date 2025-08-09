@@ -13,12 +13,10 @@ const (
 
 // html attr
 const (
-	Attr_href          = "href"
-	Attr_datetime      = "datetime"
-	Attr_src           = "src"
-	Attr_srcset        = "srcset"
-	Attr_data_src      = "data-src"
-	Attr_data_original = "data-original"
-	Attr_title         = "title"
-	Attr_content       = "content"
+	Attr_href     = "href"
+	Attr_datetime = "datetime"
+	Attr_src      = "src"
+	Attr_srcset   = "srcset"
+	Attr_title    = "title"
+	Attr_content  = "content"
 )
