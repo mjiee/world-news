@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/mjiee/gokit/slicex"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/textx"
@@ -13,6 +12,7 @@ import (
 	"github.com/mjiee/world-news/backend/repository/model"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/mjiee/gokit/slicex"
 	"github.com/pkg/errors"
 )
 

@@ -2,6 +2,7 @@ package timex
 
 import (
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/mjiee/world-news/backend/pkg/textx"
@@ -10,7 +11,7 @@ import (
 )
 
 var (
-	urlDateRegex   = regexp.MustCompile(`(?:\d{4}[-/]?\d{2}[-/]?\d{2}|\d{2}[-/]?\d{2}[-/]?\d{4})(?:[T\s]\d{2}:\d{2}:\d{2})?`)
+	urlDateRegex   = regexp.MustCompile(`(?:^|/)(\d{4})(?:[-/](\d{1,2})(?:[-/](\d{1,2}))?)?(?:/|$)`)
 	timestampRegex = regexp.MustCompile(`(?:^|[^\d])(\d{10}|\d{13})(?:[^\d]|$)`)
 )
 
@@ -27,18 +28,36 @@ func ParseTime(text string) time.Time {
 		return date.Time
 	}
 
-	match := urlDateRegex.FindString(text)
-	date, err = dateparser.Parse(nil, match)
-	if err == nil {
-		return date.Time
-	}
-
-	matchs := timestampRegex.FindStringSubmatch(text)
-	if len(matchs) == 0 {
+	dateStr := extractDateFromUrl(text)
+	if dateStr == "" {
 		return time.Time{}
 	}
 
-	date, _ = dateparser.Parse(nil, matchs[1])
+	date, _ = dateparser.Parse(nil, dateStr)
 
 	return date.Time
+}
+
+// extractDateFromUrl extract date from url
+func extractDateFromUrl(url string) string {
+	matches := urlDateRegex.FindStringSubmatch(url)
+
+	if len(matches) > 1 {
+		parts := []string{matches[1]}
+		if matches[2] != "" {
+			parts = append(parts, matches[2])
+			if matches[3] != "" {
+				parts = append(parts, matches[3])
+			}
+		}
+
+		return strings.Join(parts, "/")
+	}
+
+	matchs := timestampRegex.FindStringSubmatch(url)
+	if len(matchs) >= 1 {
+		return matchs[1]
+	}
+
+	return ""
 }
