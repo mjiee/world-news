@@ -31,6 +31,11 @@ func (s CrawlingRecordStatus) IsPaused() bool {
 	return s == PausedCrawlingRecord
 }
 
+// IsCompleted returns true if the crawling record status is completed.
+func (s CrawlingRecordStatus) IsCompleted() bool {
+	return s == CompletedCrawlingRecord
+}
+
 // UpdateValidStatus updates the crawling record status to valid status.
 func (s CrawlingRecordStatus) UpdateValidStatus(newStatus CrawlingRecordStatus) error {
 	switch newStatus {

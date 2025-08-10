@@ -1,29 +1,34 @@
 package entity
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/locale"
 	"github.com/mjiee/world-news/backend/repository/model"
+
+	"github.com/pkg/errors"
 )
 
 // SystemConfig represents the structure of system configuration data stored in the database.
 type SystemConfig struct {
 	Id        uint
 	Key       valueobject.SystemConfigKey
-	Value     any
+	Value     string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
 // NewSystemConfig creates a new SystemConfig entity.
-func NewSystemConfig(key string, value any) *SystemConfig {
-	return &SystemConfig{
-		Key:   valueobject.SystemConfigKey(key),
-		Value: value,
+func NewSystemConfig(key string, value any) (*SystemConfig, error) {
+	data, err := json.Marshal(value)
+	if err != nil {
+		return nil, errors.WithStack(err)
 	}
+
+	return &SystemConfig{Key: valueobject.SystemConfigKey(key), Value: string(data)}, err
 }
 
 // NewSystemConfigFromModel converts a SystemConfigModel to a SystemConfig entity.
@@ -35,16 +40,10 @@ func NewSystemConfigFromModel(m *model.SystemConfig) (*SystemConfig, error) {
 	s := &SystemConfig{
 		Id:        m.ID,
 		Key:       valueobject.SystemConfigKey(m.Key),
+		Value:     m.Value,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
 	}
-
-	value, err := s.Key.UnmarshalValue(m.Value)
-	if err != nil {
-		return nil, err
-	}
-
-	s.Value = value
 
 	return s, nil
 }
@@ -55,15 +54,10 @@ func (s *SystemConfig) ToModel() (*model.SystemConfig, error) {
 		return nil, errorx.SystemConfigNotFound
 	}
 
-	value, err := s.Key.MarshalValue(s.Value)
-	if err != nil {
-		return nil, err
-	}
-
 	return &model.SystemConfig{
 		ID:        s.Id,
 		Key:       s.Key.String(),
-		Value:     string(value),
+		Value:     s.Value,
 		CreatedAt: s.CreatedAt,
 		UpdatedAt: time.Now(),
 	}, nil
@@ -77,8 +71,20 @@ func (s *SystemConfig) UpdateSystemConfig() error {
 
 	switch s.Key {
 	case valueobject.LanguageKey:
-		return locale.SetAppLocalizer(s.Value.(string))
+		var lang string
+		if err := s.UnmarshalValue(&lang); err != nil {
+			return err
+		}
+
+		return locale.SetAppLocalizer(lang)
 	}
 
 	return nil
+}
+
+// UnmarshalValue unmarshal config value
+func (s *SystemConfig) UnmarshalValue(v any) error {
+	err := json.Unmarshal([]byte(s.Value), v)
+
+	return errors.WithStack(err)
 }

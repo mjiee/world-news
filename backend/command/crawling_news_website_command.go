@@ -56,8 +56,8 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 		return errorx.NewsWebsiteConfigNotFound
 	}
 
-	newsWebsiteCollections, ok := config.Value.([]*valueobject.NewsWebsite)
-	if !ok {
+	var newsWebsiteCollections []*valueobject.NewsWebsite
+	if err := config.UnmarshalValue(&newsWebsiteCollections); err != nil {
 		return errorx.InternalError.SetErr(errors.New("invalid news websites config"))
 	}
 
@@ -78,10 +78,39 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 // crawlingHandle crawling news website
 func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecord) {
 	var (
-		newsWebsites = make([]*valueobject.NewsWebsite, 0)
-		err          error
+		newsWebsites        []*valueobject.NewsWebsite
+		err                 error
+		invalidNewsWebsites []string
+		startTime           = time.Now()
 	)
 
+	// get news websites
+	config, err := c.systemConfigSvc.GetSystemConfig(c.ctx, valueobject.NewsWebsiteKey.String())
+	if err != nil {
+		logx.WithContext(c.ctx).Error("GetSystemConfig.NewsWebsiteKey", err)
+
+		return
+	}
+
+	if config.Id != 0 {
+		if err := config.UnmarshalValue(&newsWebsites); err != nil {
+			logx.WithContext(c.ctx).Error("UnmarshalValue.NewsWebsiteKey", err)
+		}
+	}
+
+	// get invalid news websites
+	invalidNewsWebsitesConfig, err := c.systemConfigSvc.GetSystemConfig(c.ctx, valueobject.InvalidNewsWebsiteKey.String())
+	if err != nil {
+		logx.WithContext(c.ctx).Error("GetSystemConfig.InvalidNewsWebsiteKey", err)
+	}
+
+	if invalidNewsWebsitesConfig.Id != 0 {
+		if err := invalidNewsWebsitesConfig.UnmarshalValue(&invalidNewsWebsites); err != nil {
+			logx.WithContext(c.ctx).Error("UnmarshalValue.InvalidNewsWebsiteKey", err)
+		}
+	}
+
+	// crawling news website
 	for _, item := range record.Config.Sources {
 		select {
 		case <-c.ctx.Done():
@@ -89,22 +118,10 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 
 			logx.WithContext(c.ctx).Info("crawlingHandle", "crawling news website paused")
 
+			_ = c.saveCrawlingResults(record, newsWebsites, invalidNewsWebsites)
+
 			return
 		default:
-			// check crawling record
-			record, err = c.crawlingSvc.GetCrawlingRecord(c.ctx, record.Id)
-			if err != nil {
-				logx.WithContext(c.ctx).Error("GetCrawlingRecord", err)
-
-				record.CrawlingFailed()
-
-				return
-			}
-
-			if !record.Status.IsProcessing() {
-				return
-			}
-
 			// crawling news website
 			websites, err := c.crawlingNewsWebsite(item.Url, item.Selector, make(map[string]bool))
 			if err != nil {
@@ -115,35 +132,88 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 
 			websites = slicex.Distinct(websites, func(v *valueobject.NewsWebsite) string { return v.GetHost() })
 
-			// remove invalid website
-			websites = slices.DeleteFunc(websites, c.isInvalidateNewsSite(item, newsWebsites))
+			count := 0
 
-			newsWebsites = append(newsWebsites, websites...)
+			for idx, website := range websites {
+				count++
+
+				// check invalid news site
+				if c.isInvalidateNewsSite(item, newsWebsites, invalidNewsWebsites)(website) {
+					invalidNewsWebsites = append(invalidNewsWebsites, website.GetHost())
+				} else {
+					newsWebsites = append(newsWebsites, website)
+				}
+
+				if count < 20 && idx < len(websites)-1 {
+					continue
+				}
+
+				// remove duplicate news website
+				newsWebsites = slicex.Distinct(newsWebsites, func(v *valueobject.NewsWebsite) string { return v.GetHost() })
+
+				// update record
+				record, err = c.crawlingSvc.GetCrawlingRecord(c.ctx, record.Id)
+				if err != nil {
+					logx.WithContext(c.ctx).Error("crawlingHandle.GetCrawlingRecord", err)
+
+					return
+				}
+
+				record.Quantity = int64(len(newsWebsites))
+
+				if time.Since(startTime) > maxWorkTime || idx == len(websites)-1 {
+					record.CrawlingCompleted()
+				}
+
+				// save crawling results
+				if err = c.saveCrawlingResults(record, newsWebsites, invalidNewsWebsites); err != nil {
+					logx.WithContext(c.ctx).Error("crawlingHandle.saveCrawlingResults", err)
+
+					return
+				}
+
+				if !record.Status.IsProcessing() {
+					return
+				}
+
+				count = 0
+			}
 		}
-	}
-
-	// remove duplicate
-	newsWebsites = slicex.Distinct(newsWebsites, func(v *valueobject.NewsWebsite) string { return v.GetHost() })
-
-	// save news website
-	if err := c.systemConfigSvc.SaveSystemConfig(c.ctx,
-		entity.NewSystemConfig(valueobject.NewsWebsiteKey.String(), newsWebsites)); err != nil {
-
-		logx.WithContext(c.ctx).Error("SaveSystemConfig", err)
-
-		return
-	}
-
-	// update crawling record
-	record.CrawlingCompleted()
-	record.Quantity = int64(len(newsWebsites))
-
-	if err := c.crawlingSvc.UpdateCrawlingRecord(c.ctx, record); err != nil {
-		logx.WithContext(c.ctx).Error("SaveSystemConfig", err)
 	}
 
 	logx.WithContext(c.ctx).Info("crawlingHandle", fmt.Sprintf("crawling news website completed, quantity: %d",
 		record.Quantity))
+}
+
+// saveCrawlingResults save crawling results
+func (c *CrawlingNewsWebsiteCommand) saveCrawlingResults(record *entity.CrawlingRecord,
+	newsWebsites []*valueobject.NewsWebsite, invalidNewsWebsites []string) error {
+	// save news website
+	newsWebsitesConfig, err := entity.NewSystemConfig(valueobject.NewsWebsiteKey.String(), newsWebsites)
+	if err != nil {
+		return err
+	}
+
+	if err := c.systemConfigSvc.SaveSystemConfig(c.ctx, newsWebsitesConfig); err != nil {
+		return err
+	}
+
+	// invalid news website
+	invalidNewsWebsitesConfig, err := entity.NewSystemConfig(valueobject.InvalidNewsWebsiteKey.String(), invalidNewsWebsites)
+	if err != nil {
+		return err
+	}
+
+	if err := c.systemConfigSvc.SaveSystemConfig(c.ctx, invalidNewsWebsitesConfig); err != nil {
+		return err
+	}
+
+	// update crawling record
+	if err := c.crawlingSvc.UpdateCrawlingRecord(c.ctx, record); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // crawlingNewsWebsite crawling news website
@@ -199,9 +269,13 @@ func (c *CrawlingNewsWebsiteCommand) crawlingNewsWebsite(source string, selector
 
 // isInvalidateNewsSite check news site is invalidate
 func (c *CrawlingNewsWebsiteCommand) isInvalidateNewsSite(source *valueobject.NewsWebsite, exists []*valueobject.NewsWebsite,
-) func(v *valueobject.NewsWebsite) bool {
+	invalidData []string) func(v *valueobject.NewsWebsite) bool {
 	return func(v *valueobject.NewsWebsite) bool {
 		if source.GetHost() == v.GetHost() {
+			return true
+		}
+
+		if slices.Contains(invalidData, v.GetHost()) {
 			return true
 		}
 

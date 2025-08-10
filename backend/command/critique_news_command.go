@@ -44,8 +44,8 @@ func (c CritiqueNewsCommand) Execute(ctx context.Context) ([]string, error) {
 		return nil, errorx.OpenaiConfigNotFound
 	}
 
-	config, ok := openaiConfig.Value.(openai.Config)
-	if !ok {
+	var config openai.Config
+	if err := openaiConfig.UnmarshalValue(&config); err != nil {
 		return nil, errorx.InternalError.SetErr(errors.New("openai config type error"))
 	}
 

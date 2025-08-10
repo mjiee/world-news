@@ -91,7 +91,13 @@ func (a *WebAadapter) SaveSystemConfig(c *gin.Context) {
 		return
 	}
 
-	httpx.WebResp(c, nil, a.systemConfigSvc.SaveSystemConfig(ctx, req.ToEntity()))
+	config, err := req.ToEntity()
+	if err != nil {
+		httpx.WebResp(c, nil, err)
+		return
+	}
+
+	httpx.WebResp(c, nil, a.systemConfigSvc.SaveSystemConfig(ctx, config))
 }
 
 // CrawlingNews handles the request to crawling news.

@@ -295,6 +295,20 @@ func (n *NewsDetail) extractImageLinks(doc *goquery.Selection) {
 
 		if valueobject.IsNewsImageLink(imageUrl) {
 			n.Images = append(n.Images, imageUrl)
+
+			return
+		}
+	}
+
+	for _, node := range doc.Nodes {
+		for _, attr := range node.Attr {
+			if !valueobject.IsNewsImageLink(attr.Val) {
+				continue
+			}
+
+			n.Images = append(n.Images, urlx.NormalizeURL(n.Link, attr.Val))
+
+			return
 		}
 	}
 }

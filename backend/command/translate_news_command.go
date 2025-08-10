@@ -55,8 +55,8 @@ func (c TranslateNewsCommand) Execute(ctx context.Context) ([]string, error) {
 		return nil, errorx.TranslaterConfigNotFound
 	}
 
-	config, ok := translaterConfig.Value.(translate.Config)
-	if !ok {
+	var config translate.Config
+	if err := translaterConfig.UnmarshalValue(config); err != nil {
 		return nil, errorx.InternalError.SetErr(errors.New("translater config type error"))
 	}
 

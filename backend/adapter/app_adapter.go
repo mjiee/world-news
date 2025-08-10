@@ -93,8 +93,12 @@ func (a *App) GetSystemConfig(req *dto.GetSystemConfigRequest) *httpx.Response {
 func (a *App) SaveSystemConfig(req *dto.SystemConfig) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
 
-	return httpx.AppResp(ctx, "SaveSystemConfig", req, nil,
-		a.systemConfigSvc.SaveSystemConfig(ctx, req.ToEntity()))
+	config, err := req.ToEntity()
+	if err != nil {
+		return httpx.AppResp(ctx, "SaveSystemConfig", req, nil, err)
+	}
+
+	return httpx.AppResp(ctx, "SaveSystemConfig", req, nil, a.systemConfigSvc.SaveSystemConfig(ctx, config))
 }
 
 // CrawlingNews handles the request to crawl news.

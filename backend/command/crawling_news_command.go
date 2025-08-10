@@ -20,6 +20,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// maxWorkTime is the maximum time to work.
+const maxWorkTime = 8 * time.Hour
+
 // CrawlingNewsCommand is a command for crawling news.
 type CrawlingNewsCommand struct {
 	ctx       context.Context
@@ -106,8 +109,8 @@ func (c *CrawlingNewsCommand) getNewsWebsites(ctx context.Context) ([]*valueobje
 		return nil, errorx.NewsWebsiteConfigNotFound
 	}
 
-	newsWebsites, ok := websiteConfig.Value.([]*valueobject.NewsWebsite)
-	if !ok {
+	var newsWebsites []*valueobject.NewsWebsite
+	if err := websiteConfig.UnmarshalValue(&newsWebsites); err != nil {
 		return nil, errorx.InternalError.SetErr(errors.New("invalid news websites config"))
 	}
 
@@ -127,8 +130,7 @@ func (c *CrawlingNewsCommand) getNewsTopics(ctx context.Context) ([]string, erro
 		return newsTopics, nil
 	}
 
-	newsTopics, ok := topicConfig.Value.([]string)
-	if !ok {
+	if err := topicConfig.UnmarshalValue(&newsTopics); err != nil {
 		return nil, errorx.InternalError.SetErr(errors.New("invalid news topic config"))
 	}
 
@@ -137,10 +139,14 @@ func (c *CrawlingNewsCommand) getNewsTopics(ctx context.Context) ([]string, erro
 
 // crawlingHandle crawling news
 func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
-	for _, website := range record.Config.Sources {
+	startTime := time.Now()
+
+	for idx, website := range record.Config.Sources {
 		select {
 		case <-c.ctx.Done():
 			record.CrawlingPaused()
+
+			_ = c.crawlingSvc.UpdateCrawlingRecord(c.ctx, record)
 
 			logx.WithContext(c.ctx).Info("crawlingHandle", "crawling news website paused")
 
@@ -154,7 +160,7 @@ func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
 				continue
 			}
 
-			// update crawling record quantity
+			// update crawling record
 			record, err = c.crawlingSvc.GetCrawlingRecord(c.ctx, record.Id)
 			if err != nil {
 				logx.WithContext(c.ctx).Error("GetCrawlingRecord:", err)
@@ -164,7 +170,11 @@ func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
 
 			record.Quantity += newsQuantity
 
-			if err := c.crawlingSvc.UpdateCrawlingRecordQuantity(c.ctx, record.Id, record.Quantity); err != nil {
+			if time.Since(startTime) > maxWorkTime || idx == len(record.Config.Sources) {
+				record.CrawlingCompleted()
+			}
+
+			if err := c.crawlingSvc.UpdateCrawlingRecord(c.ctx, record); err != nil {
 				logx.WithContext(c.ctx).Error("UpdateCrawlingRecord", err)
 
 				return
@@ -175,13 +185,6 @@ func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
 				return
 			}
 		}
-	}
-
-	// update crawling record status
-	record.CrawlingCompleted()
-
-	if err := c.crawlingSvc.UpdateCrawlingRecord(c.ctx, record); err != nil {
-		logx.WithContext(c.ctx).Error("UpdateCrawlingRecord", err)
 	}
 
 	logx.WithContext(c.ctx).Info("crawlingHandle", fmt.Sprintf("crawling news website completed, quantity: %d",

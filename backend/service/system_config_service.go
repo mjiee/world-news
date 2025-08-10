@@ -16,6 +16,7 @@ type SystemConfigService interface {
 	SystemConfigInit(ctx context.Context) error
 	GetSystemConfig(ctx context.Context, key string) (*entity.SystemConfig, error)
 	SaveSystemConfig(ctx context.Context, config *entity.SystemConfig) error
+	DeleteSystemConfig(ctx context.Context, key string) error
 }
 
 type systemConfigService struct {
@@ -51,12 +52,17 @@ func (s *systemConfigService) SystemConfigInit(ctx context.Context) error {
 		return nil
 	}
 
-	sysConfig, err := entity.NewSystemConfig(valueobject.NewsWebsiteCollectionKey.String(), valueobject.NewsWebsiteCollection).ToModel()
+	sysConfig, err := entity.NewSystemConfig(valueobject.NewsWebsiteCollectionKey.String(), valueobject.NewsWebsiteCollection)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	return errors.WithStack(repository.Q.SystemConfig.WithContext(ctx).Create(sysConfig))
+	sysConfigModel, err := sysConfig.ToModel()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return errors.WithStack(repository.Q.SystemConfig.WithContext(ctx).Create(sysConfigModel))
 }
 
 // GetSystemConfig retrieves the system configuration based on the provided key.
@@ -65,7 +71,7 @@ func (s *systemConfigService) GetSystemConfig(ctx context.Context, key string) (
 
 	config, err := repo.WithContext(ctx).Where(repo.Key.Eq(key)).First()
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return entity.NewSystemConfig(key, nil), nil
+		return entity.NewSystemConfig(key, nil)
 	}
 
 	if err != nil {
@@ -100,4 +106,11 @@ func (s *systemConfigService) SaveSystemConfig(ctx context.Context, config *enti
 	}
 
 	return errors.WithStack(repository.Q.SystemConfig.WithContext(ctx).Save(data))
+}
+
+// DeleteSystemConfig deletes the system configuration based on the provided key.
+func (s *systemConfigService) DeleteSystemConfig(ctx context.Context, key string) error {
+	_, err := repository.Q.SystemConfig.WithContext(ctx).Where(repository.Q.SystemConfig.Key.Eq(key)).Delete()
+
+	return errors.WithStack(err)
 }

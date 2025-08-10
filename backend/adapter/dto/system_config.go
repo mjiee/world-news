@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"encoding/json"
+
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
 )
@@ -17,14 +19,19 @@ func NewSystemConfigFromEntity(config *entity.SystemConfig) *SystemConfig {
 		return nil
 	}
 
+	var value any
+	if err := json.Unmarshal([]byte(config.Value), &value); err != nil {
+		return nil
+	}
+
 	return &SystemConfig{
 		Key:   config.Key.String(),
-		Value: config.Value,
+		Value: value,
 	}
 }
 
 // ToEntity converts the SystemConfig to an entity.
-func (s *SystemConfig) ToEntity() *entity.SystemConfig {
+func (s *SystemConfig) ToEntity() (*entity.SystemConfig, error) {
 	return entity.NewSystemConfig(s.Key, s.Value)
 }
 
