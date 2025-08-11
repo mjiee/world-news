@@ -42,10 +42,11 @@ interface QueryCrawlingRecordResult {
 export interface CrawlingRecord {
   id: number;
   recordType: CrawlingRecordType;
-  date: string;
   quantity: number;
   status: CrawlingRecordStatus;
   config?: CrawlingRecordConfig;
+  startTime: string;
+  endTime: string;
 }
 
 export interface CrawlingRecordConfig {

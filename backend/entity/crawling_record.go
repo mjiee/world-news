@@ -12,7 +12,6 @@ import (
 type CrawlingRecord struct {
 	Id         uint
 	RecordType valueobject.CrawlingRecordType
-	Date       time.Time
 	Quantity   int64
 	Status     valueobject.CrawlingRecordStatus
 	Config     *valueobject.CrawlingRecordConfig
@@ -25,7 +24,6 @@ func NewCrawlingRecord(recordType valueobject.CrawlingRecordType,
 	config *valueobject.CrawlingRecordConfig) *CrawlingRecord {
 	return &CrawlingRecord{
 		RecordType: recordType,
-		Date:       time.Now(),
 		Quantity:   0,
 		Status:     valueobject.ProcessingCrawlingRecord,
 		Config:     config,
@@ -46,7 +44,6 @@ func NewCrawlingRecordFromModel(m *model.CrawlingRecord) (*CrawlingRecord, error
 	return &CrawlingRecord{
 		Id:         m.ID,
 		RecordType: valueobject.CrawlingRecordType(m.RecordType),
-		Date:       m.Date,
 		Quantity:   m.Quantity,
 		Status:     valueobject.CrawlingRecordStatus(m.Status),
 		Config:     config,
@@ -66,10 +63,13 @@ func (c *CrawlingRecord) ToModel() (*model.CrawlingRecord, error) {
 		return nil, err
 	}
 
+	if c.CreatedAt.IsZero() {
+		c.CreatedAt = time.Now()
+	}
+
 	return &model.CrawlingRecord{
 		ID:         c.Id,
 		RecordType: string(c.RecordType),
-		Date:       c.Date,
 		Quantity:   c.Quantity,
 		Status:     string(c.Status),
 		Config:     config,

@@ -2,7 +2,8 @@
   "table": {
     "head": {
       "record_type": "Type",
-      "date": "Date",
+      "startTime": "Start Time",
+      "endTime": "End Time",
       "quantity": "Quantity",
       "status": "Status"
     },
