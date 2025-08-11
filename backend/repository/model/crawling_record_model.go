@@ -6,7 +6,6 @@ import "time"
 type CrawlingRecord struct {
 	ID         uint `gorm:"primaryKey"`
 	RecordType string
-	Date       time.Time
 	Quantity   int64
 	Status     string
 	Config     string

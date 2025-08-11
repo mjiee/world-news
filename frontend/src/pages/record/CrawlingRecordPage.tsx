@@ -76,10 +76,11 @@ function RecordTableHeader() {
     <Table.Thead>
       <Table.Tr>
         <Table.Th>ID</Table.Th>
-        <Table.Th>{t("table.head.date")}</Table.Th>
         <Table.Th>{t("table.head.record_type")}</Table.Th>
         <Table.Th>{t("table.head.quantity")}</Table.Th>
         <Table.Th>{t("table.head.status")}</Table.Th>
+        <Table.Th>{t("table.head.startTime")}</Table.Th>
+        <Table.Th>{t("table.head.endTime")}</Table.Th>
         <Table.Th />
       </Table.Tr>
     </Table.Thead>
@@ -97,10 +98,11 @@ function RecordTableBody({ record, updatePage }: RecordTableBodyProps) {
   return (
     <Table.Tr key={record.id}>
       <Table.Td>{record.id}</Table.Td>
-      <Table.Td>{record.date}</Table.Td>
       <Table.Td>{t("table.body.record_type." + record.recordType, { ns: "record" })}</Table.Td>
       <Table.Td>{record.quantity}</Table.Td>
       <Table.Td>{t("table.body.status." + record.status, { ns: "record" })}</Table.Td>
+      <Table.Td>{record.startTime}</Table.Td>
+      <Table.Td>{record.status === CrawlingRecordStatus.ProcessingCrawlingRecord ? "" : record.endTime}</Table.Td>
       <Table.Td>
         <Button.Group>
           {viewRecordButton(record)}
@@ -170,7 +172,7 @@ function DeleteRecordButton({ record, updatePage }: DeleteRecordButtonProps) {
   ) : (
     <>
       <Modal opened={opened} onClose={close} withCloseButton={false}>
-        {deleteLabel(record.date)}
+        {deleteLabel(record.startTime)}
         <Group justify="flex-end">
           <Button onClick={clickOkHandler}>{t("button.ok")}</Button>
           <Button onClick={close} variant="default">

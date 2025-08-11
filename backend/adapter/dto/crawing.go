@@ -55,10 +55,11 @@ type QueryCrawlingRecordsResponse struct {
 type CrawlingRecord struct {
 	Id         uint                  `json:"id"`
 	RecordType string                `json:"recordType"`
-	Date       string                `json:"date"`
 	Quantity   int64                 `json:"quantity"`
 	Status     string                `json:"status"`
 	Config     *CrawlingRecordConfig `json:"config,omitempty"`
+	StartTime  string                `json:"startTime"`
+	EndTime    string                `json:"endTime"`
 }
 
 // NewCrawlingRecordFromEntity creates a new CrawlingRecord instance.
@@ -82,9 +83,10 @@ func mappingCrawlingRecord(record *entity.CrawlingRecord) *CrawlingRecord {
 	return &CrawlingRecord{
 		Id:         record.Id,
 		RecordType: string(record.RecordType),
-		Date:       record.Date.Format(time.DateTime),
 		Quantity:   record.Quantity,
 		Status:     string(record.Status),
+		StartTime:  record.CreatedAt.Format(time.DateTime),
+		EndTime:    record.UpdatedAt.Format(time.DateTime),
 	}
 }
 
