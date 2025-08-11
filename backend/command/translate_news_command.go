@@ -7,6 +7,7 @@ import (
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/translate"
 	"github.com/mjiee/world-news/backend/service"
+
 	"github.com/pkg/errors"
 )
 
@@ -56,7 +57,7 @@ func (c TranslateNewsCommand) Execute(ctx context.Context) ([]string, error) {
 	}
 
 	var config translate.Config
-	if err := translaterConfig.UnmarshalValue(config); err != nil {
+	if err := translaterConfig.UnmarshalValue(&config); err != nil {
 		return nil, errorx.InternalError.SetErr(errors.New("translater config type error"))
 	}
 
