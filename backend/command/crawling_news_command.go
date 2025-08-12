@@ -40,6 +40,8 @@ func NewCrawlingNewsCommand(ctx context.Context, startTime string, sources []str
 ) *CrawlingNewsCommand {
 	cmd := &CrawlingNewsCommand{
 		ctx:             ctx,
+		sources:         sources,
+		topics:          topics,
 		crawlingSvc:     crawlingSvc,
 		newsSvc:         newsSvc,
 		systemConfigSvc: systemConfigSvc,
