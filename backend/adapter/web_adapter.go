@@ -113,7 +113,7 @@ func (a *WebAadapter) CrawlingNews(c *gin.Context) {
 		return
 	}
 
-	cmd := command.NewCrawlingNewsCommand(a.ctx, req.StartTime, req.Sources, req.Topics,
+	cmd := command.NewCrawlingNewsCommand(cmdCtx, req.StartTime, req.Sources, req.Topics,
 		a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
 
 	httpx.WebResp(c, nil, cmd.Execute(ctx))
