@@ -113,7 +113,8 @@ func (a *WebAadapter) CrawlingNews(c *gin.Context) {
 		return
 	}
 
-	cmd := command.NewCrawlingNewsCommand(cmdCtx, req.StartTime, a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
+	cmd := command.NewCrawlingNewsCommand(a.ctx, req.StartTime, req.Sources, req.Topics,
+		a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
 
 	httpx.WebResp(c, nil, cmd.Execute(ctx))
 }
@@ -268,7 +269,7 @@ func (a *WebAadapter) CritiqueNews(c *gin.Context) {
 	}
 
 	var (
-		cmd       = command.NewCritiqueNewsCommand(req.Id, a.newsSvc, a.systemConfigSvc)
+		cmd       = command.NewCritiqueNewsCommand(req.Title, req.Contents, a.newsSvc, a.systemConfigSvc)
 		data, err = cmd.Execute(ctx)
 	)
 
@@ -288,7 +289,7 @@ func (a *WebAadapter) TranslateNews(c *gin.Context) {
 	}
 
 	var (
-		cmd       = command.NewTranslateNewsCommand(req.Id, req.Texts, req.ToLang, a.newsSvc, a.systemConfigSvc)
+		cmd       = command.NewTranslateNewsCommand(req.Contents, req.ToLang, a.newsSvc, a.systemConfigSvc)
 		data, err = cmd.Execute(ctx)
 	)
 

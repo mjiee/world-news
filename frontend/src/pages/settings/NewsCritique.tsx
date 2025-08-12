@@ -5,6 +5,7 @@ import { Button, Stack, Textarea, TextInput, Autocomplete, PasswordInput, Number
 import { useForm } from "@mantine/form";
 import { getSystemConfig, saveSystemConfig, SystemConfigKey, OpenAIConfig } from "@/services";
 import { validateUrl } from "@/utils/url";
+import { isWeb } from "@/utils/platform";
 
 export const critiqueKey = "critique";
 
@@ -68,7 +69,7 @@ export function NewsCritique({ item }: { item: string | null }) {
 
   // fetch ai config
   const fetchAiConfig = async () => {
-    const resp = await getSystemConfig<OpenAIConfig>({ key: SystemConfigKey.OpenAI });
+    const resp = await getSystemConfig<OpenAIConfig>({ key: SystemConfigKey.OpenAI }, !isWeb());
     if (!resp || !resp.value) return;
 
     aiform.setValues(resp.value);
@@ -82,7 +83,7 @@ export function NewsCritique({ item }: { item: string | null }) {
   return (
     <form
       onSubmit={aiform.onSubmit((values) => {
-        saveSystemConfig({ key: SystemConfigKey.OpenAI, value: values });
+        saveSystemConfig({ key: SystemConfigKey.OpenAI, value: values }, !isWeb());
 
         toast.success("ok");
       })}

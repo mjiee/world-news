@@ -105,7 +105,8 @@ func (a *App) SaveSystemConfig(req *dto.SystemConfig) *httpx.Response {
 func (a *App) CrawlingNews(req *dto.CrawlingNewsRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
 
-	cmd := command.NewCrawlingNewsCommand(a.ctx, req.StartTime, a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
+	cmd := command.NewCrawlingNewsCommand(a.ctx, req.StartTime, req.Sources, req.Topics,
+		a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
 
 	return httpx.AppResp(ctx, "CrawlingNews", req, nil, cmd.Execute(ctx))
 }
@@ -191,7 +192,7 @@ func (a *App) DeleteNews(req *dto.DeleteNewsRequest) *httpx.Response {
 func (a *App) CritiqueNews(req *dto.CritiqueNewsRequest) *httpx.Response {
 	var (
 		ctx = tracex.InjectTraceInContext(a.ctx)
-		cmd = command.NewCritiqueNewsCommand(req.Id, a.newsSvc, a.systemConfigSvc)
+		cmd = command.NewCritiqueNewsCommand(req.Title, req.Contents, a.newsSvc, a.systemConfigSvc)
 	)
 
 	data, err := cmd.Execute(ctx)
@@ -203,7 +204,7 @@ func (a *App) CritiqueNews(req *dto.CritiqueNewsRequest) *httpx.Response {
 func (a *App) TranslateNews(req *dto.TranslateNewsRequest) *httpx.Response {
 	var (
 		ctx = tracex.InjectTraceInContext(a.ctx)
-		cmd = command.NewTranslateNewsCommand(req.Id, req.Texts, req.ToLang, a.newsSvc, a.systemConfigSvc)
+		cmd = command.NewTranslateNewsCommand(req.Contents, req.ToLang, a.newsSvc, a.systemConfigSvc)
 	)
 
 	data, err := cmd.Execute(ctx)

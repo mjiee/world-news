@@ -5,7 +5,13 @@
       "topic": "Topic",
       "publish_date": "Publish time"
     },
-    "delete_label": "Are you sure you want to delete this news?"
+    "delete_label": "Are you sure you want to delete this news?",
+    "fetch_news": {
+      "button": "Fetch News",
+      "start_time": "Start Time",
+      "sources": "Source",
+      "topics": "Topic"
+    }
   },
   "news_detail": {
     "translate": "Translate News",

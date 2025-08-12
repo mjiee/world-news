@@ -284,7 +284,7 @@ func (c *CrawlingNewsWebsiteCommand) isInvalidateNewsSite(source *valueobject.Ne
 		}
 
 		newsCmd := NewCrawlingNewsCommand(c.ctx, time.Now().Add(-valueobject.MaxValidityPeriod).Format(time.DateTime),
-			c.crawlingSvc, nil, c.systemConfigSvc)
+			nil, nil, c.crawlingSvc, nil, c.systemConfigSvc)
 
 		news, err := newsCmd.extractNewsList(0, valueobject.NewNewsTopicLink("", v.Url))
 		if err != nil {

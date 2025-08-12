@@ -13,6 +13,8 @@ import { dto, httpx } from "wailsjs/go/models";
 
 interface CrawlingNewsRequest {
   startTime: string;
+  sources: string[];
+  topics: string[];
 }
 
 interface QueryCrawlingRecordsRequest {

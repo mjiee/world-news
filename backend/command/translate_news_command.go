@@ -13,37 +13,25 @@ import (
 
 // TranslateNewsCommand represents a command for news translation.
 type TranslateNewsCommand struct {
-	newsId uint
-	texts  []string
-	toLang string
+	contents []string
+	toLang   string
 
 	newsSvc         service.NewsService
 	systemConfigSvc service.SystemConfigService
 }
 
-func NewTranslateNewsCommand(newsId uint, texts []string, toLang string, newsSvc service.NewsService,
+func NewTranslateNewsCommand(contents []string, toLang string, newsSvc service.NewsService,
 	systemConfigSvc service.SystemConfigService) *TranslateNewsCommand {
 	return &TranslateNewsCommand{
-		newsId:          newsId,
-		texts:           texts,
+		contents:        contents,
 		toLang:          toLang,
 		newsSvc:         newsSvc,
 		systemConfigSvc: systemConfigSvc}
 }
 
 func (c TranslateNewsCommand) Execute(ctx context.Context) ([]string, error) {
-	if len(c.texts) == 0 && c.newsId == 0 {
+	if len(c.contents) == 0 {
 		return nil, errorx.ParamsError
-	}
-
-	// get news
-	if c.newsId != 0 {
-		news, err := c.newsSvc.GetNewsDetail(ctx, c.newsId)
-		if err != nil {
-			return nil, err
-		}
-
-		c.texts = news.Contents
 	}
 
 	// get translater config
@@ -67,5 +55,5 @@ func (c TranslateNewsCommand) Execute(ctx context.Context) ([]string, error) {
 		return nil, err
 	}
 
-	return translater.Translate(ctx, c.toLang, c.texts...)
+	return translater.Translate(ctx, c.toLang, c.contents...)
 }

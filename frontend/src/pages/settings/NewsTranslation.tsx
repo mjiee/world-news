@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button, Stack, TextInput, Autocomplete, PasswordInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { getSystemConfig, saveSystemConfig, SystemConfigKey, TranslaterConfig } from "@/services";
+import { isWeb } from "@/utils/platform";
 
 export const translateKey = "translate";
 const translationPlatforms = ["google", "microsoft", "aliyun", "baidu"];
@@ -32,7 +33,7 @@ export function NewsTranslation({ item }: { item: string | null }) {
 
   // fetch translate config
   const fetchTranslateConfig = async () => {
-    const resp = await getSystemConfig<TranslaterConfig>({ key: SystemConfigKey.Translater });
+    const resp = await getSystemConfig<TranslaterConfig>({ key: SystemConfigKey.Translater }, !isWeb());
     if (!resp || !resp.value) return;
 
     form.setValues(resp.value);
@@ -46,7 +47,7 @@ export function NewsTranslation({ item }: { item: string | null }) {
   return (
     <form
       onSubmit={form.onSubmit((values) => {
-        saveSystemConfig({ key: SystemConfigKey.Translater, value: values });
+        saveSystemConfig({ key: SystemConfigKey.Translater, value: values }, !isWeb());
         toast.success("ok");
       })}
     >
