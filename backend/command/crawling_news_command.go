@@ -27,14 +27,17 @@ const maxWorkTime = 8 * time.Hour
 type CrawlingNewsCommand struct {
 	ctx       context.Context
 	startTime time.Time
+	sources   []string
+	topics    []string
 
 	crawlingSvc     service.CrawlingService
 	newsSvc         service.NewsService
 	systemConfigSvc service.SystemConfigService
 }
 
-func NewCrawlingNewsCommand(ctx context.Context, startTime string, crawlingSvc service.CrawlingService,
-	newsSvc service.NewsService, systemConfigSvc service.SystemConfigService) *CrawlingNewsCommand {
+func NewCrawlingNewsCommand(ctx context.Context, startTime string, sources []string, topics []string,
+	crawlingSvc service.CrawlingService, newsSvc service.NewsService, systemConfigSvc service.SystemConfigService,
+) *CrawlingNewsCommand {
 	cmd := &CrawlingNewsCommand{
 		ctx:             ctx,
 		crawlingSvc:     crawlingSvc,
@@ -64,14 +67,13 @@ func (c *CrawlingNewsCommand) Execute(ctx context.Context) error {
 	}
 
 	// get news keywords
-	newsTopics, err := c.getNewsTopics(ctx)
-	if err != nil {
+	if err := c.getNewsTopics(ctx); err != nil {
 		return err
 	}
 
 	// create crawling record
 	record := entity.NewCrawlingRecord(valueobject.CrawlingNews,
-		valueobject.NewCrawlingRecordConfig(newsWebsites, newsTopics))
+		valueobject.NewCrawlingRecordConfig(newsWebsites, c.topics))
 
 	if err := c.crawlingSvc.CreateCrawlingRecord(ctx, record); err != nil {
 		return err
@@ -114,27 +116,43 @@ func (c *CrawlingNewsCommand) getNewsWebsites(ctx context.Context) ([]*valueobje
 		return nil, errorx.InternalError.SetErr(errors.New("invalid news websites config"))
 	}
 
+	if len(c.sources) > 0 {
+		newsWebsites = slicex.Filter(newsWebsites, func(nw *valueobject.NewsWebsite) bool {
+			return slices.Contains(c.sources, urlx.ExtractSecondLevelDomain(nw.Url))
+		})
+	}
+
+	if len(newsWebsites) == 0 {
+		return nil, errorx.NewsWebsiteConfigNotFound
+	}
+
 	return newsWebsites, nil
 }
 
 // getNewsTopics get news topics
-func (c *CrawlingNewsCommand) getNewsTopics(ctx context.Context) ([]string, error) {
+func (c *CrawlingNewsCommand) getNewsTopics(ctx context.Context) error {
+	if len(c.topics) > 0 {
+		return nil
+	}
+
 	topicConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsTopicKey.String())
 	if err != nil {
-		return nil, err
+		return err
+	}
+
+	if topicConfig.Id == 0 {
+		return nil
 	}
 
 	var newsTopics []string
 
-	if topicConfig.Id == 0 {
-		return newsTopics, nil
-	}
-
 	if err := topicConfig.UnmarshalValue(&newsTopics); err != nil {
-		return nil, errorx.InternalError.SetErr(errors.New("invalid news topic config"))
+		return errorx.InternalError.SetErr(errors.New("invalid news topic config"))
 	}
 
-	return newsTopics, nil
+	c.topics = newsTopics
+
+	return nil
 }
 
 // crawlingHandle crawling news

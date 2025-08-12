@@ -3,11 +3,7 @@
     "button": {
       "home": "Home",
       "settings": "Settings",
-      "fetch_news": "Fetch News",
       "records": "History"
-    },
-    "label": {
-      "start_time": "Start Time"
     }
   }
 }

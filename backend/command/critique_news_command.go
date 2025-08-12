@@ -13,25 +13,26 @@ import (
 
 // CritiqueNewsCommand represents a command for news critique.
 type CritiqueNewsCommand struct {
-	newsId          uint
+	title    string
+	contents []string
+
 	newsSvc         service.NewsService
 	systemConfigSvc service.SystemConfigService
 }
 
-func NewCritiqueNewsCommand(newsId uint, newsSvc service.NewsService,
+func NewCritiqueNewsCommand(title string, contents []string, newsSvc service.NewsService,
 	systemConfigSvc service.SystemConfigService) *CritiqueNewsCommand {
 	return &CritiqueNewsCommand{
-		newsId:          newsId,
+		title:           title,
+		contents:        contents,
 		newsSvc:         newsSvc,
 		systemConfigSvc: systemConfigSvc,
 	}
 }
 
 func (c CritiqueNewsCommand) Execute(ctx context.Context) ([]string, error) {
-	// get news
-	news, err := c.newsSvc.GetNewsDetail(ctx, c.newsId)
-	if err != nil {
-		return nil, err
+	if c.title == "" || len(c.contents) == 0 {
+		return nil, errorx.ParamsError
 	}
 
 	// get openai config
@@ -50,7 +51,7 @@ func (c CritiqueNewsCommand) Execute(ctx context.Context) ([]string, error) {
 	}
 
 	// news critique
-	data, err := openai.NewOpenaiClient(&config).ChatCompletion(ctx, news.Title, strings.Join(news.Contents, "\n"))
+	data, err := openai.NewOpenaiClient(&config).ChatCompletion(ctx, c.title, strings.Join(c.contents, "\n"))
 	if err != nil {
 		return nil, err
 	}

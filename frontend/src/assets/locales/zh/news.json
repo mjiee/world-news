@@ -5,7 +5,13 @@
       "topic": "主题",
       "publish_date": "发布时间"
     },
-    "delete_label": "是否想要删除该新闻？"
+    "delete_label": "是否想要删除该新闻？",
+    "fetch_news": {
+      "button": "获取新闻",
+      "start_time": "开始时间",
+      "sources": "来源",
+      "topics": "主题"
+    }
   },
   "news_detail": {
     "translate": "翻译新闻",

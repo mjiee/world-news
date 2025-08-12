@@ -160,7 +160,7 @@ function SearchNews({ recordId, searchFrom, searchHandler }: SearchNewsProps) {
     (key: string, data: string[]) => (
       <Select
         placeholder={t("news_list.search." + key, { ns: "news" })}
-        limit={100}
+        limit={200}
         data={data}
         searchable
         clearable
@@ -238,7 +238,7 @@ function NewsCard({ news, updatePage }: NewsCardProps) {
 
   // translate title
   const translateTitle = async () => {
-    const resp = await translateNews({ id: 0, texts: [title], toLang: GolbalLanguage.getLanguage() });
+    const resp = await translateNews({ contents: [title], toLang: GolbalLanguage.getLanguage() });
 
     if (resp && resp.length > 0) setTitle(resp[0]);
   };

@@ -10,7 +10,9 @@ import (
 
 // CrawlingNewsRequest is a struct for requesting news crawling tasks.
 type CrawlingNewsRequest struct {
-	StartTime string `json:"startTime,omitempty"`
+	StartTime string   `json:"startTime,omitempty"`
+	Sources   []string `json:"sources,omitempty"`
+	Topics    []string `json:"topics,omitempty"`
 }
 
 // GetCrawlingRecordRequest is a struct for requesting a crawling record.

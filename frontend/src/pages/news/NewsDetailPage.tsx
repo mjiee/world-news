@@ -93,7 +93,7 @@ export function NewsDetailPage() {
       <Paper shadow="md" radius="md" withBorder p="lg">
         <NewsBody contents={newsDetail?.contents} images={newsDetail?.images} translations={translations} />
       </Paper>
-      <FloatingToolbar newsId={newsDetail.id} setTranslations={setTranslations} />
+      <FloatingToolbar newsDetail={newsDetail} setTranslations={setTranslations} />
     </Container>
   );
 }
@@ -173,7 +173,7 @@ function NewsLink({ link }: NewsLinkProps) {
 
 // floating toolbar
 interface FloatingToolbarProps {
-  newsId: number;
+  newsDetail: NewsDetail | undefined;
   setTranslations: (translations: string[]) => void;
 }
 
@@ -181,7 +181,7 @@ const critique = "critique";
 const translate = "translate";
 const md = new MarkdownIt();
 
-function FloatingToolbar({ newsId, setTranslations }: FloatingToolbarProps) {
+function FloatingToolbar({ newsDetail, setTranslations }: FloatingToolbarProps) {
   const { t, i18n } = useTranslation();
   const [extension, setExtension] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -193,10 +193,10 @@ function FloatingToolbar({ newsId, setTranslations }: FloatingToolbarProps) {
 
     let resp: string[] | undefined;
 
-    if (obj === critique) {
-      resp = await critiqueNews({ id: newsId });
-    } else if (obj === translate) {
-      resp = await translateNews({ id: newsId, toLang: i18n.language, texts: [] });
+    if (obj === critique && newsDetail) {
+      resp = await critiqueNews({ title: newsDetail.title, contents: newsDetail.contents ?? [] });
+    } else if (obj === translate && newsDetail) {
+      resp = await translateNews({ toLang: i18n.language, contents: newsDetail.contents ?? [] });
     }
 
     if (!resp) {

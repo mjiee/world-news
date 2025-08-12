@@ -135,12 +135,12 @@ type DeleteNewsRequest struct {
 
 // CritiqueNewsRequest critique news detail request
 type CritiqueNewsRequest struct {
-	Id uint `json:"id"`
+	Title    string   `json:"title"`
+	Contents []string `json:"contents"`
 }
 
 // TranslateNewsRequest translate news detail request
 type TranslateNewsRequest struct {
-	Id     uint     `json:"id"`
-	Texts  []string `json:"texts"`
-	ToLang string   `json:"toLang"`
+	Contents []string `json:"contents"`
+	ToLang   string   `json:"toLang"`
 }

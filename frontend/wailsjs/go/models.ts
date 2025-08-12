@@ -2,6 +2,8 @@ export namespace dto {
 	
 	export class CrawlingNewsRequest {
 	    startTime?: string;
+	    sources?: string[];
+	    topics?: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new CrawlingNewsRequest(source);
@@ -10,10 +12,13 @@ export namespace dto {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.startTime = source["startTime"];
+	        this.sources = source["sources"];
+	        this.topics = source["topics"];
 	    }
 	}
 	export class CritiqueNewsRequest {
-	    id: number;
+	    title: string;
+	    contents: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new CritiqueNewsRequest(source);
@@ -21,7 +26,8 @@ export namespace dto {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
+	        this.title = source["title"];
+	        this.contents = source["contents"];
 	    }
 	}
 	export class DeleteCrawlingRecordRequest {
@@ -171,8 +177,7 @@ export namespace dto {
 	    }
 	}
 	export class TranslateNewsRequest {
-	    id: number;
-	    texts: string[];
+	    contents: string[];
 	    toLang: string;
 	
 	    static createFrom(source: any = {}) {
@@ -181,8 +186,7 @@ export namespace dto {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.texts = source["texts"];
+	        this.contents = source["contents"];
 	        this.toLang = source["toLang"];
 	    }
 	}
