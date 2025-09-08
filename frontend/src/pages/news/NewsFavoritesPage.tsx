@@ -70,7 +70,7 @@ function NewsCard({ news, updatePage }: NewsCardProps) {
 
   return (
     <Card shadow="sm" radius="md" onClick={() => navigate("/news/detail/" + news.id)}>
-      <Flex justify="flex-start" align="flex-start" direction={{ base: "column", sm: "row" }} gap="md">
+      <Flex justify="flex-start" align="center" direction={{ base: "column", sm: "row" }} gap="md">
         {news.images && news.images.length > 0 && (
           <AspectRatio ratio={16 / 9} style={{ flexShrink: 0 }} w={{ base: "100%", sm: 200 }}>
             <Image src={news.images[0]} alt={news.title} radius="sm" fit="cover" style={{ flexShrink: 0 }} />

@@ -99,7 +99,7 @@ export async function translateNews(data: TranslateNewsRequest) {
 
 // saveFavorite to save news favorite
 export async function saveFavorite(data: SaveNewsFavoriteRequest) {
-  if (isWeb()) return await post<SaveNewsFavoriteRequest, any>("/api/news/favorite", data);
+  if (useRemoteService()) return await post<SaveNewsFavoriteRequest, any>("/api/news/favorite", data);
 
   return await call(SaveNewsFavorite(data));
 }
