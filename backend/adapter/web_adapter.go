@@ -100,6 +100,8 @@ func (a *WebAadapter) CrawlingNews(c *gin.Context) {
 		return
 	}
 
+	cmdCtx := tracex.CopyTraceContext(ctx, context.Background())
+
 	cmd := command.NewCrawlingNewsCommand(cmdCtx, req.StartTime, req.Sources, req.Topics,
 		a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
 
@@ -221,10 +223,8 @@ func (a *WebAadapter) CritiqueNews(c *gin.Context) {
 		return
 	}
 
-	var (
-		cmd       = command.NewCritiqueNewsCommand(req.Title, req.Contents, a.newsSvc, a.systemConfigSvc)
-		data, err = cmd.Execute(ctx)
-	)
+	cmd := command.NewCritiqueNewsCommand(req.Title, req.Contents, a.newsSvc, a.systemConfigSvc)
+	data, err := cmd.Execute(ctx)
 
 	httpx.WebResp(c, data, err)
 }
@@ -237,10 +237,8 @@ func (a *WebAadapter) TranslateNews(c *gin.Context) {
 		return
 	}
 
-	var (
-		cmd       = command.NewTranslateNewsCommand(req.Contents, req.ToLang, a.newsSvc, a.systemConfigSvc)
-		data, err = cmd.Execute(ctx)
-	)
+	cmd := command.NewTranslateNewsCommand(req.Contents, req.ToLang, a.newsSvc, a.systemConfigSvc)
+	data, err := cmd.Execute(ctx)
 
 	httpx.WebResp(c, data, err)
 }
