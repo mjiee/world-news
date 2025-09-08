@@ -16,6 +16,7 @@
   "news_detail": {
     "translate": "翻译新闻",
     "critique": "AI点评",
-    "link": "原文链接: "
+    "link": "原文链接: ",
+    "favorite": "收藏"
   }
 }

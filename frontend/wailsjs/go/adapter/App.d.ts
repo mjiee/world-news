@@ -25,7 +25,11 @@ export function QueryCrawlingRecords(arg1:dto.QueryCrawlingRecordsRequest):Promi
 
 export function QueryNews(arg1:dto.QueryNewsRequest):Promise<httpx.Response>;
 
+export function SaveNewsFavorite(arg1:dto.SaveNewsFavoriteRequest):Promise<httpx.Response>;
+
 export function SaveSystemConfig(arg1:dto.SystemConfig):Promise<httpx.Response>;
+
+export function SaveWebsiteWeight(arg1:dto.SaveWebsiteWeightRequest):Promise<httpx.Response>;
 
 export function TranslateNews(arg1:dto.TranslateNewsRequest):Promise<httpx.Response>;
 

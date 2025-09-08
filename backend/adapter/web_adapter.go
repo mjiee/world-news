@@ -64,12 +64,8 @@ func SetWebAdapter(conf *config.WebConfig) (*WebAadapter, error) {
 
 // GetSystemConfig handles the request to retrieve system config.
 func (a *WebAadapter) GetSystemConfig(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-		req dto.GetSystemConfigRequest
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.GetSystemConfigRequest](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -81,12 +77,8 @@ func (a *WebAadapter) GetSystemConfig(c *gin.Context) {
 
 // SaveSystemConfig handles the request to save system config.
 func (a *WebAadapter) SaveSystemConfig(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-		req dto.SystemConfig
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.SystemConfig](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -102,13 +94,8 @@ func (a *WebAadapter) SaveSystemConfig(c *gin.Context) {
 
 // CrawlingNews handles the request to crawling news.
 func (a *WebAadapter) CrawlingNews(c *gin.Context) {
-	var (
-		ctx    = c.Request.Context()
-		cmdCtx = tracex.CopyTraceContext(ctx, context.Background())
-		req    dto.CrawlingNewsRequest
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.CrawlingNewsRequest](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -133,12 +120,8 @@ func (a *WebAadapter) CrawlingWebsite(c *gin.Context) {
 
 // QueryCrawlingRecords handles the request to retrieve crawling records.
 func (a *WebAadapter) QueryCrawlingRecords(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-		req dto.QueryCrawlingRecordsRequest
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.QueryCrawlingRecordsRequest](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -151,12 +134,8 @@ func (a *WebAadapter) QueryCrawlingRecords(c *gin.Context) {
 
 // GetCrawlingRecord handles the request to retrieve a crawling record.
 func (a *WebAadapter) GetCrawlingRecord(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-		req dto.GetCrawlingRecordRequest
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.GetCrawlingRecordRequest](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -168,12 +147,8 @@ func (a *WebAadapter) GetCrawlingRecord(c *gin.Context) {
 
 // DeleteCrawlingRecord handles the request to delete a crawling record.
 func (a *WebAadapter) DeleteCrawlingRecord(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-		req dto.DeleteCrawlingRecordRequest
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.DeleteCrawlingRecordRequest](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -183,12 +158,8 @@ func (a *WebAadapter) DeleteCrawlingRecord(c *gin.Context) {
 
 // UpdateCrawlingRecordStatus handles the request to update a crawling record status.
 func (a *WebAadapter) UpdateCrawlingRecordStatus(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-		req dto.UpdateCrawlingRecordStatusRequest
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.UpdateCrawlingRecordStatusRequest](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -198,9 +169,7 @@ func (a *WebAadapter) UpdateCrawlingRecordStatus(c *gin.Context) {
 
 // HasCrawlingTasks handles the request to confirm whether there are ongoing crawling tasks.
 func (a *WebAadapter) HasCrawlingTasks(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-	)
+	ctx := c.Request.Context()
 
 	result, err := a.crawlingSvc.HasProcessingTasks(ctx)
 
@@ -209,12 +178,8 @@ func (a *WebAadapter) HasCrawlingTasks(c *gin.Context) {
 
 // QueryNews handles the request to retrieve news detail list.
 func (a *WebAadapter) QueryNews(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-		req dto.QueryNewsRequest
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.QueryNewsRequest](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -226,12 +191,8 @@ func (a *WebAadapter) QueryNews(c *gin.Context) {
 
 // GetNewsDetail handles the request to retrieve a news detail.
 func (a *WebAadapter) GetNewsDetail(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-		req dto.GetNewsDetailRequest
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.GetNewsDetailRequest](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -243,12 +204,8 @@ func (a *WebAadapter) GetNewsDetail(c *gin.Context) {
 
 // DeleteNews handles the request to delete a news detail.
 func (a *WebAadapter) DeleteNews(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-		req dto.DeleteNewsRequest
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.DeleteNewsRequest](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -258,12 +215,8 @@ func (a *WebAadapter) DeleteNews(c *gin.Context) {
 
 // CritiqueNews handles the request to critique a news detail.
 func (a *WebAadapter) CritiqueNews(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-		req dto.CritiqueNewsRequest
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.CritiqueNewsRequest](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -278,12 +231,8 @@ func (a *WebAadapter) CritiqueNews(c *gin.Context) {
 
 // TranslateNews handles the request to translate a news detail.
 func (a *WebAadapter) TranslateNews(c *gin.Context) {
-	var (
-		ctx = c.Request.Context()
-		req dto.TranslateNewsRequest
-	)
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	ctx, req, err := httpx.ParseRequest[dto.TranslateNewsRequest](c)
+	if err != nil {
 		httpx.WebResp(c, nil, err)
 		return
 	}
@@ -294,4 +243,26 @@ func (a *WebAadapter) TranslateNews(c *gin.Context) {
 	)
 
 	httpx.WebResp(c, data, err)
+}
+
+// SaveNewsFavorite handles the request to save a news favorite.
+func (a *WebAadapter) SaveNewsFavorite(c *gin.Context) {
+	ctx, req, err := httpx.ParseRequest[dto.SaveNewsFavoriteRequest](c)
+	if err != nil {
+		httpx.WebResp(c, nil, err)
+		return
+	}
+
+	httpx.WebResp(c, nil, a.newsSvc.UpdateNewsFavorite(ctx, req.Id, false))
+}
+
+// SaveWebsiteWeight handles the request to save a news website weight.
+func (a *WebAadapter) SaveWebsiteWeight(c *gin.Context) {
+	ctx, req, err := httpx.ParseRequest[dto.SaveWebsiteWeightRequest](c)
+	if err != nil {
+		httpx.WebResp(c, nil, err)
+		return
+	}
+
+	httpx.WebResp(c, nil, a.systemConfigSvc.UpdateNewsWebsiteWeight(ctx, req.Website, req.Step))
 }

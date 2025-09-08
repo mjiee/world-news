@@ -211,3 +211,18 @@ func (a *App) TranslateNews(req *dto.TranslateNewsRequest) *httpx.Response {
 
 	return httpx.AppResp(ctx, "TranslateNews", req, data, err)
 }
+
+// SaveNewsFavorite handles the request to save a news favorite.
+func (a *App) SaveNewsFavorite(req *dto.SaveNewsFavoriteRequest) *httpx.Response {
+	ctx := tracex.InjectTraceInContext(a.ctx)
+
+	return httpx.AppResp(ctx, "SaveNewsFavorite", req, nil, a.newsSvc.UpdateNewsFavorite(ctx, req.Id, req.Favorited))
+}
+
+// SaveWebsiteWeight handles the request to save a news website weight.
+func (a *App) SaveWebsiteWeight(req *dto.SaveWebsiteWeightRequest) *httpx.Response {
+	ctx := tracex.InjectTraceInContext(a.ctx)
+
+	return httpx.AppResp(ctx, "SaveWebsiteWeight", req, nil, a.systemConfigSvc.UpdateNewsWebsiteWeight(ctx,
+		req.Website, req.Step))
+}

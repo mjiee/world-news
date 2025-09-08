@@ -13,20 +13,22 @@ import (
 
 // QueryNewsRequest get news detail list request
 type QueryNewsRequest struct {
-	RecordId    uint              `json:"recordId"`
-	Source      string            `json:"source"`
-	Topic       string            `json:"topic"`
-	PublishDate string            `json:"publishDate"`
+	RecordId    uint              `json:"recordId,omitempty"`
+	Source      string            `json:"source,omitempty"`
+	Topic       string            `json:"topic,omitempty"`
+	PublishDate string            `json:"publishDate,omitempty"`
+	Favorited   bool              `json:"favorited,omitempty"`
 	Pagination  *httpx.Pagination `json:"pagination"`
 }
 
 // ToValueobject query news params
 func (q *QueryNewsRequest) ToValueobject() *valueobject.QueryNewsParams {
 	query := &valueobject.QueryNewsParams{
-		RecordId: q.RecordId,
-		Source:   q.Source,
-		Topic:    q.Topic,
-		Page:     q.Pagination,
+		RecordId:  q.RecordId,
+		Source:    q.Source,
+		Topic:     q.Topic,
+		Favorited: q.Favorited,
+		Page:      q.Pagination,
 	}
 
 	if q.PublishDate == "" {
@@ -91,6 +93,7 @@ type NewsDetail struct {
 	Contents    []string `json:"contents"`
 	Images      []string `json:"images"`
 	PublishedAt string   `json:"publishedAt"`
+	Favorited   bool     `json:"favorited"`
 }
 
 // NewNewsDetailFromEntity news detail
@@ -114,6 +117,7 @@ func NewNewsDetailFromEntity(data *entity.NewsDetail) *NewsDetail {
 		Contents:    data.Contents,
 		Images:      data.Images,
 		PublishedAt: publishedAt,
+		Favorited:   data.Favorited,
 	}
 }
 
@@ -143,4 +147,10 @@ type CritiqueNewsRequest struct {
 type TranslateNewsRequest struct {
 	Contents []string `json:"contents"`
 	ToLang   string   `json:"toLang"`
+}
+
+// SaveNewsFavoriteRequest save news favorite request
+type SaveNewsFavoriteRequest struct {
+	Id        uint `json:"id"`
+	Favorited bool `json:"favorited"`
 }

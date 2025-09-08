@@ -30,6 +30,7 @@ type NewsDetail struct {
 	Images      []string
 	Video       string
 	Scraped     bool
+	Favorited   bool
 	CreatedAt   time.Time
 }
 
@@ -65,6 +66,7 @@ func NewNewsDetailFromModel(m *model.NewsDetail) (*NewsDetail, error) {
 		Video:       m.Video,
 		Scraped:     m.Scraped,
 		PublishedAt: m.PublishedAt,
+		Favorited:   m.Favorited,
 		CreatedAt:   m.CreatedAt,
 	}, nil
 }
@@ -107,6 +109,7 @@ func (n *NewsDetail) ToModel() (*model.NewsDetail, error) {
 		Video:       n.Video,
 		Scraped:     n.Scraped,
 		PublishedAt: n.PublishedAt,
+		Favorited:   n.Favorited,
 		CreatedAt:   n.CreatedAt,
 	}, nil
 }

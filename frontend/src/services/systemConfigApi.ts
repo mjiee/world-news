@@ -1,6 +1,6 @@
 import { useRemoteService } from "@/stores";
 import { call, post } from "@/utils/http";
-import { GetSystemConfig, SaveSystemConfig } from "wailsjs/go/adapter/App";
+import { GetSystemConfig, SaveSystemConfig, SaveWebsiteWeight } from "wailsjs/go/adapter/App";
 import { dto } from "wailsjs/go/models";
 
 export enum SystemConfigKey {
@@ -25,6 +25,7 @@ interface GetSystemConfigRequest {
 export interface NewsWebsiteValue {
   url: string;
   selector?: NewsSelector;
+  weight: number;
 }
 
 export interface NewsSelector {
@@ -58,6 +59,11 @@ export interface TranslaterConfig {
   appSecret?: string;
 }
 
+export interface SaveWebsiteWeightRequest {
+  website: string;
+  step: number;
+}
+
 // getSystemConfig to get system config
 export async function getSystemConfig<T>(
   request: GetSystemConfigRequest,
@@ -74,4 +80,11 @@ export async function saveSystemConfig<T>(request: SystemConfig<T>, forceLocal =
   if (useRemoteService(forceLocal)) return await post<SystemConfig<T>, any>("/api/system/config/save", request);
 
   return await call(SaveSystemConfig(new dto.SystemConfig(request)));
+}
+
+// saveWebsiteWeight to save website weight
+export async function saveWebsiteWeight(data: SaveWebsiteWeightRequest) {
+  if (useRemoteService()) return await post<SaveWebsiteWeightRequest, any>("/api/system/website/weight", data);
+
+  return await call(SaveWebsiteWeight(data));
 }

@@ -125,10 +125,11 @@ export namespace dto {
 		}
 	}
 	export class QueryNewsRequest {
-	    recordId: number;
-	    source: string;
-	    topic: string;
-	    publishDate: string;
+	    recordId?: number;
+	    source?: string;
+	    topic?: string;
+	    publishDate?: string;
+	    favorited?: boolean;
 	    pagination?: httpx.Pagination;
 	
 	    static createFrom(source: any = {}) {
@@ -141,6 +142,7 @@ export namespace dto {
 	        this.source = source["source"];
 	        this.topic = source["topic"];
 	        this.publishDate = source["publishDate"];
+	        this.favorited = source["favorited"];
 	        this.pagination = this.convertValues(source["pagination"], httpx.Pagination);
 	    }
 	
@@ -161,6 +163,34 @@ export namespace dto {
 		    }
 		    return a;
 		}
+	}
+	export class SaveNewsFavoriteRequest {
+	    id: number;
+	    favorited: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new SaveNewsFavoriteRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.favorited = source["favorited"];
+	    }
+	}
+	export class SaveWebsiteWeightRequest {
+	    website: string;
+	    step: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new SaveWebsiteWeightRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.website = source["website"];
+	        this.step = source["step"];
+	    }
 	}
 	export class SystemConfig {
 	    key: string;

@@ -16,6 +16,7 @@
   "news_detail": {
     "translate": "Translate News",
     "critique": "AI Review",
-    "link": "Original link: "
+    "link": "Original link: ",
+    "favorite": "Favorites"
   }
 }

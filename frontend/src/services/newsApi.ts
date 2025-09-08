@@ -1,14 +1,22 @@
 import { useRemoteService } from "@/stores";
 import { call, post } from "@/utils/http";
 import { isWeb } from "@/utils/platform";
-import { QueryNews, GetNewsDetail, DeleteNews, CritiqueNews, TranslateNews } from "wailsjs/go/adapter/App";
+import {
+  QueryNews,
+  GetNewsDetail,
+  DeleteNews,
+  CritiqueNews,
+  TranslateNews,
+  SaveNewsFavorite,
+} from "wailsjs/go/adapter/App";
 import { dto, httpx } from "wailsjs/go/models";
 
 interface QueryNewsRequest {
-  recordId: number;
-  source: string;
-  topic: string;
-  publishDate: string;
+  recordId?: number;
+  source?: string;
+  topic?: string;
+  publishDate?: string;
+  favorited?: boolean;
   pagination: httpx.Pagination;
 }
 
@@ -26,6 +34,7 @@ export interface NewsDetail {
   contents?: string[];
   images?: string[];
   publishedAt?: string;
+  favorited?: boolean;
 }
 
 interface GetNewsDetailRequest {
@@ -44,6 +53,11 @@ interface CritiqueNewsRequest {
 interface TranslateNewsRequest {
   contents: string[];
   toLang: string;
+}
+
+interface SaveNewsFavoriteRequest {
+  id: number;
+  favorited: boolean;
 }
 
 // queryNews to query news
@@ -81,4 +95,11 @@ export async function translateNews(data: TranslateNewsRequest) {
   if (isWeb()) return await post<TranslateNewsRequest, string[]>("/api/news/translate", data);
 
   return await call<string[]>(TranslateNews(data));
+}
+
+// saveFavorite to save news favorite
+export async function saveFavorite(data: SaveNewsFavoriteRequest) {
+  if (isWeb()) return await post<SaveNewsFavoriteRequest, any>("/api/news/favorite", data);
+
+  return await call(SaveNewsFavorite(data));
 }

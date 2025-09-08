@@ -8,6 +8,7 @@ import (
 type NewsWebsite struct {
 	Url      string    `json:"url"`                // url
 	Selector *Selector `json:"selector,omitempty"` // selectors
+	Weight   int       `json:"weight,omitempty"`   // weight
 }
 
 // Selector represents a selector.

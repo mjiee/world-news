@@ -86,5 +86,9 @@
     "validate": {
       "required": "请输入 {{ label }}。"
     }
+  },
+  "source_label": {
+    "incr": "增加站点新闻爬取优先级。",
+    "decr": "降低站点新闻爬取优先级。"
   }
 }
