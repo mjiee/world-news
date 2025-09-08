@@ -251,7 +251,7 @@ func (a *WebAadapter) SaveNewsFavorite(c *gin.Context) {
 		return
 	}
 
-	httpx.WebResp(c, nil, a.newsSvc.UpdateNewsFavorite(ctx, req.Id, false))
+	httpx.WebResp(c, nil, a.newsSvc.UpdateNewsFavorite(ctx, req.Id, req.Favorited))
 }
 
 // SaveWebsiteWeight handles the request to save a news website weight.
