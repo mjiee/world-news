@@ -21,6 +21,7 @@ type NewsService interface {
 	QueryNews(ctx context.Context, params *valueobject.QueryNewsParams) ([]*entity.NewsDetail, int64, error)
 	GetNewsDetail(ctx context.Context, id uint) (*entity.NewsDetail, error)
 	DeleteNews(ctx context.Context, id uint) error
+	UpdateNewsFavorite(ctx context.Context, id uint, favorited bool) error
 }
 
 type newsService struct {
@@ -76,6 +77,10 @@ func (s *newsService) QueryNews(ctx context.Context, params *valueobject.QueryNe
 			repo.PublishedAt.Gte(params.PublishDate),
 			repo.PublishedAt.Lte(params.PublishDate.AddDate(0, 0, 1)),
 		)
+	}
+
+	if params.Favorited {
+		query = query.Where(repo.Favorited.Is(true))
 	}
 
 	data, total, err := query.Order(repo.ID.Desc()).FindByPage(params.Page.GetOffset(), params.Page.GetLimit())
@@ -159,4 +164,13 @@ func (s *newsService) crawlingNewsDetail(ctx context.Context, news *entity.NewsD
 	}
 
 	return news, nil
+}
+
+// UpdateNewsFavorite updates the favorite status of the news detail.
+func (s *newsService) UpdateNewsFavorite(ctx context.Context, id uint, favorited bool) error {
+	repo := repository.Q.NewsDetail
+
+	_, err := repo.WithContext(ctx).Where(repo.ID.Eq(id)).UpdateColumnSimple(repo.Favorited.Value(favorited))
+
+	return errors.WithStack(err)
 }

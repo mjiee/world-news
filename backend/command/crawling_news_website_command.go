@@ -78,24 +78,14 @@ func (c *CrawlingNewsWebsiteCommand) Execute(ctx context.Context) error {
 // crawlingHandle crawling news website
 func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecord) {
 	var (
-		newsWebsites        []*valueobject.NewsWebsite
-		err                 error
 		invalidNewsWebsites []string
 		startTime           = time.Now()
 	)
 
 	// get news websites
-	config, err := c.systemConfigSvc.GetSystemConfig(c.ctx, valueobject.NewsWebsiteKey.String())
+	newsWebsites, err := c.systemConfigSvc.GetNewsWebsites(c.ctx)
 	if err != nil {
-		logx.WithContext(c.ctx).Error("GetSystemConfig.NewsWebsiteKey", err)
-
-		return
-	}
-
-	if config.Id != 0 {
-		if err := config.UnmarshalValue(&newsWebsites); err != nil {
-			logx.WithContext(c.ctx).Error("UnmarshalValue.NewsWebsiteKey", err)
-		}
+		logx.WithContext(c.ctx).Error("GetNewsWebsite", err)
 	}
 
 	// get invalid news websites
@@ -189,12 +179,7 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 func (c *CrawlingNewsWebsiteCommand) saveCrawlingResults(record *entity.CrawlingRecord,
 	newsWebsites []*valueobject.NewsWebsite, invalidNewsWebsites []string) error {
 	// save news website
-	newsWebsitesConfig, err := entity.NewSystemConfig(valueobject.NewsWebsiteKey.String(), newsWebsites)
-	if err != nil {
-		return err
-	}
-
-	if err := c.systemConfigSvc.SaveSystemConfig(c.ctx, newsWebsitesConfig); err != nil {
+	if err := c.systemConfigSvc.SaveNewsWebsites(c.ctx, newsWebsites); err != nil {
 		return err
 	}
 

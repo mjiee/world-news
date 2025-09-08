@@ -87,6 +87,7 @@ func Run(assets embed.FS) {
 func ApiRouter(r *gin.RouterGroup, webAdapter *adapter.WebAadapter) {
 	r.POST("/system/config", webAdapter.GetSystemConfig)
 	r.POST("/system/config/save", webAdapter.SaveSystemConfig)
+	r.POST("/system/website/weight", webAdapter.SaveWebsiteWeight)
 	r.POST("/crawling/website", webAdapter.CrawlingWebsite)
 	r.POST("/crawling/news", webAdapter.CrawlingNews)
 	r.POST("/crawling/processing/task", webAdapter.HasCrawlingTasks)
@@ -99,4 +100,5 @@ func ApiRouter(r *gin.RouterGroup, webAdapter *adapter.WebAadapter) {
 	r.POST("/news/delete", webAdapter.DeleteNews)
 	r.POST("/news/critique", webAdapter.CritiqueNews)
 	r.POST("/news/translate", webAdapter.TranslateNews)
+	r.POST("/news/favorite", webAdapter.SaveNewsFavorite)
 }

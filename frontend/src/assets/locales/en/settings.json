@@ -86,5 +86,9 @@
     "validate": {
       "required": "Please enter {{ label }}。"
     }
+  },
+  "source_label": {
+    "incr": "Increase the website news crawling priority.",
+    "decr": "Decrease the website news crawling priority."
   }
 }

@@ -104,18 +104,9 @@ func (c *CrawlingNewsCommand) crawlingNewsAllowed(ctx context.Context) error {
 
 // getNewsWebsites get news websites
 func (c *CrawlingNewsCommand) getNewsWebsites(ctx context.Context) ([]*valueobject.NewsWebsite, error) {
-	websiteConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsWebsiteKey.String())
+	newsWebsites, err := c.systemConfigSvc.GetNewsWebsites(ctx)
 	if err != nil {
 		return nil, err
-	}
-
-	if websiteConfig.Id == 0 {
-		return nil, errorx.NewsWebsiteConfigNotFound
-	}
-
-	var newsWebsites []*valueobject.NewsWebsite
-	if err := websiteConfig.UnmarshalValue(&newsWebsites); err != nil {
-		return nil, errorx.InternalError.SetErr(errors.New("invalid news websites config"))
 	}
 
 	if len(c.sources) > 0 {

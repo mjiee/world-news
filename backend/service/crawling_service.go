@@ -141,7 +141,10 @@ func (s *crawlingService) DeleteCrawlingRecord(ctx context.Context, id uint) err
 			return errors.WithStack(err)
 		}
 
-		if _, err := tx.NewsDetail.WithContext(ctx).Where(tx.NewsDetail.RecordId.Eq(id)).Delete(); err != nil {
+		if _, err := tx.NewsDetail.WithContext(ctx).Where(
+			tx.NewsDetail.RecordId.Eq(id),
+			tx.NewsDetail.Favorited.Is(false),
+		).Delete(); err != nil {
 			return errors.WithStack(err)
 		}
 

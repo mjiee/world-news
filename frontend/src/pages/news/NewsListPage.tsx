@@ -1,43 +1,24 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import {
-  Stack,
-  AspectRatio,
-  Modal,
-  Button,
-  Card,
-  Group,
-  Image,
-  Select,
-  SimpleGrid,
-  Text,
-  Title,
-  ActionIcon,
-  Pagination,
-  Badge,
-} from "@mantine/core";
+import { Stack, AspectRatio, Button, Card, Group, Image, Select, SimpleGrid, Text, Title } from "@mantine/core";
 import { useForm, UseFormReturnType } from "@mantine/form";
-import { useDisclosure } from "@mantine/hooks";
 import { FetchNewsButton } from "@/components";
 import {
   getSystemConfig,
   queryNews,
   getCrawlingRecord,
-  deleteNews,
   SystemConfigKey,
   NewsDetail,
   NewsWebsiteValue,
-  translateNews,
 } from "@/services";
-import { DateInput, Loading } from "@/components";
-import { GolbalLanguage, useRemoteServiceStore } from "@/stores";
+import { DateInput, Loading, Pagination } from "@/components";
+import { useRemoteServiceStore } from "@/stores";
 import { getPageNumber } from "@/utils/pagination";
 import { getSecondLevelDomain } from "@/utils/url";
 import { httpx } from "wailsjs/go/models";
+import NewsCardFooter from "./components/NewsCardFooter";
 import classes from "./styles/newsList.module.css";
-import IconTrash from "@/assets/icons/IconTrash.svg?react";
-import IconLanguage from "@/assets/icons/IconLanguage.svg?react";
 
 // news list page
 export function NewsListPage() {
@@ -74,7 +55,7 @@ export function NewsListPage() {
 
   // update page
   const updatePageHandler = (page: number) => {
-    setPagination({ ...pagination, page: page });
+    if (page) setPagination({ ...pagination, page: page });
     setLoading(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -92,7 +73,7 @@ export function NewsListPage() {
       ) : (
         <Stack gap="lg" p="md">
           <NewsList newsList={newsList} updatePage={updatePageHandler} />
-          <Pagination p="md" value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
+          <Pagination value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
         </Stack>
       )}
     </>
@@ -236,13 +217,6 @@ function NewsCard({ news, updatePage }: NewsCardProps) {
   const navigate = useNavigate();
   const [title, setTitle] = useState(news.title);
 
-  // translate title
-  const translateTitle = async () => {
-    const resp = await translateNews({ contents: [title], toLang: GolbalLanguage.getLanguage() });
-
-    if (resp && resp.length > 0) setTitle(resp[0]);
-  };
-
   return (
     <Card key={news.id} p="md" radius="md" className={classes.card} onClick={() => navigate("/news/detail/" + news.id)}>
       <NewsCardImage news={news} />
@@ -253,16 +227,7 @@ function NewsCard({ news, updatePage }: NewsCardProps) {
 
       <NewsCardContent news={news} />
 
-      <Group justify="space-between" mt={5} mb="xs" onClick={(event) => event.stopPropagation()}>
-        <NewsCardFooter news={news} />
-
-        <Group gap="xs">
-          <ActionIcon variant="subtle" color="gray" size="sm" onClick={translateTitle}>
-            <IconLanguage />
-          </ActionIcon>
-          <DeleteNewsButton newsId={news.id} updatePage={updatePage} />
-        </Group>
-      </Group>
+      <NewsCardFooter news={news} updatePage={updatePage} updateTitle={setTitle} />
     </Card>
   );
 }
@@ -289,61 +254,5 @@ function NewsCardContent({ news }: { news: NewsDetail }) {
     <Text c="dimmed" size="sm" lineClamp={2}>
       {news.contents[0]}
     </Text>
-  );
-}
-
-// news card footer
-function NewsCardFooter({ news }: { news: NewsDetail }) {
-  const newsCardfooter = (txt: string, color: string = "dimmed") => (
-    <Badge variant="light" color={color} size="sm">
-      {txt}
-    </Badge>
-  );
-
-  return (
-    <Group gap="xs">
-      {news.source && newsCardfooter(news.source, "blue")}
-      {news.topic && newsCardfooter(news.topic, "green")}
-      {news.publishedAt && (
-        <Text size="xs" c="dimmed">
-          {news.publishedAt}
-        </Text>
-      )}
-    </Group>
-  );
-}
-
-// delete news button
-interface DeleteNewsButtonProps {
-  newsId: number;
-  updatePage: (page: number) => void;
-}
-
-function DeleteNewsButton({ newsId, updatePage }: DeleteNewsButtonProps) {
-  const [opened, { open, close }] = useDisclosure(false);
-  const { t } = useTranslation();
-
-  // click ok handler
-  const clickOkHandler = async () => {
-    await deleteNews({ id: newsId });
-    close();
-    updatePage(1);
-  };
-
-  return (
-    <>
-      <Modal opened={opened} onClose={close} withCloseButton={false}>
-        <p>{t("news_list.delete_label", { ns: "news" })}</p>
-        <Group justify="flex-end">
-          <Button onClick={clickOkHandler}>{t("button.ok")}</Button>
-          <Button onClick={close} variant="default">
-            {t("button.cancel")}
-          </Button>
-        </Group>
-      </Modal>
-      <ActionIcon variant="subtle" color="gray" size="sm" onClick={open}>
-        <IconTrash />
-      </ActionIcon>
-    </>
   );
 }

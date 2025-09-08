@@ -3,7 +3,8 @@
     "button": {
       "home": "Home",
       "settings": "Settings",
-      "records": "History"
+      "records": "History",
+      "favorites": "Favorites"
     }
   }
 }

@@ -4,7 +4,7 @@ import toast, { Toaster, resolveValue } from "react-hot-toast";
 import { Notification, Space } from "@mantine/core";
 import { HomePage } from "@/pages/home";
 import { SettingsPage } from "@/pages/settings";
-import { NewsDetailPage, NewsListPage } from "@/pages/news";
+import { NewsDetailPage, NewsListPage, NewsFavoritesPage } from "@/pages/news";
 import { LoginPage } from "@/pages/auth";
 import { CrawlingRecordPage } from "./pages/record";
 import { useRemoteServiceStore } from "@/stores";
@@ -25,6 +25,7 @@ function App() {
           <Route path="settings" element={<SettingsPage />} />
           <Route path="news/list/:recordId" element={<NewsListPage />} />
           <Route path="news/detail/:newsId" element={<NewsDetailPage />} />
+          <Route path="news/favorites" element={<NewsFavoritesPage />} />
         </Route>
 
         <Route path="login" element={<LoginPage />} />

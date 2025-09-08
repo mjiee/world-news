@@ -21,8 +21,8 @@ import {
   Popover,
 } from "@mantine/core";
 import MarkdownIt from "markdown-it";
-import { Loading } from "@/components";
-import { getNewsDetail, NewsDetail, critiqueNews, translateNews } from "@/services";
+import { Loading, SourceLabel } from "@/components";
+import { getNewsDetail, NewsDetail, critiqueNews, translateNews, saveFavorite } from "@/services";
 import classes from "./styles/newsDetail.module.css";
 import IconCopy from "@/assets/icons/IconCopy.svg?react";
 import IconCheck from "@/assets/icons/IconCheck.svg?react";
@@ -30,6 +30,8 @@ import IconLanguage from "@/assets/icons/IconLanguage.svg?react";
 import IconAi from "@/assets/icons/IconAi.svg?react";
 import IconArrowLeft from "@/assets/icons/IconArrowLeft.svg?react";
 import IconX from "@/assets/icons/IconX.svg?react";
+import IconStar from "@/assets/icons/IconStar.svg?react";
+import IconStarFilled from "@/assets/icons/IconStarFilled.svg?react";
 
 // News detail page
 export function NewsDetailPage() {
@@ -79,7 +81,7 @@ export function NewsDetailPage() {
       </Title>
 
       <Group mb="xs">
-        {newsLabel(newsDetail.source, "blue")}
+        <SourceLabel source={newsDetail.source} />
         {newsDetail.topic && newsLabel(newsDetail.topic, "green")}
         {newsDetail.publishedAt && (
           <Text c="dimmed" size="sm">
@@ -179,6 +181,7 @@ interface FloatingToolbarProps {
 
 const critique = "critique";
 const translate = "translate";
+const favorite = "favorite";
 const md = new MarkdownIt();
 
 function FloatingToolbar({ newsDetail, setTranslations }: FloatingToolbarProps) {
@@ -186,6 +189,7 @@ function FloatingToolbar({ newsDetail, setTranslations }: FloatingToolbarProps) 
   const [extension, setExtension] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [critiqueContent, setCritiqueContent] = useState<string>("");
+  const [favorited, setFavorited] = useState<boolean>(newsDetail?.favorited ?? false);
 
   const onClickHandle = async (obj: string) => {
     setExtension(obj);
@@ -197,6 +201,9 @@ function FloatingToolbar({ newsDetail, setTranslations }: FloatingToolbarProps) 
       resp = await critiqueNews({ title: newsDetail.title, contents: newsDetail.contents ?? [] });
     } else if (obj === translate && newsDetail) {
       resp = await translateNews({ toLang: i18n.language, contents: newsDetail.contents ?? [] });
+    } else if (obj == favorite && newsDetail) {
+      await saveFavorite({ id: newsDetail.id, favorited: !favorited });
+      setFavorited(!favorited);
     }
 
     if (!resp) {
@@ -206,7 +213,7 @@ function FloatingToolbar({ newsDetail, setTranslations }: FloatingToolbarProps) 
 
     if (obj === translate) {
       setTranslations(resp);
-    } else {
+    } else if (obj === critique) {
       setCritiqueContent(md.render(resp.join("\n")));
     }
 
@@ -221,6 +228,7 @@ function FloatingToolbar({ newsDetail, setTranslations }: FloatingToolbarProps) 
   const actionButton = (obj: string, label: string, color: string) => {
     const button = (
       <ActionIcon
+        variant={obj === favorite ? "light" : "filled"}
         color={color}
         size="xl"
         loading={loading && extension === obj}
@@ -228,7 +236,10 @@ function FloatingToolbar({ newsDetail, setTranslations }: FloatingToolbarProps) 
         disabled={loading}
         aria-label={label}
       >
-        {obj === critique ? <IconAi /> : <IconLanguage />}
+        {obj === critique && <IconAi />}
+        {obj === translate && <IconLanguage />}
+        {obj === favorite && favorited && <IconStarFilled />}
+        {obj === favorite && !favorited && <IconStar />}
       </ActionIcon>
     );
 
@@ -272,6 +283,7 @@ function FloatingToolbar({ newsDetail, setTranslations }: FloatingToolbarProps) 
       <Transition transition="slide-up" mounted={true}>
         {(transitionStyles) => (
           <Stack gap="sm" style={{ ...transitionStyles }}>
+            {actionButton(favorite, t("news_detail.favorite", { ns: "news" }), "yellow")}
             {actionButton(translate, t("news_detail.translate", { ns: "news" }), "blue")}
             {actionButton(critique, t("news_detail.critique", { ns: "news" }), "green")}
           </Stack>

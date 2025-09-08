@@ -46,8 +46,16 @@ export function QueryNews(arg1) {
   return window['go']['adapter']['App']['QueryNews'](arg1);
 }
 
+export function SaveNewsFavorite(arg1) {
+  return window['go']['adapter']['App']['SaveNewsFavorite'](arg1);
+}
+
 export function SaveSystemConfig(arg1) {
   return window['go']['adapter']['App']['SaveSystemConfig'](arg1);
+}
+
+export function SaveWebsiteWeight(arg1) {
+  return window['go']['adapter']['App']['SaveWebsiteWeight'](arg1);
 }
 
 export function TranslateNews(arg1) {

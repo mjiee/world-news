@@ -39,6 +39,7 @@ func newNewsDetail(db *gorm.DB, opts ...gen.DOOption) newsDetail {
 	_newsDetail.Images = field.NewString(tableName, "images")
 	_newsDetail.Video = field.NewString(tableName, "video")
 	_newsDetail.Scraped = field.NewBool(tableName, "scraped")
+	_newsDetail.Favorited = field.NewBool(tableName, "favorited")
 	_newsDetail.CreatedAt = field.NewTime(tableName, "created_at")
 
 	_newsDetail.fillFieldMap()
@@ -62,6 +63,7 @@ type newsDetail struct {
 	Images      field.String
 	Video       field.String
 	Scraped     field.Bool
+	Favorited   field.Bool
 	CreatedAt   field.Time
 
 	fieldMap map[string]field.Expr
@@ -91,6 +93,7 @@ func (n *newsDetail) updateTableName(table string) *newsDetail {
 	n.Images = field.NewString(table, "images")
 	n.Video = field.NewString(table, "video")
 	n.Scraped = field.NewBool(table, "scraped")
+	n.Favorited = field.NewBool(table, "favorited")
 	n.CreatedAt = field.NewTime(table, "created_at")
 
 	n.fillFieldMap()
@@ -118,7 +121,7 @@ func (n *newsDetail) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (n *newsDetail) fillFieldMap() {
-	n.fieldMap = make(map[string]field.Expr, 13)
+	n.fieldMap = make(map[string]field.Expr, 14)
 	n.fieldMap["id"] = n.ID
 	n.fieldMap["record_id"] = n.RecordId
 	n.fieldMap["source"] = n.Source
@@ -131,6 +134,7 @@ func (n *newsDetail) fillFieldMap() {
 	n.fieldMap["images"] = n.Images
 	n.fieldMap["video"] = n.Video
 	n.fieldMap["scraped"] = n.Scraped
+	n.fieldMap["favorited"] = n.Favorited
 	n.fieldMap["created_at"] = n.CreatedAt
 }
 

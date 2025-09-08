@@ -49,6 +49,9 @@ function DesktopNav() {
       <Button onClick={() => navigate("/")} variant="subtle">
         {navText("header.button.home")}
       </Button>
+      <Button onClick={() => navigate("/news/favorites")} variant="subtle">
+        {navText("header.button.favorites")}
+      </Button>
       <Button onClick={() => navigate("/records")} variant="subtle">
         {navText("header.button.records")}
       </Button>
@@ -84,6 +87,7 @@ function MobileNav() {
 
       <Menu.Dropdown>
         <Menu.Item onClick={() => onClickHandle("/")}>{navText("header.button.home")}</Menu.Item>
+        <Menu.Item onClick={() => onClickHandle("/news/favorites·")}>{navText("header.button.favorites")}</Menu.Item>
         <Menu.Item onClick={() => onClickHandle("/records")}>{navText("header.button.records")}</Menu.Item>
         <Menu.Item onClick={() => onClickHandle("/settings")}>{navText("header.button.settings")}</Menu.Item>
       </Menu.Dropdown>

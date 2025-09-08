@@ -45,3 +45,9 @@ type GetSystemConfigResponse struct {
 	*httpx.Response
 	Result *SystemConfig `json:"result"`
 }
+
+// SaveWebsiteWeightRequest save news website weight request
+type SaveWebsiteWeightRequest struct {
+	Website string `json:"website" binding:"required"`
+	Step    int    `json:"step" binding:"required"` // -1, 1
+}

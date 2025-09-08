@@ -12,6 +12,7 @@ type QueryNewsParams struct {
 	Source      string
 	Topic       string
 	PublishDate time.Time
+	Favorited   bool
 	Page        *httpx.Pagination
 }
 
