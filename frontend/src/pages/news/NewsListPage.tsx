@@ -13,7 +13,7 @@ import {
   NewsWebsiteValue,
 } from "@/services";
 import { DateInput, Loading, Pagination } from "@/components";
-import { useRemoteServiceStore } from "@/stores";
+import { useNewsListStore, useRemoteServiceStore } from "@/stores";
 import { getPageNumber } from "@/utils/pagination";
 import { getSecondLevelDomain } from "@/utils/url";
 import { httpx } from "wailsjs/go/models";
@@ -23,46 +23,78 @@ import classes from "./styles/newsList.module.css";
 // news list page
 export function NewsListPage() {
   const { recordId } = useParams();
-  const [newsList, setNewsList] = useState<NewsDetail[]>([]);
-  const [pagination, setPagination] = useState<httpx.Pagination>({ page: 1, limit: 20, total: 0 });
-  const [loading, setLoading] = useState<boolean>(true);
   const enableService = useRemoteServiceStore((state) => state.enable);
+
+  const {
+    currentRecordId,
+    pagination,
+    searchForm,
+    newsList,
+    loading,
+    setCurrentRecordId,
+    updatePagination,
+    setNewsList,
+    setLoading,
+    searchWithReset,
+  } = useNewsListStore();
 
   const recordID = Number(recordId) || 0;
 
   const searchFrom = useForm({
     mode: "uncontrolled",
-    initialValues: { source: "", topic: "", publishDate: "" },
+    initialValues: searchForm,
   });
 
-  // fetch news
-  const fetchNews = async () => {
+  useEffect(() => {
+    if (recordID !== currentRecordId) {
+      setCurrentRecordId(recordID);
+    }
+  }, [recordID, currentRecordId, setCurrentRecordId]);
+
+  useEffect(() => {
+    if (recordID === currentRecordId) {
+      searchFrom.setValues(searchForm);
+    }
+  }, [currentRecordId, searchForm]);
+
+  const fetchNews = useCallback(async () => {
     if (!loading) return;
 
     const resp = await queryNews({ ...searchFrom.getValues(), recordId: recordID, pagination: pagination });
 
+    if (resp && resp.data) {
+      setNewsList(resp.data);
+      updatePagination({ total: resp.total });
+    }
+
     setLoading(false);
-
-    if (!resp || !resp.data) return;
-
-    setNewsList(resp.data);
-    setPagination({ ...pagination, total: resp.total });
-  };
+  }, [loading, recordID, pagination, searchFrom, setNewsList, updatePagination, setLoading]);
 
   useEffect(() => {
     fetchNews();
-  }, [loading, enableService]);
+  }, [fetchNews, enableService]);
 
   // update page
   const updatePageHandler = (page: number) => {
-    if (page) setPagination({ ...pagination, page: page });
-    setLoading(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (page && page !== pagination.page) {
+      updatePagination({ page });
+      setLoading(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
-  // searchHandler
   const searchHandler = async () => {
-    setLoading(true);
+    const formValues = searchFrom.getValues();
+
+    const hasChanged = Object.keys(formValues).some(
+      (key) => formValues[key as keyof typeof formValues] !== searchForm[key as keyof typeof searchForm],
+    );
+
+    if (hasChanged) {
+      searchWithReset(formValues);
+    } else {
+      setLoading(true);
+    }
   };
 
   return (
