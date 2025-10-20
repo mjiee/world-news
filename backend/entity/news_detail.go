@@ -12,7 +12,7 @@ import (
 	"github.com/mjiee/world-news/backend/repository/model"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/mjiee/gokit/slicex"
+	"github.com/mjiee/gokit"
 	"github.com/pkg/errors"
 )
 
@@ -286,7 +286,7 @@ func (n *NewsDetail) ExtractImages(doc *goquery.Selection) {
 		})
 	}
 
-	n.Images = slicex.Distinct(n.Images, func(item string) string { return urlx.RemoveQueryParams(item) })
+	n.Images = gokit.SliceDistinct(n.Images, func(item string) string { return urlx.RemoveQueryParams(item) })
 }
 
 // extractImageLinks extracts the image links from the news detail.
@@ -322,7 +322,7 @@ func (n *NewsDetail) optimizeImages() {
 		return
 	}
 
-	if images := slicex.Filter(n.Images, n.isValidImage); len(images) > 0 {
+	if images := gokit.SliceFilter(n.Images, n.isValidImage); len(images) > 0 {
 		n.Images = images[:min(5, len(images))]
 	} else {
 		n.Images = n.Images[:5]

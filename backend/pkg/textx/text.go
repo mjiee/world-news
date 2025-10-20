@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/mjiee/gokit/slicex"
+	"github.com/mjiee/gokit"
 )
 
 // CleanText clean text
@@ -33,7 +33,7 @@ func CleanText(text string) string {
 func MatchesKeyword(text string, keywords []string) (string, bool) {
 	text = strings.ToLower(strings.TrimSpace(text))
 
-	keyword := slicex.Find(keywords, func(k string) bool {
+	keyword := gokit.SliceFind(keywords, func(k string) bool {
 		keywordLower := strings.ToLower(k)
 
 		if text == keywordLower {

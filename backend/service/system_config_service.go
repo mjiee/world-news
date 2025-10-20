@@ -4,7 +4,7 @@ import (
 	"context"
 	"slices"
 
-	"github.com/mjiee/gokit/slicex"
+	"github.com/mjiee/gokit"
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/urlx"
@@ -151,7 +151,7 @@ func (s *systemConfigService) UpdateNewsWebsiteWeight(ctx context.Context, domai
 		return err
 	}
 
-	website := slicex.Find(newsWebsites, func(item *valueobject.NewsWebsite) bool {
+	website := gokit.SliceFind(newsWebsites, func(item *valueobject.NewsWebsite) bool {
 		return urlx.ExtractSecondLevelDomain(item.Url) == domain
 	})
 

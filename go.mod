@@ -13,7 +13,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/markusmobius/go-dateparser v1.2.4
-	github.com/mjiee/gokit v0.0.0-20250803092115-98d4532b422a
+	github.com/mjiee/gokit v0.0.0-20251020063222-eb1eebd64225
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nicksnyder/go-i18n/v2 v2.5.1
 	github.com/pkg/errors v0.9.1
