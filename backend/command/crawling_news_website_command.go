@@ -14,7 +14,7 @@ import (
 	"github.com/mjiee/world-news/backend/service"
 
 	"github.com/gocolly/colly/v2"
-	"github.com/mjiee/gokit/slicex"
+	"github.com/mjiee/gokit"
 	"github.com/pkg/errors"
 )
 
@@ -120,7 +120,7 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 				continue
 			}
 
-			websites = slicex.Distinct(websites, func(v *valueobject.NewsWebsite) string { return v.GetHost() })
+			websites = gokit.SliceDistinct(websites, func(v *valueobject.NewsWebsite) string { return v.GetHost() })
 
 			count := 0
 
@@ -139,7 +139,7 @@ func (c *CrawlingNewsWebsiteCommand) crawlingHandle(record *entity.CrawlingRecor
 				}
 
 				// remove duplicate news website
-				newsWebsites = slicex.Distinct(newsWebsites, func(v *valueobject.NewsWebsite) string { return v.GetHost() })
+				newsWebsites = gokit.SliceDistinct(newsWebsites, func(v *valueobject.NewsWebsite) string { return v.GetHost() })
 
 				// update record
 				record, err = c.crawlingSvc.GetCrawlingRecord(c.ctx, record.Id)

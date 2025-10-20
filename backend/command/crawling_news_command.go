@@ -16,12 +16,12 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
-	"github.com/mjiee/gokit/slicex"
+	"github.com/mjiee/gokit"
 	"github.com/pkg/errors"
 )
 
 // maxWorkTime is the maximum time to work.
-const maxWorkTime = 8 * time.Hour
+const maxWorkTime = 4 * time.Hour
 
 // CrawlingNewsCommand is a command for crawling news.
 type CrawlingNewsCommand struct {
@@ -110,7 +110,7 @@ func (c *CrawlingNewsCommand) getNewsWebsites(ctx context.Context) ([]*valueobje
 	}
 
 	if len(c.sources) > 0 {
-		newsWebsites = slicex.Filter(newsWebsites, func(nw *valueobject.NewsWebsite) bool {
+		newsWebsites = gokit.SliceFilter(newsWebsites, func(nw *valueobject.NewsWebsite) bool {
 			return slices.Contains(c.sources, urlx.ExtractSecondLevelDomain(nw.Url))
 		})
 	}
@@ -151,8 +151,14 @@ func (c *CrawlingNewsCommand) getNewsTopics(ctx context.Context) error {
 // crawlingHandle crawling news
 func (c *CrawlingNewsCommand) crawlingHandle(record *entity.CrawlingRecord) {
 	startTime := time.Now()
+	sources := gokit.SliceFilter(record.Config.Sources, func(i *valueobject.NewsWebsite) bool { return i.Weight > 0 })
 
-	for idx, website := range record.Config.Sources {
+	sources = append(sources, gokit.SliceShuffle(gokit.SliceFilter(record.Config.Sources,
+		func(i *valueobject.NewsWebsite) bool { return i.Weight == 0 }))...)
+	sources = append(sources, gokit.SliceFilter(record.Config.Sources,
+		func(i *valueobject.NewsWebsite) bool { return i.Weight < 0 })...)
+
+	for idx, website := range sources {
 		select {
 		case <-c.ctx.Done():
 			record.CrawlingPaused()
@@ -263,7 +269,7 @@ func (c *CrawlingNewsCommand) extractNewsTopicLinks(website *valueobject.NewsWeb
 
 	err := collector.Visit(website.Url)
 
-	return slicex.Distinct(result, func(i *valueobject.NewsTopicLink) string { return i.URL }), errors.WithStack(err)
+	return gokit.SliceDistinct(result, func(i *valueobject.NewsTopicLink) string { return i.URL }), errors.WithStack(err)
 }
 
 // crawlingNewsInTopicPage crawling news in topic page
@@ -289,14 +295,14 @@ func (c *CrawlingNewsCommand) crawlingNewsInTopicPage(record *entity.CrawlingRec
 func removeDuplicateNews(data []*entity.NewsDetail) []*entity.NewsDetail {
 	var (
 		images  = make([]string, 0)
-		newsMap = slicex.GroupBy(data, func(item *entity.NewsDetail) string { return item.Link })
+		newsMap = gokit.SliceGroupBy(data, func(item *entity.NewsDetail) string { return item.Link })
 		result  = make([]*entity.NewsDetail, 0, len(data))
 	)
 
 	for _, newsData := range newsMap {
 		news := slices.MaxFunc(newsData, func(a, b *entity.NewsDetail) int { return a.Compare(b) })
 
-		news.Images = slicex.Filter(news.Images, func(v string) bool {
+		news.Images = gokit.SliceFilter(news.Images, func(v string) bool {
 			v = urlx.RemoveQueryParams(v)
 
 			if slices.Contains(images, v) {
@@ -326,7 +332,7 @@ func (c *CrawlingNewsCommand) extractNewsList(recordId uint, link *valueobject.N
 			items = c.findNewsLink(e.DOM)
 		}
 
-		newsList := slicex.Map(items, func(item *goquery.Selection) *entity.NewsDetail {
+		newsList := gokit.SliceMap(items, func(item *goquery.Selection) *entity.NewsDetail {
 			detail := entity.NewNewsDetailFromTopicLink(recordId, link)
 
 			detail.ExtractTitle(item)
@@ -343,7 +349,7 @@ func (c *CrawlingNewsCommand) extractNewsList(recordId uint, link *valueobject.N
 
 	err = collector.Visit(link.URL)
 
-	return slicex.Filter(result, func(v *entity.NewsDetail) bool { return v != nil && v.IsValid(c.startTime) }),
+	return gokit.SliceFilter(result, func(v *entity.NewsDetail) bool { return v != nil && v.IsValid(c.startTime) }),
 		errors.WithStack(err)
 }
 
