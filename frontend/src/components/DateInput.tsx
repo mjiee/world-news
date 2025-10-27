@@ -17,6 +17,7 @@ export function DateInput(props: DateInputProps) {
 
   return (
     <MantineDateInput
+      clearable
       maxDate={new Date()}
       locale={i18n.language}
       label={props.label}

@@ -16,6 +16,7 @@ import (
 	"github.com/mjiee/world-news/backend/repository"
 	"github.com/mjiee/world-news/backend/repository/model"
 	"github.com/mjiee/world-news/backend/service"
+	"github.com/mjiee/world-news/backend/task"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -56,6 +57,11 @@ func SetWebAdapter(conf *config.WebConfig) (*WebAadapter, error) {
 
 	// init system config
 	if err := web.systemConfigSvc.SystemConfigInit(context.Background()); err != nil {
+		return nil, err
+	}
+
+	// init scheduler
+	if err := task.NewScheduler(web.crawlingSvc, web.newsSvc, web.systemConfigSvc); err != nil {
 		return nil, err
 	}
 

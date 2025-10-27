@@ -1,25 +1,28 @@
-import { Loading, Pagination } from "@/components";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
+import { Card, Stack, Image, Title, Text, AspectRatio, Flex, Group, Button } from "@mantine/core";
+import { httpx } from "wailsjs/go/models";
+import { DateInput, Loading, Pagination } from "@/components";
 import { NewsDetail, queryNews } from "@/services";
 import { useRemoteServiceStore } from "@/stores";
 import { getPageNumber } from "@/utils/pagination";
-import { Card, Stack, Image, Title, Text, AspectRatio, Flex } from "@mantine/core";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { httpx } from "wailsjs/go/models";
 import NewsCardFooter from "./components/NewsCardFooter";
 
 // news favorites page
 export function NewsFavoritesPage() {
+  const { t } = useTranslation();
   const [newsList, setNewsList] = useState<NewsDetail[]>([]);
   const [pagination, setPagination] = useState<httpx.Pagination>({ page: 1, limit: 20, total: 0 });
   const [loading, setLoading] = useState<boolean>(true);
+  const [searchPublishDate, setSearchPublishDate] = useState<string | null>();
   const enableService = useRemoteServiceStore((state) => state.enable);
 
   // fetch news
   const fetchNews = async () => {
     if (!loading) return;
 
-    const resp = await queryNews({ favorited: true, pagination: pagination });
+    const resp = await queryNews({ favorited: true, pagination: pagination, publishDate: searchPublishDate ?? "" });
 
     setLoading(false);
 
@@ -42,6 +45,22 @@ export function NewsFavoritesPage() {
 
   return (
     <>
+      <Group gap="sm" p="md" mb="md" align="flex-end" justify="center">
+        <DateInput
+          placeholder={t("news_list.search.publish_date", { ns: "news" })}
+          onChange={setSearchPublishDate}
+          disabled={loading}
+        />
+        <Button
+          onClick={() => updatePageHandler(1)}
+          variant="filled"
+          aria-label={t("button.search")}
+          disabled={loading}
+          loading={loading}
+        >
+          {t("button.search")}
+        </Button>
+      </Group>
       {loading ? (
         <Loading />
       ) : (
