@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
@@ -24,6 +25,7 @@ type CrawlingService interface {
 	DeleteCrawlingRecord(ctx context.Context, id uint) error
 	HasProcessingTasks(ctx context.Context) (bool, error)
 	PauseAllTasks(ctx context.Context) error
+	DeleteHistory(ctx context.Context, deadline time.Time) error
 }
 
 type crawlingService struct {
@@ -137,7 +139,7 @@ func (s *crawlingService) QueryCrawlingRecords(ctx context.Context, params value
 // DeleteCrawlingRecord delete crawling record
 func (s *crawlingService) DeleteCrawlingRecord(ctx context.Context, id uint) error {
 	err := repository.Q.Transaction(func(tx *repository.Query) error {
-		if _, err := tx.CrawlingRecord.WithContext(ctx).Where(tx.CrawlingRecord.ID.Eq(uint(id))).Delete(); err != nil {
+		if _, err := tx.CrawlingRecord.WithContext(ctx).Where(tx.CrawlingRecord.ID.Eq(id)).Delete(); err != nil {
 			return errors.WithStack(err)
 		}
 
@@ -172,4 +174,22 @@ func (s *crawlingService) PauseAllTasks(ctx context.Context) error {
 		Update(repo.Status, valueobject.PausedCrawlingRecord.String())
 
 	return errors.WithStack(err)
+}
+
+// DeleteHistory delete history
+func (s *crawlingService) DeleteHistory(ctx context.Context, deadline time.Time) error {
+	repo := repository.Q.CrawlingRecord
+
+	data, err := repo.WithContext(ctx).Where(repo.CreatedAt.Lte(deadline)).Find()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	for _, record := range data {
+		if err := s.DeleteCrawlingRecord(ctx, record.ID); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
