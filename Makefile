@@ -22,9 +22,9 @@ module: check-dependency
 build-web-static:
 	@cd frontend && npm run build-web
 
-# run app
-.PHONY: run
-run: check-dependency
+# run dev
+.PHONY: dev
+dev: check-dependency
 	@wails dev
 
 # run web

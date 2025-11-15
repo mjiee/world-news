@@ -13,7 +13,14 @@
     "hasProcessingTasks": "有其它任务正在处理中，请稍后再试",
     "newsWebsiteConfigNotFound": "请先完成网站配置",
     "updateRecordStatusNotAllowed": "不允许更新该记录的状态",
-    "openaiConfigNotFound": "请先完成AI点评配置",
-    "translaterConfigNotFound": "请先完成翻译服务配置"
+    "openaiConfigNotFound": "请先完成文本AI服务配置",
+    "translaterConfigNotFound": "请先完成翻译服务配置",
+    "critiquePromptNotFound": "请先完成新闻点评提示语配置",
+    "podcastPromptNotFound": "请先完成生成播客提示语配置",
+    "ttsAiConfigNotFound": "请先完成文本转语音AI服务配置",
+    "podcastTaskNotFound": "播客任务不存在",
+    "podcastGenerationFailed": "播客生成失败",
+    "podcastScriptNotFound": "请重新生成播客脚本",
+    "podcastVoiceNotFound": "请先完成播客语音配置"
   }
 }

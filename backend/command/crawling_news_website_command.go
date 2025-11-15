@@ -6,16 +6,17 @@ import (
 	"slices"
 	"time"
 
+	"github.com/gocolly/colly/v2"
+	"github.com/pkg/errors"
+
+	"github.com/mjiee/gokit"
+
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/pkg/urlx"
 	"github.com/mjiee/world-news/backend/service"
-
-	"github.com/gocolly/colly/v2"
-	"github.com/mjiee/gokit"
-	"github.com/pkg/errors"
 )
 
 // CrawlingNewsWebsiteCommand crawlling news website command

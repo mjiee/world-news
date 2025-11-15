@@ -1,0 +1,70 @@
+{
+  "news": {
+    "page_title": "News task list",
+    "page_description": "Total {{total}} records",
+    "record": {
+      "quantity": "Quantity",
+      "record_type": {
+        "crawlingWebsite": "Fetch website",
+        "crawlingNews": "Fetch news"
+      },
+      "status": {
+        "processing": "Processing",
+        "completed": "Completed",
+        "failed": "Failed",
+        "paused": "Paused"
+      }
+    },
+    "button": {
+      "delete_label": "Do you want to delete this record ({{date}})?",
+      "pause": "Pause"
+    }
+  },
+  "podcast": {
+    "page_title": "Podcast task list",
+    "page_description": "Total {{total}} records.",
+    "progress": "Task progress",
+    "prompt": "Prompt",
+    "voice": "Voice",
+    "result": {
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "status": {
+      "processing": "Processing",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "stage": {
+      "approval": "Content Approval",
+      "rewrite": "Rewrite Content",
+      "merge": "Merge Podcast",
+      "classify": "Classified News",
+      "stylize": "Stylized Content",
+      "scripted": "Scripted Content",
+      "tts": "Text To Speech"
+    },
+    "merge": {
+      "content": "Selected Podcast Content",
+      "voice": "Podcast Voice",
+      "title": "Podcast Title"
+    },
+    "stylize": {
+      "scripted": "Generate Script",
+      "rewrite": "Rewrite Content",
+      "merge": "Merge Content"
+    },
+    "tts": {
+      "sub_title": "Podcast Audio"
+    },
+    "scripted": {
+      "content": "Content",
+      "voice": "Voice",
+      "emotion": "Emotion",
+      "speed": "Speed",
+      "volume": "Volume",
+      "generate": "Generate Audio"
+    }
+  },
+  "error_reason": "Failure reason"
+}

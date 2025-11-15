@@ -3,12 +3,12 @@ package dto
 import (
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
-
-	"github.com/pkg/errors"
 )
 
 // QueryNewsRequest get news detail list request
@@ -88,12 +88,44 @@ type NewsDetail struct {
 	Id          uint     `json:"id"`
 	Title       string   `json:"title"`
 	Source      string   `json:"source"`
-	Topic       string   `json:"topic"`
-	Link        string   `json:"link"`
-	Contents    []string `json:"contents"`
-	Images      []string `json:"images"`
-	PublishedAt string   `json:"publishedAt"`
-	Favorited   bool     `json:"favorited"`
+	Topic       string   `json:"topic,omitempty"`
+	Link        string   `json:"link,omitempty"`
+	Contents    []string `json:"contents,omitempty"`
+	Images      []string `json:"images,omitempty"`
+	PublishedAt string   `json:"publishedAt,omitempty"`
+	Favorited   bool     `json:"favorited,omitempty"`
+}
+
+// ToEntity create news detail
+func (n *NewsDetail) ToEntity() *entity.NewsDetail {
+	publishedAt := time.Now()
+
+	if n.PublishedAt != "" {
+		publishedAt, _ = time.Parse(time.DateOnly, n.PublishedAt)
+	}
+
+	return &entity.NewsDetail{
+		Id:          n.Id,
+		Title:       n.Title,
+		Source:      n.Source,
+		Topic:       n.Topic,
+		Link:        n.Link,
+		Contents:    n.Contents,
+		Images:      n.Images,
+		Favorited:   n.Favorited,
+		Scraped:     true,
+		PublishedAt: publishedAt,
+		CreatedAt:   time.Now(),
+	}
+}
+
+// NewBaseNewsDetail create news detail
+func NewBaseNewsDetail(news *entity.NewsDetail) *NewsDetail {
+	return &NewsDetail{
+		Id:     news.Id,
+		Title:  news.Title,
+		Source: news.Source,
+	}
 }
 
 // NewNewsDetailFromEntity news detail
@@ -139,7 +171,6 @@ type DeleteNewsRequest struct {
 
 // CritiqueNewsRequest critique news detail request
 type CritiqueNewsRequest struct {
-	Title    string   `json:"title"`
 	Contents []string `json:"contents"`
 }
 

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Group, Text, ActionIcon } from "@mantine/core";
-import IconChevronLeft from "@/assets/icons/IconChevronLeft.svg?react";
-import IconChevronRight from "@/assets/icons/IconChevronRight.svg?react";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 
 export const Pagination = ({ value = 0, total = 0, onChange = (value: number) => {}, size = "md" }) => {
   const [inputValue, setInputValue] = useState(value.toString());

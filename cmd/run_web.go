@@ -8,15 +8,15 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+
 	"github.com/mjiee/world-news/backend/adapter"
 	"github.com/mjiee/world-news/backend/pkg/auth"
 	"github.com/mjiee/world-news/backend/pkg/config"
 	"github.com/mjiee/world-news/backend/pkg/locale"
 	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/pkg/tracex"
-
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 )
 
 // Run creates an instance of the web application structure and runs it.
@@ -101,4 +101,7 @@ func ApiRouter(r *gin.RouterGroup, webAdapter *adapter.WebAadapter) {
 	r.POST("/news/critique", webAdapter.CritiqueNews)
 	r.POST("/news/translate", webAdapter.TranslateNews)
 	r.POST("/news/favorite", webAdapter.SaveNewsFavorite)
+	r.POST("/task/create", webAdapter.CreateTask)
+	r.POST("/task/query", webAdapter.QueryTasks)
+	r.POST("/task/detail", webAdapter.GetTask)
 }

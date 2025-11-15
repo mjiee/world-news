@@ -16,8 +16,95 @@ export namespace dto {
 	        this.topics = source["topics"];
 	    }
 	}
-	export class CritiqueNewsRequest {
+	export class CreateAudioRequest {
+	    stageId: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new CreateAudioRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.stageId = source["stageId"];
+	    }
+	}
+	export class CreateScriptRequest {
+	    stageId: number;
+	    voiceIds: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new CreateScriptRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.stageId = source["stageId"];
+	        this.voiceIds = source["voiceIds"];
+	    }
+	}
+	export class NewsDetail {
+	    id: number;
 	    title: string;
+	    source: string;
+	    topic?: string;
+	    link?: string;
+	    contents?: string[];
+	    images?: string[];
+	    publishedAt?: string;
+	    favorited?: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new NewsDetail(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.title = source["title"];
+	        this.source = source["source"];
+	        this.topic = source["topic"];
+	        this.link = source["link"];
+	        this.contents = source["contents"];
+	        this.images = source["images"];
+	        this.publishedAt = source["publishedAt"];
+	        this.favorited = source["favorited"];
+	    }
+	}
+	export class CreateTaskRequest {
+	    language: string;
+	    news?: NewsDetail;
+	    voiceIds?: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new CreateTaskRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.language = source["language"];
+	        this.news = this.convertValues(source["news"], NewsDetail);
+	        this.voiceIds = source["voiceIds"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class CritiqueNewsRequest {
 	    contents: string[];
 	
 	    static createFrom(source: any = {}) {
@@ -26,7 +113,6 @@ export namespace dto {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.title = source["title"];
 	        this.contents = source["contents"];
 	    }
 	}
@@ -53,6 +139,62 @@ export namespace dto {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	    }
+	}
+	export class DeleteTaskRequest {
+	    batchNo: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DeleteTaskRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.batchNo = source["batchNo"];
+	    }
+	}
+	export class DownloadAudioRequest {
+	    stageId: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new DownloadAudioRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.stageId = source["stageId"];
+	    }
+	}
+	export class EditScriptRequest {
+	    stageId: number;
+	    scripts: ttsai.TtsScript[];
+	
+	    static createFrom(source: any = {}) {
+	        return new EditScriptRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.stageId = source["stageId"];
+	        this.scripts = this.convertValues(source["scripts"], ttsai.TtsScript);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 	export class GetCrawlingRecordRequest {
 	    id: number;
@@ -90,6 +232,37 @@ export namespace dto {
 	        this.key = source["key"];
 	    }
 	}
+	export class GetTaskRequest {
+	    batchNo: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new GetTaskRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.batchNo = source["batchNo"];
+	    }
+	}
+	export class MergeArticleRequest {
+	    language: string;
+	    title: string;
+	    stageIds: number[];
+	    voiceIds?: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new MergeArticleRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.language = source["language"];
+	        this.title = source["title"];
+	        this.stageIds = source["stageIds"];
+	        this.voiceIds = source["voiceIds"];
+	    }
+	}
+	
 	export class QueryCrawlingRecordsRequest {
 	    recordType?: string;
 	    status?: string;
@@ -163,6 +336,54 @@ export namespace dto {
 		    }
 		    return a;
 		}
+	}
+	export class QueryTaskRequest {
+	    startDate?: string;
+	    endDate?: string;
+	    pagination?: httpx.Pagination;
+	
+	    static createFrom(source: any = {}) {
+	        return new QueryTaskRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.startDate = source["startDate"];
+	        this.endDate = source["endDate"];
+	        this.pagination = this.convertValues(source["pagination"], httpx.Pagination);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class RestyleArticleRequest {
+	    stageId: number;
+	    prompt: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RestyleArticleRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.stageId = source["stageId"];
+	        this.prompt = source["prompt"];
+	    }
 	}
 	export class SaveNewsFavoriteRequest {
 	    id: number;
@@ -271,6 +492,31 @@ export namespace httpx {
 	        this.code = source["code"];
 	        this.message = source["message"];
 	        this.result = source["result"];
+	    }
+	}
+
+}
+
+export namespace ttsai {
+	
+	export class TtsScript {
+	    content: string;
+	    speaker: string;
+	    emotion: string;
+	    speechRate: number;
+	    volume: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new TtsScript(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.content = source["content"];
+	        this.speaker = source["speaker"];
+	        this.emotion = source["emotion"];
+	        this.speechRate = source["speechRate"];
+	        this.volume = source["volume"];
 	    }
 	}
 

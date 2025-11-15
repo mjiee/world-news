@@ -8,3 +8,5 @@ frontend/package-lock.json
 *.drawio
 .DS_Store
 __debug*
+
+*.wav

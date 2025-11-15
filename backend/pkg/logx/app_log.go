@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/mjiee/world-news/backend/pkg/pathx"
-
 	"go.uber.org/zap"
+
+	"github.com/mjiee/world-news/backend/pkg/pathx"
 )
 
 const appMsg string = "app"

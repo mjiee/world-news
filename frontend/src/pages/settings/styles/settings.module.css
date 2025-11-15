@@ -1,0 +1,102 @@
+.settingCard {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #e9ecef;
+}
+
+.settingCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #228be6;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.chevron {
+  color: #868e96;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.settingCard:hover .chevron {
+  transform: translateX(4px);
+  color: #228be6;
+}
+
+.modalContent {
+  border-radius: 12px;
+}
+
+.modalHeader {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 1rem;
+}
+
+.pill {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 500;
+}
+
+.websiteItem {
+  transition: all 0.2s ease;
+}
+
+.websiteItem:hover {
+  background-color: #f8f9fa;
+  border-color: #228be6;
+}
+
+.selectorText {
+  font-family: "Monaco", "Courier New", monospace;
+  background-color: #f1f3f5;
+  padding: 0.5rem;
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+.styleItem {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.styleItem:hover {
+  border-color: #228be6;
+  background-color: #fff;
+}
+
+.voiceRow {
+  padding: 0.5rem;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+}
+
+.voiceRow:hover {
+  background-color: #e9ecef;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem 0.5rem;
+  }
+
+  .iconWrapper {
+    width: 40px;
+    height: 40px;
+  }
+
+  .voiceRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

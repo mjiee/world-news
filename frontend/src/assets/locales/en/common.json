@@ -15,9 +15,15 @@
     "internal_error": "Internal Server Error",
     "unauthorized": "unauthorized"
   },
-  "auth": {
-    "button": "Sign In",
-    "title": "Welcome back!",
-    "label": "Token"
+  "navbar": {
+    "news": "News",
+    "settings": "Settings",
+    "records": "History",
+    "favorites": "Favorites",
+    "tasks": "Tasks",
+    "podcasts": "Podcasts"
+  },
+  "validate": {
+    "required": "Please enter {{ label }}."
   }
 }

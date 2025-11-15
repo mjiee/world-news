@@ -46,7 +46,6 @@ interface DeleteNewsRequest {
 }
 
 interface CritiqueNewsRequest {
-  title: string;
   contents: string[];
 }
 

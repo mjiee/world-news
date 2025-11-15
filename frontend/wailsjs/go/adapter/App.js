@@ -10,6 +10,18 @@ export function CrawlingWebsite() {
   return window['go']['adapter']['App']['CrawlingWebsite']();
 }
 
+export function CreateAudio(arg1) {
+  return window['go']['adapter']['App']['CreateAudio'](arg1);
+}
+
+export function CreateScript(arg1) {
+  return window['go']['adapter']['App']['CreateScript'](arg1);
+}
+
+export function CreateTask(arg1) {
+  return window['go']['adapter']['App']['CreateTask'](arg1);
+}
+
 export function CritiqueNews(arg1) {
   return window['go']['adapter']['App']['CritiqueNews'](arg1);
 }
@@ -22,6 +34,18 @@ export function DeleteNews(arg1) {
   return window['go']['adapter']['App']['DeleteNews'](arg1);
 }
 
+export function DeleteTask(arg1) {
+  return window['go']['adapter']['App']['DeleteTask'](arg1);
+}
+
+export function DownloadAudio(arg1) {
+  return window['go']['adapter']['App']['DownloadAudio'](arg1);
+}
+
+export function EditScript(arg1) {
+  return window['go']['adapter']['App']['EditScript'](arg1);
+}
+
 export function GetCrawlingRecord(arg1) {
   return window['go']['adapter']['App']['GetCrawlingRecord'](arg1);
 }
@@ -30,12 +54,24 @@ export function GetNewsDetail(arg1) {
   return window['go']['adapter']['App']['GetNewsDetail'](arg1);
 }
 
+export function GetPodcast() {
+  return window['go']['adapter']['App']['GetPodcast']();
+}
+
 export function GetSystemConfig(arg1) {
   return window['go']['adapter']['App']['GetSystemConfig'](arg1);
 }
 
+export function GetTask(arg1) {
+  return window['go']['adapter']['App']['GetTask'](arg1);
+}
+
 export function HasCrawlingTasks() {
   return window['go']['adapter']['App']['HasCrawlingTasks']();
+}
+
+export function MergeArticle(arg1) {
+  return window['go']['adapter']['App']['MergeArticle'](arg1);
 }
 
 export function QueryCrawlingRecords(arg1) {
@@ -44,6 +80,18 @@ export function QueryCrawlingRecords(arg1) {
 
 export function QueryNews(arg1) {
   return window['go']['adapter']['App']['QueryNews'](arg1);
+}
+
+export function QueryPodcasts() {
+  return window['go']['adapter']['App']['QueryPodcasts']();
+}
+
+export function QueryTasks(arg1) {
+  return window['go']['adapter']['App']['QueryTasks'](arg1);
+}
+
+export function RestyleArticle(arg1) {
+  return window['go']['adapter']['App']['RestyleArticle'](arg1);
 }
 
 export function SaveNewsFavorite(arg1) {

@@ -1,37 +1,38 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router";
-import { useTranslation } from "react-i18next";
-import {
-  Container,
-  Title,
-  ActionIcon,
-  CopyButton,
-  Text,
-  Badge,
-  Flex,
-  Box,
-  Image,
-  Divider,
-  Paper,
-  Group,
-  Anchor,
-  Stack,
-  Transition,
-  Affix,
-  Popover,
-} from "@mantine/core";
-import MarkdownIt from "markdown-it";
 import { Loading, SourceLabel } from "@/components";
-import { getNewsDetail, NewsDetail, critiqueNews, translateNews, saveFavorite } from "@/services";
+import { critiqueNews, getNewsDetail, NewsDetail, saveFavorite, translateNews } from "@/services";
+import { md } from "@/utils/md";
+import {
+  ActionIcon,
+  Affix,
+  Anchor,
+  Badge,
+  Box,
+  CopyButton,
+  Divider,
+  Flex,
+  Group,
+  Image,
+  Paper,
+  Popover,
+  Stack,
+  Text,
+  Title,
+  Transition,
+} from "@mantine/core";
+import {
+  IconAi,
+  IconArrowLeft,
+  IconCheck,
+  IconCopy,
+  IconLanguage,
+  IconStar,
+  IconStarFilled,
+  IconX,
+} from "@tabler/icons-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate, useParams } from "react-router";
 import classes from "./styles/newsDetail.module.css";
-import IconCopy from "@/assets/icons/IconCopy.svg?react";
-import IconCheck from "@/assets/icons/IconCheck.svg?react";
-import IconLanguage from "@/assets/icons/IconLanguage.svg?react";
-import IconAi from "@/assets/icons/IconAi.svg?react";
-import IconArrowLeft from "@/assets/icons/IconArrowLeft.svg?react";
-import IconX from "@/assets/icons/IconX.svg?react";
-import IconStar from "@/assets/icons/IconStar.svg?react";
-import IconStarFilled from "@/assets/icons/IconStarFilled.svg?react";
 
 // News detail page
 export function NewsDetailPage() {
@@ -67,7 +68,7 @@ export function NewsDetailPage() {
   );
 
   return (
-    <Container size="md">
+    <>
       <Group mb="xl">
         <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate(-1)} aria-label={t("button.back")}>
           <IconArrowLeft />
@@ -96,7 +97,7 @@ export function NewsDetailPage() {
         <NewsBody contents={newsDetail?.contents} images={newsDetail?.images} translations={translations} />
       </Paper>
       <FloatingToolbar newsDetail={newsDetail} setTranslations={setTranslations} />
-    </Container>
+    </>
   );
 }
 
@@ -182,7 +183,6 @@ interface FloatingToolbarProps {
 const critique = "critique";
 const translate = "translate";
 const favorite = "favorite";
-const md = new MarkdownIt();
 
 function FloatingToolbar({ newsDetail, setTranslations }: FloatingToolbarProps) {
   const { t, i18n } = useTranslation();
@@ -198,7 +198,7 @@ function FloatingToolbar({ newsDetail, setTranslations }: FloatingToolbarProps) 
     let resp: string[] | undefined;
 
     if (obj === critique && newsDetail) {
-      resp = await critiqueNews({ title: newsDetail.title, contents: newsDetail.contents ?? [] });
+      resp = await critiqueNews({ contents: [newsDetail.title, ...(newsDetail.contents ?? [])] });
     } else if (obj === translate && newsDetail) {
       resp = await translateNews({ toLang: i18n.language, contents: newsDetail.contents ?? [] });
     } else if (obj == favorite && newsDetail) {

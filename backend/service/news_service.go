@@ -3,16 +3,16 @@ package service
 import (
 	"context"
 
+	"github.com/gocolly/colly/v2"
+	"github.com/pkg/errors"
+	"gorm.io/gorm"
+
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/repository"
 	"github.com/mjiee/world-news/backend/repository/model"
-
-	"github.com/gocolly/colly/v2"
-	"github.com/pkg/errors"
-	"gorm.io/gorm"
 )
 
 // NewsService represents the interface for news-related operations.
@@ -127,7 +127,17 @@ func (s *newsService) GetNewsDetail(ctx context.Context, id uint) (*entity.NewsD
 
 // DeleteNews deletes the news detail based on the provided ID.
 func (s *newsService) DeleteNews(ctx context.Context, id uint) error {
-	_, err := repository.Q.NewsDetail.WithContext(ctx).Where(repository.Q.NewsDetail.ID.Eq(id)).Delete()
+	err := repository.Q.Transaction(func(tx *repository.Query) error {
+		if _, err := tx.NewsDetail.WithContext(ctx).Where(tx.NewsDetail.ID.Eq(id)).Delete(); err != nil {
+			return err
+		}
+
+		if _, err := tx.PodcastTask.WithContext(ctx).Where(tx.PodcastTask.NewsId.Eq(id)).Delete(); err != nil {
+			return err
+		}
+
+		return nil
+	})
 
 	return errors.WithStack(err)
 }

@@ -5,40 +5,72 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/mjiee/world-news/backend/pkg/errorx"
-
 	"github.com/pkg/errors"
+
+	"github.com/mjiee/world-news/backend/pkg/errorx"
 )
 
-// ChatCompletionRequest is the request body for the OpenAI API
-type ChatCompletionRequest struct {
+// chatCompletionRequest is the request body for the OpenAI API
+type chatCompletionRequest struct {
 	Model     string     `json:"model"`
-	Messages  []*message `json:"messages"`
-	MaxTokens int        `json:"max_tokens"`
+	Messages  []*Message `json:"messages"`
+	MaxTokens int        `json:"max_tokens,omitempty"`
 }
 
-// NewChatCompletionRequest creates a new ChatCompletionRequest
-func NewChatCompletionRequest(conf *Config, userMsg []string) *ChatCompletionRequest {
-	req := &ChatCompletionRequest{
-		Model:     conf.Model,
-		MaxTokens: conf.MaxTokens,
+// SetSystemPrompt sets the system prompt for the ChatCompletionRequest
+func (c *OpenaiClient) SetSystemPrompt(prompt string) *OpenaiClient {
+	if c.chatCompletion == nil {
+		c.chatCompletion = &chatCompletionRequest{}
 	}
 
-	req.Messages = make([]*message, 0, 3)
-
-	if conf.SystemPrompt != "" {
-		req.Messages = append(req.Messages, SystemMessage(conf.SystemPrompt))
+	if len(prompt) == 0 {
+		return c
 	}
 
-	for _, msg := range userMsg {
-		req.Messages = append(req.Messages, UserMessage(msg))
+	c.chatCompletion.Messages = append(c.chatCompletion.Messages, SystemMessage(prompt))
+
+	return c
+}
+
+// SetUserPrompt sets the user prompt for the ChatCompletionRequest
+func (c *OpenaiClient) SetUserPrompt(prompt ...string) *OpenaiClient {
+	if c.chatCompletion == nil {
+		c.chatCompletion = &chatCompletionRequest{}
 	}
 
-	if conf.AssistantPrompt != "" {
-		req.Messages = append(req.Messages, AssistantMessage(conf.AssistantPrompt))
+	if len(prompt) == 0 {
+		return c
 	}
 
-	return req
+	c.chatCompletion.Messages = append(c.chatCompletion.Messages, UserMessage(prompt...))
+
+	return c
+}
+
+// SetAssistantPrompt sets the assistant prompt for the ChatCompletionRequest
+func (c *OpenaiClient) SetAssistantPrompt(prompt string) *OpenaiClient {
+	if c.chatCompletion == nil {
+		c.chatCompletion = &chatCompletionRequest{}
+	}
+
+	if len(prompt) == 0 {
+		return c
+	}
+
+	c.chatCompletion.Messages = append(c.chatCompletion.Messages, AssistantMessage(prompt))
+
+	return c
+}
+
+// SetMessage sets the message for the ChatCompletionRequest
+func (c *OpenaiClient) SetMessage(messages ...*Message) *OpenaiClient {
+	if c.chatCompletion == nil {
+		c.chatCompletion = &chatCompletionRequest{}
+	}
+
+	c.chatCompletion.Messages = append(c.chatCompletion.Messages, messages...)
+
+	return c
 }
 
 // ChatCompletionMessage is the message for the OpenAI API
@@ -68,13 +100,23 @@ type ChatCompletionChoice struct {
 }
 
 // ChatCompletion is the chat completion endpoint for the OpenAI API
-func (c *OpenaiClient) ChatCompletion(ctx context.Context, userMessage ...string) (*ChatCompletionResponse, error) {
-	reqBody, err := json.Marshal(NewChatCompletionRequest(c.config, userMessage))
+func (c *OpenaiClient) ChatCompletion(ctx context.Context) (*ChatCompletionResponse, error) {
+	if c.chatCompletion == nil {
+		return nil, errors.WithStack(errorx.InternalError)
+	}
+
+	c.chatCompletion.Model = c.config.Model
+
+	if c.config.MaxTokens > 0 {
+		c.chatCompletion.MaxTokens = c.config.MaxTokens
+	}
+
+	reqBody, err := json.Marshal(c.chatCompletion)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	resp, err := c.Do(ctx, reqBody)
+	resp, err := c.do(ctx, reqBody)
 	if err != nil {
 		return nil, err
 	}

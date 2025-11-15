@@ -14,6 +14,13 @@
     "newsWebsiteConfigNotFound": "Please complete the website configuration first",
     "updateRecordStatusNotAllowed": "Record status update not allowed",
     "openaiConfigNotFound": "Please complete the OpenAI configuration first",
-    "translaterConfigNotFound": "Please complete the translation service configuration first"
+    "translaterConfigNotFound": "Please complete the translation service configuration first",
+    "critiquePromptNotFound": "Please complete the news critique prompt first",
+    "podcastPromptNotFound": "Please complete the podcast prompt first",
+    "ttsAiConfigNotFound": "Please complete the TTS AI configuration first",
+    "podcastTaskNotFound": "Podcast task not found",
+    "podcastGenerationFailed": "Podcast generation failed",
+    "podcastScriptNotFound": "Please complete the podcast script first",
+    "podcastVoiceNotFound": "Please complete the podcast voice first"
   }
 }

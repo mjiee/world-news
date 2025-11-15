@@ -7,23 +7,47 @@ export function CrawlingNews(arg1:dto.CrawlingNewsRequest):Promise<httpx.Respons
 
 export function CrawlingWebsite():Promise<httpx.Response>;
 
+export function CreateAudio(arg1:dto.CreateAudioRequest):Promise<httpx.Response>;
+
+export function CreateScript(arg1:dto.CreateScriptRequest):Promise<httpx.Response>;
+
+export function CreateTask(arg1:dto.CreateTaskRequest):Promise<httpx.Response>;
+
 export function CritiqueNews(arg1:dto.CritiqueNewsRequest):Promise<httpx.Response>;
 
 export function DeleteCrawlingRecord(arg1:dto.DeleteCrawlingRecordRequest):Promise<httpx.Response>;
 
 export function DeleteNews(arg1:dto.DeleteNewsRequest):Promise<httpx.Response>;
 
+export function DeleteTask(arg1:dto.DeleteTaskRequest):Promise<httpx.Response>;
+
+export function DownloadAudio(arg1:dto.DownloadAudioRequest):Promise<httpx.Response>;
+
+export function EditScript(arg1:dto.EditScriptRequest):Promise<httpx.Response>;
+
 export function GetCrawlingRecord(arg1:dto.GetCrawlingRecordRequest):Promise<httpx.Response>;
 
 export function GetNewsDetail(arg1:dto.GetNewsDetailRequest):Promise<httpx.Response>;
 
+export function GetPodcast():Promise<httpx.Response>;
+
 export function GetSystemConfig(arg1:dto.GetSystemConfigRequest):Promise<httpx.Response>;
 
+export function GetTask(arg1:dto.GetTaskRequest):Promise<httpx.Response>;
+
 export function HasCrawlingTasks():Promise<httpx.Response>;
+
+export function MergeArticle(arg1:dto.MergeArticleRequest):Promise<httpx.Response>;
 
 export function QueryCrawlingRecords(arg1:dto.QueryCrawlingRecordsRequest):Promise<httpx.Response>;
 
 export function QueryNews(arg1:dto.QueryNewsRequest):Promise<httpx.Response>;
+
+export function QueryPodcasts():Promise<httpx.Response>;
+
+export function QueryTasks(arg1:dto.QueryTaskRequest):Promise<httpx.Response>;
+
+export function RestyleArticle(arg1:dto.RestyleArticleRequest):Promise<httpx.Response>;
 
 export function SaveNewsFavorite(arg1:dto.SaveNewsFavoriteRequest):Promise<httpx.Response>;
 

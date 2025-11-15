@@ -1,22 +1,20 @@
 // src/i18n.ts
 import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
+import { initReactI18next } from "react-i18next";
 
 import commonEn from "@/assets/locales/en/common.json";
-import commonZh from "@/assets/locales/zh/common.json";
-import homeEn from "@/assets/locales/en/home.json";
-import homeZh from "@/assets/locales/zh/home.json";
-import settingsEn from "@/assets/locales/en/settings.json";
-import settingsZh from "@/assets/locales/zh/settings.json";
 import newsEn from "@/assets/locales/en/news.json";
+import settingsEn from "@/assets/locales/en/settings.json";
+import task from "@/assets/locales/en/task.json";
+import commonZh from "@/assets/locales/zh/common.json";
 import newsZh from "@/assets/locales/zh/news.json";
-import record from "@/assets/locales/en/record.json";
-import recordZh from "@/assets/locales/zh/record.json";
+import settingsZh from "@/assets/locales/zh/settings.json";
+import taskZh from "@/assets/locales/zh/task.json";
 
 const resources = {
-  en: { common: commonEn, home: homeEn, settings: settingsEn, news: newsEn, record: record },
-  zh: { common: commonZh, home: homeZh, settings: settingsZh, news: newsZh, record: recordZh },
+  en: { common: commonEn, settings: settingsEn, news: newsEn, task: task },
+  zh: { common: commonZh, settings: settingsZh, news: newsZh, task: taskZh },
 };
 
 i18n

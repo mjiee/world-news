@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/locale"
 	"github.com/mjiee/world-news/backend/repository/model"
-
-	"github.com/pkg/errors"
 )
 
 // SystemConfig represents the structure of system configuration data stored in the database.
@@ -87,4 +87,17 @@ func (s *SystemConfig) UnmarshalValue(v any) error {
 	err := json.Unmarshal([]byte(s.Value), v)
 
 	return errors.WithStack(err)
+}
+
+// UnmarshalValue unmarshal config value
+func UnmarshalValue[T any](data *SystemConfig, notErr error) (*T, error) {
+	if data == nil || data.Id == 0 {
+		return nil, notErr
+	}
+
+	var v T
+
+	err := json.Unmarshal([]byte(data.Value), &v)
+
+	return &v, errors.WithStack(err)
 }

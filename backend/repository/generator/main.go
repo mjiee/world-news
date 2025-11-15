@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
+	"gorm.io/gen"
+
 	"github.com/mjiee/world-news/backend/pkg/databasex"
 	"github.com/mjiee/world-news/backend/repository/model"
-
-	"gorm.io/gen"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 
 	g.UseDB(db)
 
-	g.ApplyBasic(model.NewsDetail{}, model.SystemConfig{}, model.CrawlingRecord{})
+	g.ApplyBasic(model.NewsDetail{}, model.SystemConfig{}, model.CrawlingRecord{}, model.PodcastTask{}, model.Podcast{})
 
 	g.Execute()
 }

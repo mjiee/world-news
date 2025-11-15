@@ -1,23 +1,32 @@
-import { deleteNews, NewsDetail, saveFavorite, translateNews } from "@/services";
-import { GolbalLanguage } from "@/stores";
-import { ActionIcon, Badge, Button, Group, Modal, Text } from "@mantine/core";
 import { useState } from "react";
-import { useDisclosure } from "@mantine/hooks";
 import { useTranslation } from "react-i18next";
+import { useDisclosure } from "@mantine/hooks";
+import { useField } from "@mantine/form";
+import { ActionIcon, Badge, Button, Group, Modal, MultiSelect, Stack, Text } from "@mantine/core";
+import { IconTrash, IconLanguage, IconStar, IconStarFilled, IconBroadcast } from "@tabler/icons-react";
+import {
+  deleteNews,
+  NewsDetail,
+  saveFavorite,
+  translateNews,
+  createTask,
+  getNewsDetail,
+  getSystemConfig,
+  TextToSpeechAIConfig,
+  SystemConfigKey,
+} from "@/services";
 import { SourceLabel } from "@/components";
-import IconTrash from "@/assets/icons/IconTrash.svg?react";
-import IconLanguage from "@/assets/icons/IconLanguage.svg?react";
-import IconStar from "@/assets/icons/IconStar.svg?react";
-import IconStarFilled from "@/assets/icons/IconStarFilled.svg?react";
+import { GolbalLanguage } from "@/stores";
 
 interface NewsCardFooterProps {
   news: NewsDetail;
   updatePage: (page: number) => void;
   updateTitle: (title: string) => void;
+  showTask?: boolean;
 }
 
 // news card footer
-export default function NewsCardFooter({ news, updatePage, updateTitle }: NewsCardFooterProps) {
+export default function NewsCardFooter({ news, updatePage, updateTitle, showTask }: NewsCardFooterProps) {
   const [favorited, setFavorited] = useState<boolean>(news?.favorited ?? false);
 
   const translateTitle = async () => {
@@ -56,6 +65,7 @@ export default function NewsCardFooter({ news, updatePage, updateTitle }: NewsCa
         <ActionIcon variant="subtle" color={favorited ? "yellow" : "gray"} size="sm" onClick={saveNewsFavorite}>
           {favorited ? <IconStarFilled /> : <IconStar />}
         </ActionIcon>
+        {showTask && <CreateTaskButton newsId={news.id} />}
         <DeleteNewsButton newsId={news.id} updatePage={updatePage} />
       </Group>
     </Group>
@@ -93,6 +103,61 @@ function DeleteNewsButton({ newsId, updatePage }: DeleteNewsButtonProps) {
       <ActionIcon variant="subtle" color="gray" size="sm" onClick={open}>
         <IconTrash />
       </ActionIcon>
+    </>
+  );
+}
+
+// create task button
+interface CreateTaskButtonProps {
+  newsId: number;
+}
+
+function CreateTaskButton({ newsId }: CreateTaskButtonProps) {
+  const { t } = useTranslation();
+  const [voices, setVoices] = useState<{ value: string; label: string }[]>([]);
+  const [opened, { open, close }] = useDisclosure(false);
+  const [loading, setLoading] = useState(false);
+  const voiceField = useField({ initialValue: [] });
+
+  const createPodcastcaTask = async () => {
+    setLoading(true);
+    const news = await getNewsDetail({ id: newsId });
+
+    if (!news) return;
+
+    await createTask(GolbalLanguage.getLanguage(), news, voiceField.getValue());
+    setLoading(false);
+    voiceField.setValue([]);
+    close();
+  };
+
+  const loadVoices = async () => {
+    const resp = await getSystemConfig<TextToSpeechAIConfig>({ key: SystemConfigKey.TextToSpeechAi }, true);
+
+    if (!resp || !resp.value || !resp.value.voices) return [];
+
+    setVoices(resp.value.voices.map((v) => ({ value: v.id, label: v.name })));
+  };
+
+  return (
+    <>
+      <ActionIcon variant="subtle" color="gray" size="sm" onClick={open}>
+        <IconBroadcast />
+      </ActionIcon>
+
+      <Modal opened={opened} onClose={close} withCloseButton={false} title={"创建任务"} size="lg">
+        <Stack gap="md">
+          <MultiSelect data={voices} {...voiceField.getInputProps()} label="播音" onDropdownOpen={loadVoices} />
+          <Button
+            variant="gradient"
+            gradient={{ from: "violet", to: "grape" }}
+            loading={loading}
+            onClick={createPodcastcaTask}
+          >
+            {t("button.save")}
+          </Button>
+        </Stack>
+      </Modal>
     </>
   );
 }

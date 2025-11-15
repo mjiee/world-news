@@ -4,14 +4,14 @@ import (
 	"context"
 	"time"
 
+	"github.com/gocolly/colly/v2"
+	"github.com/pkg/errors"
+	"gorm.io/gorm"
+
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/repository"
-	"gorm.io/gorm"
-
-	"github.com/gocolly/colly/v2"
-	"github.com/pkg/errors"
 )
 
 // CrawlingService news crawling service

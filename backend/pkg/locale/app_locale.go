@@ -9,7 +9,7 @@ var appLocalizer *i18n.Localizer
 // SetAppLocalizer sets the app localizer
 func SetAppLocalizer(lang string) error {
 	if lang == "" {
-		lang = en
+		lang = En
 	}
 
 	bundle, err := LoadLocaleFile()
@@ -25,7 +25,7 @@ func SetAppLocalizer(lang string) error {
 // AppLocalize app localize
 func AppLocalize(messageId string, templateData ...map[string]string) string {
 	if appLocalizer == nil {
-		SetAppLocalizer(en)
+		SetAppLocalizer(En)
 	}
 
 	return Localize(appLocalizer, messageId, templateData...)

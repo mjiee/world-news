@@ -2,9 +2,9 @@ package command
 
 import (
 	"context"
-	"errors"
 	"strings"
 
+	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/openai"
@@ -13,45 +13,55 @@ import (
 
 // CritiqueNewsCommand represents a command for news critique.
 type CritiqueNewsCommand struct {
-	title    string
-	contents []string
-
+	contents        []string
 	newsSvc         service.NewsService
 	systemConfigSvc service.SystemConfigService
 }
 
-func NewCritiqueNewsCommand(title string, contents []string, newsSvc service.NewsService,
+func NewCritiqueNewsCommand(contents []string, newsSvc service.NewsService,
 	systemConfigSvc service.SystemConfigService) *CritiqueNewsCommand {
 	return &CritiqueNewsCommand{
-		title:           title,
 		contents:        contents,
 		newsSvc:         newsSvc,
 		systemConfigSvc: systemConfigSvc,
 	}
 }
 
+// newsCritiquePromptConfig represents the configuration for news critique prompt.
+type newsCritiquePromptConfig struct {
+	SystemPrompt string `json:"systemPrompt"`
+}
+
 func (c CritiqueNewsCommand) Execute(ctx context.Context) ([]string, error) {
-	if c.title == "" || len(c.contents) == 0 {
+	if len(c.contents) == 0 {
 		return nil, errorx.ParamsError
 	}
 
 	// get openai config
-	openaiConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.OpenAIKey.String())
+	openaiConfig, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.TextAIKey.String())
 	if err != nil {
 		return nil, err
 	}
 
-	if openaiConfig.Id == 0 {
-		return nil, errorx.OpenaiConfigNotFound
+	textAiConfig, err := entity.UnmarshalValue[openai.Config](openaiConfig, errorx.OpenaiConfigNotFound)
+	if err != nil {
+		return nil, err
 	}
 
-	var config openai.Config
-	if err := openaiConfig.UnmarshalValue(&config); err != nil {
-		return nil, errorx.InternalError.SetErr(errors.New("openai config type error"))
+	// get news ceritique prompt
+	critiquePrompt, err := c.systemConfigSvc.GetSystemConfig(ctx, valueobject.NewsCritiquePromptKey.String())
+	if err != nil {
+		return nil, err
+	}
+
+	critiqueConfig, err := entity.UnmarshalValue[newsCritiquePromptConfig](critiquePrompt, errorx.CritiquePromptNotFound)
+	if err != nil {
+		return nil, err
 	}
 
 	// news critique
-	data, err := openai.NewOpenaiClient(&config).ChatCompletion(ctx, c.title, strings.Join(c.contents, "\n"))
+	data, err := openai.NewOpenaiClient(textAiConfig).SetSystemPrompt(critiqueConfig.SystemPrompt).
+		SetUserPrompt(c.contents...).ChatCompletion(ctx)
 	if err != nil {
 		return nil, err
 	}

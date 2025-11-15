@@ -1,22 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router";
-import { useTranslation } from "react-i18next";
-import { Stack, AspectRatio, Button, Card, Group, Image, Select, SimpleGrid, Text, Title } from "@mantine/core";
-import { useForm, UseFormReturnType } from "@mantine/form";
-import { FetchNewsButton } from "@/components";
+import { DateInput, FetchNewsButton, Loading, Pagination } from "@/components";
 import {
-  getSystemConfig,
-  queryNews,
   getCrawlingRecord,
-  SystemConfigKey,
+  getSystemConfig,
   NewsDetail,
   NewsWebsiteValue,
+  queryNews,
+  SystemConfigKey,
 } from "@/services";
-import { DateInput, Loading, Pagination } from "@/components";
 import { useNewsListStore, useRemoteServiceStore } from "@/stores";
 import { getPageNumber } from "@/utils/pagination";
 import { getSecondLevelDomain } from "@/utils/url";
-import { httpx } from "wailsjs/go/models";
+import { AspectRatio, Button, Card, Group, Image, Select, SimpleGrid, Space, Stack, Text, Title } from "@mantine/core";
+import { useForm, UseFormReturnType } from "@mantine/form";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate, useParams } from "react-router";
 import NewsCardFooter from "./components/NewsCardFooter";
 import classes from "./styles/newsList.module.css";
 
@@ -103,10 +101,11 @@ export function NewsListPage() {
       {loading ? (
         <Loading />
       ) : (
-        <Stack gap="lg" p="md">
+        <>
           <NewsList newsList={newsList} updatePage={updatePageHandler} />
+          <Space h="xl" />
           <Pagination value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
-        </Stack>
+        </>
       )}
     </>
   );
@@ -227,7 +226,7 @@ function NewsList({ newsList, updatePage }: NewsListProps) {
           ))}
         </SimpleGrid>
       )}
-
+      <Space h="md" />
       {newsWithoutImages.length > 0 && (
         <Stack gap="md">
           {newsWithoutImages.map((item) => (

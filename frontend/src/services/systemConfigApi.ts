@@ -9,8 +9,11 @@ export enum SystemConfigKey {
   NewsWebsites = "newsWebsites",
   Language = "language",
   RemoteService = "remoteService",
-  OpenAI = "openAI",
   Translater = "translater",
+  TextAi = "textAI",
+  TextToSpeechAi = "textToSpeechAI",
+  NewsCritiquePromptKey = "newsCritiquePrompt",
+  PodcastScriptPromptKey = "podcastScriptPrompt",
 }
 
 interface SystemConfig<T> {
@@ -43,14 +46,44 @@ export interface NewsSelector {
   child?: NewsSelector;
 }
 
-export interface OpenAIConfig {
-  description: string;
+export interface TextAIConfig {
+  platform: string;
   apiKey: string;
   apiUrl: string;
   model: string;
-  maxTokens?: number;
-  systemPrompt?: string;
-  assistantPrompt?: string;
+}
+
+export interface TextToSpeechAIConfig {
+  platform: string;
+  appId?: string;
+  apiKey: string;
+  model: string;
+  voices?: AudioVoice[];
+}
+
+export interface AudioVoice {
+  id: string;
+  name: string;
+  description?: string;
+  model?: string;
+}
+
+export interface NewsCritiquePrompt {
+  systemPrompt: string;
+}
+
+export interface PodcastScriptPrompt {
+  systemPrompt: string;
+  approvalPrompt?: string;
+  rewritePrompt?: string;
+  mergePrompt?: string;
+  classifyPrompt?: string;
+  stylizePrompts?: StylePrompt[];
+}
+
+export interface StylePrompt {
+  style: string;
+  prompt: string;
 }
 
 export interface TranslaterConfig {

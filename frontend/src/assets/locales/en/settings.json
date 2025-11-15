@@ -2,27 +2,39 @@
   "settings_label": {
     "topic": {
       "label": "News Topic",
-      "description": "Configure the news topics you are interested in to filter news."
+      "description": "Set the news topics you care about to filter and organize relevant news."
     },
     "collection": {
       "label": "News Website Collection",
-      "description": "The news website collection is used to access global news websites."
+      "description": "Manage and access collections of global news sources for content aggregation."
     },
     "website": {
       "label": "News Website",
-      "description": "The URLs of global news websites obtained from the news website collection."
+      "description": "Define specific news website URLs obtained from your selected collections."
     },
-    "critique": {
-      "label": "News Critique",
-      "description": "Configure AI services compatible with OpenAI API for the analysis and evaluation of news content."
+    "text_ai": {
+      "label": "Text AI",
+      "description": "Configure AI models compatible with the OpenAI API to analyze and evaluate news content."
+    },
+    "text_to_speech_ai": {
+      "label": "Text to Speech AI",
+      "description": "Configure AI services for converting news text into natural-sounding speech."
+    },
+    "critique_prompt": {
+      "label": "News Critique Prompt",
+      "description": "Define prompt templates for AI-based critique and commentary on news content."
+    },
+    "podcast_prompt": {
+      "label": "Podcast Script Prompt",
+      "description": "Define prompt templates for generating podcast scripts based on news articles."
     },
     "translate": {
       "label": "News Translation",
-      "description": "Configure translation services for translating news content into other languages."
+      "description": "Set up translation services to automatically translate news into multiple languages."
     },
     "service": {
-      "label": "Remote service",
-      "description": "Enable cloud-deployed services for global news crawling, and use this feature when the local network is poor."
+      "label": "Remote Service",
+      "description": "Enable cloud-based news crawling and processing when local network conditions are poor."
     }
   },
   "news_website": {
@@ -60,22 +72,59 @@
       "duplicate": "The news topic already exists."
     }
   },
-  "news_critique": {
+  "text_ai": {
     "label": {
       "ai_platform": "AI Platform",
       "model": "Model",
       "api_key": "Api Key",
       "api_url": "Api Url",
-      "max_toknes": "Max Tokens",
-      "system_prompt": "System Prompt",
-      "assistant_prompt": "Assistant Prompt"
+      "max_toknes": "Max Tokens"
     },
     "validate": {
       "required": "Please enter {{ label }}.",
       "invalid_url": "Please enter a valid url.",
       "invalid_api_key": "Please enter a valid api key."
+    }
+  },
+  "tts_ai": {
+    "label": {
+      "ai_platform": "AI Platform",
+      "model": "Model",
+      "api_key": "Api Key",
+      "voices": "Voices",
+      "voice_id": "voice ID",
+      "voice_name": "voice",
+      "voice_description": "voice description",
+      "voice_model": "voice model"
     },
-    "default_system_prompt": "You are a news critic."
+    "validate": {
+      "required": "Please enter {{ label }}."
+    }
+  },
+  "critique_prompt": {
+    "label": "System Prompt",
+    "validate": "Please enter system prompt.",
+    "default": "You are a news critic."
+  },
+  "podcast_prompt": {
+    "label": {
+      "system": "System Prompt",
+      "approval": "Approval Prompt",
+      "rewrite": "News Rewrite Prompt",
+      "classify": "Classify Prompt",
+      "podcast": "Podcast Prompt",
+      "style": "Podcast Style",
+      "add_style": "Add Podcast Style",
+      "merge": "Merge Prompt"
+    },
+    "validate": "Please enter {{ label }}.",
+    "default": {
+      "system": "You are a podcast script generation assistant.",
+      "approval": "Please determine whether the following news passes the authenticity review based on the three aspects: factual truth, overall truth, and essential truth.",
+      "rewrite": "Please rewrite the following news content to make it more suitable for podcast presentation.",
+      "classify": "Analyze the following podcast content and determine which podcast style it best fits (single choice). Return only the index number of your choice.",
+      "merge": "Please merge the following podcast content into a single podcast script."
+    }
   },
   "translate": {
     "label": {

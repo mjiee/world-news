@@ -1,6 +1,6 @@
 module github.com/mjiee/world-news
 
-go 1.24.3
+go 1.25.4
 
 require (
 	cloud.google.com/go/translate v1.12.4
@@ -14,11 +14,11 @@ require (
 	github.com/go-co-op/gocron/v2 v2.17.0
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/markusmobius/go-dateparser v1.2.4
-	github.com/mjiee/gokit v0.0.0-20251020063222-eb1eebd64225
+	github.com/mjiee/gokit v0.0.0-20251127055251-2219481fbb94
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nicksnyder/go-i18n/v2 v2.5.1
 	github.com/pkg/errors v0.9.1
-	github.com/wailsapp/wails/v2 v2.10.2
+	github.com/wailsapp/wails/v2 v2.11.0
 	go.opentelemetry.io/otel v1.34.0
 	go.opentelemetry.io/otel/sdk v1.34.0
 	go.opentelemetry.io/otel/trace v1.34.0
@@ -119,7 +119,7 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	github.com/wailsapp/go-webview2 v1.0.19 // indirect
+	github.com/wailsapp/go-webview2 v1.0.22 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/wasilibs/go-re2 v1.3.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect

@@ -1,0 +1,23 @@
+.headertitle {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  font-weight: 800;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.progress {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.contentbox {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.scriptcard {
+  background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+  border-left: 4px solid #667eea;
+}
