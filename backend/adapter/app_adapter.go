@@ -28,6 +28,7 @@ type App struct {
 	crawlingSvc     service.CrawlingService
 	newsSvc         service.NewsService
 	systemConfigSvc service.SystemConfigService
+	taskSvc         service.PodcastTaskService
 }
 
 // NewApp creates a new App application struct
@@ -57,6 +58,7 @@ func NewApp() *App {
 	app.crawlingSvc = service.NewCrawlingService(c)
 	app.newsSvc = service.NewNewsService(c)
 	app.systemConfigSvc = service.NewSystemConfigService()
+	app.taskSvc = service.NewPodcastTaskService()
 
 	return app
 }
@@ -83,7 +85,6 @@ func (a *App) Shutdown(ctx context.Context) {
 // GetSystemConfig handles the request to retrieve system config.
 func (a *App) GetSystemConfig(req *dto.GetSystemConfigRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
-
 	data, err := a.systemConfigSvc.GetSystemConfig(ctx, req.Key)
 
 	return httpx.AppResp(ctx, "GetSystemConfig", req, dto.NewSystemConfigFromEntity(data), err)
@@ -104,7 +105,6 @@ func (a *App) SaveSystemConfig(req *dto.SystemConfig) *httpx.Response {
 // CrawlingNews handles the request to crawl news.
 func (a *App) CrawlingNews(req *dto.CrawlingNewsRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
-
 	cmd := command.NewCrawlingNewsCommand(a.ctx, req.StartTime, req.Sources, req.Topics,
 		a.crawlingSvc, a.newsSvc, a.systemConfigSvc)
 
@@ -114,7 +114,6 @@ func (a *App) CrawlingNews(req *dto.CrawlingNewsRequest) *httpx.Response {
 // CrawlingWebsite handles the request to crawl a news website.
 func (a *App) CrawlingWebsite() *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
-
 	cmd := command.NewCrawlingNewsWebsiteCommand(a.ctx, a.crawlingSvc, a.systemConfigSvc)
 
 	return httpx.AppResp(ctx, "CrawlingWebsite", nil, nil, cmd.Execute(ctx))
@@ -123,7 +122,6 @@ func (a *App) CrawlingWebsite() *httpx.Response {
 // QueryCrawlingRecords handles the request to retrieve crawling records.
 func (a *App) QueryCrawlingRecords(req *dto.QueryCrawlingRecordsRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
-
 	data, total, err := a.crawlingSvc.QueryCrawlingRecords(ctx,
 		*valueobject.NewQueryRecordParams(req.RecordType, req.Status, req.Pagination))
 
@@ -133,7 +131,6 @@ func (a *App) QueryCrawlingRecords(req *dto.QueryCrawlingRecordsRequest) *httpx.
 // GetCrawlingRecord handles the request to retrieve a crawling record.
 func (a *App) GetCrawlingRecord(req *dto.GetCrawlingRecordRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
-
 	data, err := a.crawlingSvc.GetCrawlingRecord(ctx, req.Id)
 
 	return httpx.AppResp(ctx, "GetCrawlingRecord", req, dto.NewCrawlingRecordFromEntity(data), err)
@@ -157,7 +154,6 @@ func (a *App) UpdateCrawlingRecordStatus(req *dto.UpdateCrawlingRecordStatusRequ
 // HasCrawlingTasks handles the request to confirm whether there are ongoing crawling tasks.
 func (a *App) HasCrawlingTasks() *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
-
 	result, err := a.crawlingSvc.HasProcessingTasks(ctx)
 
 	return httpx.AppResp(ctx, "HasCrawlingTasks", nil, result, err)
@@ -166,7 +162,6 @@ func (a *App) HasCrawlingTasks() *httpx.Response {
 // QueryNews handles the request to retrieve news detail list.
 func (a *App) QueryNews(req *dto.QueryNewsRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
-
 	data, total, err := a.newsSvc.QueryNews(ctx, req.ToValueobject())
 
 	return httpx.AppResp(ctx, "QueryNews", req, dto.NewQueryNewsResult(data, total), err)
@@ -175,7 +170,6 @@ func (a *App) QueryNews(req *dto.QueryNewsRequest) *httpx.Response {
 // GetNewsDetail handles the request to retrieve a news detail.
 func (a *App) GetNewsDetail(req *dto.GetNewsDetailRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
-
 	news, err := a.newsSvc.GetNewsDetail(ctx, req.Id)
 
 	return httpx.AppResp(ctx, "GetNewsDetail", req, dto.NewNewsDetailFromEntity(news), err)
@@ -192,7 +186,7 @@ func (a *App) DeleteNews(req *dto.DeleteNewsRequest) *httpx.Response {
 func (a *App) CritiqueNews(req *dto.CritiqueNewsRequest) *httpx.Response {
 	var (
 		ctx = tracex.InjectTraceInContext(a.ctx)
-		cmd = command.NewCritiqueNewsCommand(req.Title, req.Contents, a.newsSvc, a.systemConfigSvc)
+		cmd = command.NewCritiqueNewsCommand(req.Contents, a.newsSvc, a.systemConfigSvc)
 	)
 
 	data, err := cmd.Execute(ctx)
@@ -225,4 +219,107 @@ func (a *App) SaveWebsiteWeight(req *dto.SaveWebsiteWeightRequest) *httpx.Respon
 
 	return httpx.AppResp(ctx, "SaveWebsiteWeight", req, nil, a.systemConfigSvc.UpdateNewsWebsiteWeight(ctx,
 		req.Website, req.Step))
+}
+
+// CreateTask handles the request to create a podcast task.
+func (a *App) CreateTask(req *dto.CreateTaskRequest) *httpx.Response {
+	var (
+		ctx = tracex.InjectTraceInContext(a.ctx)
+		cmd = command.NewCreateTaskCommand(ctx, req.Language, req.News.ToEntity(), req.VoiceIds, a.newsSvc,
+			a.systemConfigSvc, a.taskSvc)
+	)
+
+	batchNo, err := cmd.Execute(ctx)
+
+	return httpx.AppResp(ctx, "CreateTask", req, &dto.CreateTaskResult{BatchNo: batchNo}, err)
+}
+
+// DeleteTask handles the request to delete a podcast task.
+func (a *App) DeleteTask(req *dto.DeleteTaskRequest) *httpx.Response {
+	ctx := tracex.InjectTraceInContext(a.ctx)
+
+	return httpx.AppResp(ctx, "DeleteTask", req, nil, a.taskSvc.DeleteTask(ctx, req.BatchNo))
+}
+
+// QueryTasks handles the request to retrieve podcast task list.
+func (a *App) QueryTasks(req *dto.QueryTaskRequest) *httpx.Response {
+	ctx := tracex.InjectTraceInContext(a.ctx)
+	tasks, total, err := a.taskSvc.QueryTasks(ctx, req.ToValueObject())
+
+	return httpx.AppResp(ctx, "QueryTasks", req, dto.NewQueryTaskResult(tasks, total), err)
+}
+
+// GetTask handles the request to retrieve a podcast task.
+func (a *App) GetTask(req *dto.GetTaskRequest) *httpx.Response {
+	ctx := tracex.InjectTraceInContext(a.ctx)
+	task, err := a.taskSvc.GetTaskByBatchNo(ctx, req.BatchNo)
+
+	return httpx.AppResp(ctx, "GetTask", req, dto.NewPodcastTask(task), err)
+}
+
+// RestyleArticle handles the request to restyle an article.
+func (a *App) RestyleArticle(req *dto.RestyleArticleRequest) *httpx.Response {
+	var (
+		ctx = tracex.InjectTraceInContext(a.ctx)
+		cmd = command.NewRestyleArticleCommand(ctx, req.StageId, req.Prompt, a.systemConfigSvc, a.taskSvc)
+	)
+
+	return httpx.AppResp(ctx, "RestyleArticle", req, nil, cmd.Execute(ctx))
+}
+
+// MergeArticle handles the request to merge an article.
+func (a *App) MergeArticle(req *dto.MergeArticleRequest) *httpx.Response {
+	var (
+		ctx = tracex.InjectTraceInContext(a.ctx)
+		cmd = command.NewMergeArticleCommand(ctx, req.Language, req.Title, req.StageIds, req.VoiceIds,
+			a.systemConfigSvc, a.taskSvc)
+	)
+
+	batchNo, err := cmd.Execute(ctx)
+
+	return httpx.AppResp(ctx, "MergeArticle", req, &dto.CreateTaskResult{BatchNo: batchNo}, err)
+}
+
+// CreateScript handles the request to restyle an article.
+func (a *App) CreateScript(req *dto.CreateScriptRequest) *httpx.Response {
+	var (
+		ctx = tracex.InjectTraceInContext(a.ctx)
+		cmd = command.NewCreateScriptCommand(ctx, req.StageId, req.VoiceIds, a.systemConfigSvc, a.taskSvc)
+	)
+
+	return httpx.AppResp(ctx, "CreateScript", req, nil, cmd.Execute(ctx))
+}
+
+// EditScript handles the request to edit a podcast script.
+func (a *App) EditScript(req *dto.EditScriptRequest) *httpx.Response {
+	ctx := tracex.InjectTraceInContext(a.ctx)
+
+	return httpx.AppResp(ctx, "EditScript", req, nil, a.taskSvc.EditScript(ctx, req.StageId, req.Scripts))
+}
+
+// CreateAudio handles the request to generate podcast audio.
+func (a *App) CreateAudio(req *dto.CreateAudioRequest) *httpx.Response {
+	var (
+		ctx = tracex.InjectTraceInContext(a.ctx)
+		cmd = command.NewCreateAudioCommand(ctx, req.StageId, a.systemConfigSvc, a.taskSvc)
+	)
+
+	return httpx.AppResp(ctx, "CreateAudio", req, nil, cmd.Execute(ctx))
+}
+
+// DownloadAudio handles the request to download podcast audio.
+func (a *App) DownloadAudio(req *dto.DownloadAudioRequest) *httpx.Response {
+	ctx := tracex.InjectTraceInContext(a.ctx)
+
+	return httpx.AppResp(ctx, "DownloadAudio", req, nil, a.taskSvc.DownloadAudio(ctx, req.StageId))
+}
+
+// QueryPodcasts handles the request to retrieve podcast list.
+func (a *App) QueryPodcasts() *httpx.Response {
+	return nil
+}
+
+// GetPodcast handles the request to retrieve a podcast.
+func (a *App) GetPodcast() *httpx.Response {
+	return nil
 }

@@ -30,3 +30,25 @@ func GetAppBasePath(appName string, subdirectories ...string) (string, error) {
 
 	return basePath, nil
 }
+
+// GetDownloadPath returns the download path for the application
+func GetDownloadPath() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+
+	download := filepath.Join(home, "Downloads")
+
+	if runtime.GOOS == "windows" {
+		if _, err := os.Stat(download); err == nil {
+			return download
+		}
+
+		if up := os.Getenv("USERPROFILE"); up != "" {
+			return filepath.Join(up, "Downloads")
+		}
+	}
+
+	return download
+}

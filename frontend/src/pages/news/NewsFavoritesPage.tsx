@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { useTranslation } from "react-i18next";
-import { Card, Stack, Image, Title, Text, AspectRatio, Flex, Group, Button } from "@mantine/core";
-import { httpx } from "wailsjs/go/models";
 import { DateInput, Loading, Pagination } from "@/components";
 import { NewsDetail, queryNews } from "@/services";
 import { useRemoteServiceStore } from "@/stores";
 import { getPageNumber } from "@/utils/pagination";
+import { AspectRatio, Button, Card, Flex, Group, Image, Space, Stack, Text, Title } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
+import { httpx } from "wailsjs/go/models";
 import NewsCardFooter from "./components/NewsCardFooter";
 
 // news favorites page
@@ -64,14 +64,15 @@ export function NewsFavoritesPage() {
       {loading ? (
         <Loading />
       ) : (
-        <Stack gap="lg" p="md">
+        <>
           <Stack gap="md">
             {newsList.map((item) => (
               <NewsCard key={item.id} news={item} updatePage={updatePageHandler} />
             ))}
           </Stack>
+          <Space h="xl" />
           <Pagination value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
-        </Stack>
+        </>
       )}
     </>
   );
@@ -107,7 +108,7 @@ function NewsCard({ news, updatePage }: NewsCardProps) {
             </Text>
           )}
 
-          <NewsCardFooter news={news} updatePage={updatePage} updateTitle={setTitle} />
+          <NewsCardFooter news={news} updatePage={updatePage} updateTitle={setTitle} showTask={true} />
         </Stack>
       </Flex>
     </Card>

@@ -3,10 +3,10 @@
 package locale
 
 import (
-	"github.com/mjiee/world-news/backend/pkg/logx"
-
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+
+	"github.com/mjiee/world-news/backend/pkg/logx"
 )
 
 const (
@@ -25,7 +25,7 @@ func WebLocale() gin.HandlerFunc {
 		lang := c.GetHeader(acceptLanguage)
 
 		if lang == "" {
-			lang = c.DefaultQuery("lang", en)
+			lang = c.DefaultQuery("lang", En)
 		}
 
 		c.Set(webLocalizerKey, i18n.NewLocalizer(bundle, lang))

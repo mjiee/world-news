@@ -88,8 +88,6 @@ serviceAxios.interceptors.response.use(
     let data = response.data;
 
     if (data?.code !== 0) {
-      if (data?.code === 401 && isWeb()) window.location.href = "/login";
-
       notificationError(data?.message ?? undefined);
 
       return;

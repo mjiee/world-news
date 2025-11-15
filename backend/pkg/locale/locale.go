@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	en = "en"
-	zh = "zh"
+	En = "en"
+	Zh = "zh"
 )
 
 var (

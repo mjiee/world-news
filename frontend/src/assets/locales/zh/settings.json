@@ -12,9 +12,21 @@
       "label": "新闻网站",
       "description": "从新闻网站集中获取的全球新闻网址。"
     },
-    "critique": {
-      "label": "新闻点评",
+    "text_ai": {
+      "label": "文本AI",
       "description": "配置与 OpenAI API 兼容的 AI 服务，用于分析和评估新闻内容。"
+    },
+    "text_to_speech_ai": {
+      "label": "文本转语音AI",
+      "description": "配置文本转语音服务，用于将新闻内容转换成语音。"
+    },
+    "critique_prompt": {
+      "label": "新闻点评提示词",
+      "description": "定义点评提示词，用于对新闻内容进行点评。"
+    },
+    "podcast_prompt": {
+      "label": "播客提示词",
+      "description": "定义播客提示词，用于将新闻内容转换成播客。"
     },
     "translate": {
       "label": "新闻翻译",
@@ -60,22 +72,59 @@
       "duplicate": "该新闻主题已存在。"
     }
   },
-  "news_critique": {
+  "text_ai": {
     "label": {
       "ai_platform": "AI 平台",
       "model": "AI 大模型",
       "api_key": "API 密钥",
       "api_url": "API 地址",
-      "max_toknes": "最大令牌数",
-      "system_prompt": "系统提示",
-      "assistant_prompt": "回复提示"
+      "max_toknes": "最大令牌数"
     },
     "validate": {
       "required": "请输入 {{ label }}。",
       "invalid_url": "API 地址无效。",
       "invalid_api_key": "API 密钥无效。"
+    }
+  },
+  "tts_ai": {
+    "label": {
+      "ai_platform": "AI 平台",
+      "model": "AI 大模型",
+      "api_key": "API 密钥",
+      "voices": "声音",
+      "voice_id": "声音 ID",
+      "voice_name": "声音名称",
+      "voice_description": "声音描述",
+      "voice_model": "模型"
     },
-    "default_system_prompt": "你是一名新闻评论员，你将根据以下新闻内容，为新闻提供客观的评价。"
+    "validate": {
+      "required": "请输入 {{ label }}。"
+    }
+  },
+  "critique_prompt": {
+    "label": "系统提示词",
+    "validate": "请输入系统提示词。",
+    "default": "你是一名新闻评论员，你将根据以下新闻内容，为新闻提供客观的评价。"
+  },
+  "podcast_prompt": {
+    "label": {
+      "system": "系统提示词",
+      "approval": "审核提示词",
+      "rewrite": "重构新闻提示词",
+      "classify": "分类提示词",
+      "podcast": "播客提示词",
+      "style": "播客风格",
+      "add_style": "添加播客风格",
+      "merge": "合并播客提示词"
+    },
+    "validate": "请输入 {{ label }}。",
+    "default": {
+      "system": "你是一位中文播客脚本生成助手。",
+      "approval": "请判断以下新闻是否通过真实性审核（事实真实、总体真实、本质真实三方面）。",
+      "rewrite": "请重新编写新闻内容，使其更适合播客内容。",
+      "classify": "请分析以下播客内容，判断它最适合哪种播客风格（单选），并返回选择的索引：",
+      "merge": "请合并多篇播客内容，保留所有文本的核心信息，使其成为一篇完整的播客文案。"
+    }
   },
   "translate": {
     "label": {

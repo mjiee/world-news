@@ -15,9 +15,15 @@
     "internal_error": "服务器内部错误",
     "unauthorized": "未授权"
   },
-  "auth": {
-    "button": "登陆",
-    "title": "欢迎使用！",
-    "label": "授权码"
+  "navbar": {
+    "news": "新闻",
+    "settings": "设置",
+    "records": "获取记录",
+    "favorites": "收藏",
+    "tasks": "任务列表",
+    "podcasts": "播客"
+  },
+  "validate": {
+    "required": "请输入 {{ label }}。"
   }
 }

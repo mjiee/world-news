@@ -5,12 +5,12 @@ package databasex
 import (
 	"path/filepath"
 
-	"github.com/mjiee/world-news/backend/pkg/logx"
-	"github.com/mjiee/world-news/backend/pkg/pathx"
-
 	"github.com/pkg/errors"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	"github.com/mjiee/world-news/backend/pkg/logx"
+	"github.com/mjiee/world-news/backend/pkg/pathx"
 )
 
 // NewAppDB creates a new instance of the gorm.DB

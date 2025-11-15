@@ -1,6 +1,5 @@
 import { ActionIcon, Badge, Popover, Stack, Tooltip } from "@mantine/core";
-import IconChevronUp from "@/assets/icons/IconChevronUp.svg?react";
-import IconChevronDown from "@/assets/icons/IconChevronDown.svg?react";
+import { IconChevronUp, IconChevronDown } from "@tabler/icons-react";
 import { saveWebsiteWeight } from "@/services";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";

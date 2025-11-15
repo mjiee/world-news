@@ -19,6 +19,8 @@ var (
 	Q              = new(Query)
 	CrawlingRecord *crawlingRecord
 	NewsDetail     *newsDetail
+	Podcast        *podcast
+	PodcastTask    *podcastTask
 	SystemConfig   *systemConfig
 )
 
@@ -26,6 +28,8 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	CrawlingRecord = &Q.CrawlingRecord
 	NewsDetail = &Q.NewsDetail
+	Podcast = &Q.Podcast
+	PodcastTask = &Q.PodcastTask
 	SystemConfig = &Q.SystemConfig
 }
 
@@ -34,6 +38,8 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		db:             db,
 		CrawlingRecord: newCrawlingRecord(db, opts...),
 		NewsDetail:     newNewsDetail(db, opts...),
+		Podcast:        newPodcast(db, opts...),
+		PodcastTask:    newPodcastTask(db, opts...),
 		SystemConfig:   newSystemConfig(db, opts...),
 	}
 }
@@ -43,6 +49,8 @@ type Query struct {
 
 	CrawlingRecord crawlingRecord
 	NewsDetail     newsDetail
+	Podcast        podcast
+	PodcastTask    podcastTask
 	SystemConfig   systemConfig
 }
 
@@ -53,6 +61,8 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		db:             db,
 		CrawlingRecord: q.CrawlingRecord.clone(db),
 		NewsDetail:     q.NewsDetail.clone(db),
+		Podcast:        q.Podcast.clone(db),
+		PodcastTask:    q.PodcastTask.clone(db),
 		SystemConfig:   q.SystemConfig.clone(db),
 	}
 }
@@ -70,6 +80,8 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		db:             db,
 		CrawlingRecord: q.CrawlingRecord.replaceDB(db),
 		NewsDetail:     q.NewsDetail.replaceDB(db),
+		Podcast:        q.Podcast.replaceDB(db),
+		PodcastTask:    q.PodcastTask.replaceDB(db),
 		SystemConfig:   q.SystemConfig.replaceDB(db),
 	}
 }
@@ -77,6 +89,8 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 type queryCtx struct {
 	CrawlingRecord *crawlingRecordDo
 	NewsDetail     *newsDetailDo
+	Podcast        *podcastDo
+	PodcastTask    *podcastTaskDo
 	SystemConfig   *systemConfigDo
 }
 
@@ -84,6 +98,8 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
 		CrawlingRecord: q.CrawlingRecord.WithContext(ctx),
 		NewsDetail:     q.NewsDetail.WithContext(ctx),
+		Podcast:        q.Podcast.WithContext(ctx),
+		PodcastTask:    q.PodcastTask.WithContext(ctx),
 		SystemConfig:   q.SystemConfig.WithContext(ctx),
 	}
 }

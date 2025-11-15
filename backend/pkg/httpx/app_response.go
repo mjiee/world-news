@@ -16,8 +16,8 @@ func AppResp(ctx context.Context, path string, req, result any, err error) *Resp
 	var (
 		resp = Ok(result)
 		data = &logx.LogData{
-			Request:  req,
-			Response: resp,
+			Request: req,
+			// Response: resp,
 			Duration: tracex.CalculateDuration(ctx),
 		}
 	)

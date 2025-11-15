@@ -5,6 +5,9 @@ package adapter
 import (
 	"context"
 
+	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+
 	"github.com/mjiee/world-news/backend/adapter/dto"
 	"github.com/mjiee/world-news/backend/command"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
@@ -17,9 +20,6 @@ import (
 	"github.com/mjiee/world-news/backend/repository/model"
 	"github.com/mjiee/world-news/backend/service"
 	"github.com/mjiee/world-news/backend/task"
-
-	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 )
 
 const AppName = "world-news"
@@ -29,6 +29,7 @@ type WebAadapter struct {
 	crawlingSvc     service.CrawlingService
 	newsSvc         service.NewsService
 	systemConfigSvc service.SystemConfigService
+	taskSvc         service.PodcastTaskService
 }
 
 // SetWebAdapter create a new WebAadapter
@@ -54,6 +55,7 @@ func SetWebAdapter(conf *config.WebConfig) (*WebAadapter, error) {
 	web.crawlingSvc = service.NewCrawlingService(c)
 	web.newsSvc = service.NewNewsService(c)
 	web.systemConfigSvc = service.NewSystemConfigService()
+	web.taskSvc = service.NewPodcastTaskService()
 
 	// init system config
 	if err := web.systemConfigSvc.SystemConfigInit(context.Background()); err != nil {
@@ -229,7 +231,7 @@ func (a *WebAadapter) CritiqueNews(c *gin.Context) {
 		return
 	}
 
-	cmd := command.NewCritiqueNewsCommand(req.Title, req.Contents, a.newsSvc, a.systemConfigSvc)
+	cmd := command.NewCritiqueNewsCommand(req.Contents, a.newsSvc, a.systemConfigSvc)
 	data, err := cmd.Execute(ctx)
 
 	httpx.WebResp(c, data, err)
@@ -269,4 +271,49 @@ func (a *WebAadapter) SaveWebsiteWeight(c *gin.Context) {
 	}
 
 	httpx.WebResp(c, nil, a.systemConfigSvc.UpdateNewsWebsiteWeight(ctx, req.Website, req.Step))
+}
+
+// CreateTask handles the request to create a podcast task.
+func (a *WebAadapter) CreateTask(c *gin.Context) {
+	ctx, req, err := httpx.ParseRequest[dto.CreateTaskRequest](c)
+	if err != nil {
+		httpx.WebResp(c, nil, err)
+		return
+	}
+
+	var (
+		cmdCtx = tracex.CopyTraceContext(ctx, context.Background())
+		cmd    = command.NewCreateTaskCommand(cmdCtx, req.Language, req.News.ToEntity(), req.VoiceIds, a.newsSvc,
+			a.systemConfigSvc, a.taskSvc)
+	)
+
+	batchNo, err := cmd.Execute(ctx)
+
+	httpx.WebResp(c, &dto.CreateTaskResult{BatchNo: batchNo}, err)
+}
+
+// QueryTasks handles the request to retrieve podcast task list.
+func (a *WebAadapter) QueryTasks(c *gin.Context) {
+	ctx, req, err := httpx.ParseRequest[dto.QueryTaskRequest](c)
+	if err != nil {
+		httpx.WebResp(c, nil, err)
+		return
+	}
+
+	tasks, total, err := a.taskSvc.QueryTasks(ctx, req.ToValueObject())
+
+	httpx.WebResp(c, dto.NewQueryTaskResult(tasks, total), err)
+}
+
+// GetTask handles the request to retrieve a podcast task.
+func (a *WebAadapter) GetTask(c *gin.Context) {
+	ctx, req, err := httpx.ParseRequest[dto.GetTaskRequest](c)
+	if err != nil {
+		httpx.WebResp(c, nil, err)
+		return
+	}
+
+	task, err := a.taskSvc.GetTaskByBatchNo(ctx, req.BatchNo)
+
+	httpx.WebResp(c, dto.NewPodcastTask(task), err)
 }

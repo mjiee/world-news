@@ -2,7 +2,14 @@ package entity
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/pkg/errors"
+
+	"github.com/mjiee/gokit"
 
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
@@ -10,10 +17,6 @@ import (
 	"github.com/mjiee/world-news/backend/pkg/timex"
 	"github.com/mjiee/world-news/backend/pkg/urlx"
 	"github.com/mjiee/world-news/backend/repository/model"
-
-	"github.com/PuerkitoBio/goquery"
-	"github.com/mjiee/gokit"
-	"github.com/pkg/errors"
 )
 
 // NewsDetail represents the detailed information about a news item.
@@ -46,11 +49,11 @@ func NewNewsDetailFromModel(m *model.NewsDetail) (*NewsDetail, error) {
 	)
 
 	if err := json.Unmarshal([]byte(m.Contents), &contents); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.WithMessagef(err, "newsId: %d", m.ID)
 	}
 
 	if err := json.Unmarshal([]byte(m.Images), &images); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.WithMessagef(err, "newsId: %d", m.ID)
 	}
 
 	return &NewsDetail{
@@ -112,6 +115,15 @@ func (n *NewsDetail) ToModel() (*model.NewsDetail, error) {
 		Favorited:   n.Favorited,
 		CreatedAt:   n.CreatedAt,
 	}, nil
+}
+
+// BuildPrompt builds the prompt for the podcast script.
+func (n *NewsDetail) BuildPrompt() string {
+	if len(n.Contents) == 0 {
+		return fmt.Sprintf("\nNews title: %s\nNews link: \n%s", n.Title, n.Link)
+	}
+
+	return fmt.Sprintf("\nNews title: %s\nNews content: \n%s", n.Title, strings.Join(n.Contents, "\n"))
 }
 
 // IsValid checks if the news detail is valid.

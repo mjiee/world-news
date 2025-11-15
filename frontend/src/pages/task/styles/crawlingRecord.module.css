@@ -1,0 +1,50 @@
+.recordCard {
+  background: white;
+  border: 1px solid #e1e8ed;
+  transition: all 0.2s ease;
+}
+
+.recordCard:hover {
+  border-color: #4a90e2;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.1);
+  transform: translateY(-2px);
+}
+
+.infoSection {
+  flex: 1;
+  min-width: 0;
+}
+
+.actionSection {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.icon {
+  color: #8a9ba8;
+}
+
+.emptyCard {
+  padding: 60px 20px;
+  text-align: center;
+  background: white;
+  border: 1px dashed #e1e8ed;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .recordCard {
+    padding: 16px !important;
+  }
+
+  .infoSection {
+    font-size: 14px;
+  }
+
+  .actionSection {
+    flex-direction: column;
+  }
+}

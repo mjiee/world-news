@@ -13,6 +13,8 @@ import (
 type OpenaiClient struct {
 	config *Config
 	client *http.Client
+
+	chatCompletion *chatCompletionRequest
 }
 
 // NewOpenaiClient creates a new OpenaiClient
@@ -23,8 +25,8 @@ func NewOpenaiClient(config *Config) *OpenaiClient {
 	}
 }
 
-// Do sends a request to the OpenAI API
-func (c *OpenaiClient) Do(ctx context.Context, data []byte) (*http.Response, error) {
+// do sends a request to the OpenAI API
+func (c *OpenaiClient) do(ctx context.Context, data []byte) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodPost, c.config.ApiUrl, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, errors.WithStack(err)

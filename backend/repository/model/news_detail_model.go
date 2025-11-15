@@ -4,10 +4,10 @@ import "time"
 
 // NewsDetail represents the detailed information about a news item.
 type NewsDetail struct {
-	ID          uint   `gorm:"primaryKey"`
-	RecordId    uint   `gorm:"index;not null"` // crawling record id
-	Source      string `gorm:"index;not null"`
-	Topic       string `gorm:"index;not null"`
+	ID          uint `gorm:"primaryKey"`
+	RecordId    uint `gorm:"index;not null"` // crawling record id
+	Source      string
+	Topic       string
 	Title       string
 	Author      string
 	PublishedAt time.Time
