@@ -234,6 +234,19 @@ func (a *App) CreateTask(req *dto.CreateTaskRequest) *httpx.Response {
 	return httpx.AppResp(ctx, "CreateTask", req, &dto.CreateTaskResult{BatchNo: batchNo}, err)
 }
 
+// AutoTask handles the request to create a podcast task.
+func (a *App) AutoTask(req *dto.CreateTaskRequest) *httpx.Response {
+	var (
+		ctx = tracex.InjectTraceInContext(a.ctx)
+		cmd = command.NewAutoPodcastTaskCommand(ctx, req.Language, req.News.ToEntity(), a.newsSvc,
+			a.systemConfigSvc, a.taskSvc)
+	)
+
+	batchNo, err := cmd.Execute(ctx)
+
+	return httpx.AppResp(ctx, "AutoTask", req, &dto.CreateTaskResult{BatchNo: batchNo}, err)
+}
+
 // DeleteTask handles the request to delete a podcast task.
 func (a *App) DeleteTask(req *dto.DeleteTaskRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)

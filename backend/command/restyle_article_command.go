@@ -2,14 +2,9 @@ package command
 
 import (
 	"context"
-	"strings"
 
-	"github.com/mjiee/gokit"
-
-	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/logx"
-	"github.com/mjiee/world-news/backend/pkg/openai"
 	"github.com/mjiee/world-news/backend/service"
 )
 
@@ -42,7 +37,7 @@ func NewRestyleArticleCommand(
 
 func (c *RestyleArticleCommand) Execute(ctx context.Context) error {
 	// get config
-	textAi, _, prompt, err := getPodcastConfig(ctx, c.systemConfigSvc)
+	textAi, _, _, err := c.systemConfigSvc.GetPodcastConfig(ctx)
 	if err != nil {
 		return err
 	}
@@ -75,38 +70,13 @@ func (c *RestyleArticleCommand) Execute(ctx context.Context) error {
 		return err
 	}
 
-	// execute
-	go c.restyleArticle(task, textAi, prompt)
+	// execute task
+	executeCmd := NewExecuteTaskCommand(c.ctx, task, c.systemConfigSvc, c.taskSvc)
+	go func() {
+		if err := executeCmd.Execute(executeCmd.ctx); err != nil {
+			logx.WithContext(executeCmd.ctx).Error("RestyleArticleCommand", err)
+		}
+	}()
 
 	return err
-}
-
-// restyleArticle restyle article
-func (c *RestyleArticleCommand) restyleArticle(task *entity.PodcastTask, textAi *openai.Config,
-	prompt *valueobject.PodcastScriptPrompt) {
-	var (
-		stage    = task.GetStage(valueobject.TaskStageStylize)
-		messages = []*openai.Message{
-			openai.SystemMessage(prompt.BuildSystemPrompt(task.Language)),
-			openai.UserMessage(stage.BuildPrompt()),
-		}
-	)
-
-	data, err := openai.NewOpenaiClient(textAi).SetMessage(messages...).ChatCompletion(c.ctx)
-	if err != nil {
-		stage.Fail(err.Error())
-		task.Result = valueobject.TaskResultFailed
-	} else {
-		assistantMsg := gokit.SliceMap(data.Choices, func(item *openai.ChatCompletionChoice) string {
-			return item.Message.Content
-		})
-
-		stage.TaskAi.SessionId = data.ID
-		stage.SetOutput(strings.Join(assistantMsg, "\n"))
-		stage.SetStatus(valueobject.StageStatusCompleted)
-	}
-
-	if err := c.taskSvc.SaveTask(c.ctx, task); err != nil {
-		logx.WithContext(c.ctx).Error("RestyleArticleCommand.SaveTask", err)
-	}
 }

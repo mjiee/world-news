@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"slices"
-	"strings"
 
 	"github.com/mjiee/gokit"
 
@@ -55,95 +54,71 @@ func (c *CreateTaskCommand) Execute(ctx context.Context) (string, error) {
 	}
 
 	// config
-	textAi, ttsAi, prompt, err := getPodcastConfig(ctx, c.systemConfigSvc)
+	textAi, ttsAi, prompt, err := c.systemConfigSvc.GetPodcastConfig(ctx)
 	if err != nil {
 		return "", err
 	}
 
+	newTask, err := c.createTask(ctx, textAi, ttsAi, prompt)
+	if err != nil {
+		return "", err
+	}
+
+	// execute task
+	executeCmd := NewExecuteTaskCommand(c.ctx, newTask, c.systemConfigSvc, c.taskSvc)
+	go func() {
+		if err := executeCmd.Execute(executeCmd.ctx); err != nil {
+			logx.WithContext(executeCmd.ctx).Error("CreateTaskCommand", err)
+		}
+	}()
+
+	return newTask.BatchNo, nil
+}
+
+// create new task
+func (c *CreateTaskCommand) createTask(ctx context.Context, textAi *openai.Config, ttsAi *ttsai.Config,
+	prompt *valueobject.PodcastScriptPrompt) (*entity.PodcastTask, error) {
 	voices := gokit.SliceFilter(ttsAi.Voices, func(v *ttsai.Voice) bool { return slices.Contains(c.voiceIds, v.Id) })
 	if len(ttsAi.Voices) == 0 || len(voices) != len(c.voiceIds) {
-		return "", errorx.PodcastVoiceNotFound
+		return nil, errorx.PodcastVoiceNotFound
+	}
+
+	if c.news == nil {
+		return nil, errorx.ParamsError
 	}
 
 	// news
 	news, err := c.newsSvc.GetNewsDetail(ctx, c.news.Id)
 	if err != nil && !errors.Is(err, errorx.NewsNotFound) {
-		return "", err
+		return nil, err
 	}
 
 	if news == nil {
 		if err := c.newsSvc.CreateNews(ctx, c.news); err != nil {
-			return "", err
+			return nil, err
 		}
 	}
 
 	// check crawling record
 	hasProcessingTask, err := c.taskSvc.HasProcessingTasks(ctx, c.news.Id)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if hasProcessingTask {
-		return "", errorx.HasProcessingTasks
+		return nil, errorx.HasProcessingTasks
 	}
 
 	// create task
 	newTask := entity.NewPodcastTask(c.news, c.language)
 
 	if err := c.buildTaskState(newTask, textAi, ttsAi, prompt); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	if err := c.taskSvc.SaveTask(c.ctx, newTask); err != nil {
-		return "", err
-	}
+	err = c.taskSvc.SaveTask(c.ctx, newTask)
 
-	// execute task
-	go c.executeTaskState(newTask, textAi, prompt)
-
-	return newTask.BatchNo, nil
-}
-
-func getPodcastConfig(ctx context.Context, configSvc service.SystemConfigService) (
-	textAi *openai.Config,
-	ttsAi *ttsai.Config,
-	prompt *valueobject.PodcastScriptPrompt,
-	err error,
-) {
-	// text ai config
-	config, err := configSvc.GetSystemConfig(ctx, valueobject.TextAIKey.String())
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	textAi, err = entity.UnmarshalValue[openai.Config](config, errorx.OpenaiConfigNotFound)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	// tts ai config
-	ttsAiConfig, err := configSvc.GetSystemConfig(ctx, valueobject.TextToSpeechAIKey.String())
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	ttsAi, err = entity.UnmarshalValue[ttsai.Config](ttsAiConfig, errorx.TtsAiConfigNotFound)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	// podcast script prompt
-	config, err = configSvc.GetSystemConfig(ctx, valueobject.PodcastScriptPromptKey.String())
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	prompt, err = entity.UnmarshalValue[valueobject.PodcastScriptPrompt](config, errorx.PodcastPromptNotFound)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	return textAi, ttsAi, prompt, nil
+	return newTask, err
 }
 
 // build task state
@@ -210,96 +185,6 @@ func (c *CreateTaskCommand) buildTaskState(task *entity.PodcastTask, textAi *ope
 
 			stage.Audio = &valueobject.PodcastAudio{Voices: voices}
 			task.AddNewStage(stage)
-		}
-	}
-
-	return nil
-}
-
-// executeTaskState execute task state
-func (c *CreateTaskCommand) executeTaskState(
-	task *entity.PodcastTask,
-	textAi *openai.Config,
-	prompt *valueobject.PodcastScriptPrompt,
-) {
-	// execute task
-	if err := executeTaskState(c.ctx, task, textAi, prompt); err != nil {
-		logx.WithContext(c.ctx).Error("CreatePodcastTaskCommand.executeTaskState", err)
-	}
-
-	if err := c.taskSvc.SaveTask(c.ctx, task); err != nil {
-		logx.WithContext(c.ctx).Error("CreatePodcastTaskCommand.SaveTask", err)
-	}
-}
-
-// execute task state
-func executeTaskState(ctx context.Context, newTask *entity.PodcastTask, textAi *openai.Config,
-	prompt *valueobject.PodcastScriptPrompt) error {
-	var (
-		messages    = []*openai.Message{openai.SystemMessage(prompt.BuildSystemPrompt(newTask.Language))}
-		stylePrompt *valueobject.StylePrompt
-	)
-
-	for _, stage := range newTask.Stages {
-		userMsg := stage.BuildPrompt()
-
-		if stage.Stage == valueobject.TaskStageStylize {
-			if stylePrompt == nil {
-				stage.Fail("failed to classify news")
-				newTask.Result = valueobject.TaskResultFailed
-
-				return nil
-			}
-
-			stage.Prompt = stylePrompt.Prompt
-			userMsg = stage.BuildPrompt()
-		}
-
-		messages = append(messages, openai.UserMessage(userMsg))
-
-		data, err := openai.NewOpenaiClient(textAi).SetMessage(messages...).ChatCompletion(ctx)
-		if err != nil {
-			stage.Fail(err.Error())
-			newTask.Result = valueobject.TaskResultFailed
-
-			return err
-		}
-
-		assistantMsg := gokit.SliceMap(data.Choices, func(item *openai.ChatCompletionChoice) string {
-			return item.Message.Content
-		})
-
-		stage.TaskAi.SessionId = data.ID
-		stage.SetOutput(strings.Join(assistantMsg, "\n"))
-		messages = append(messages, openai.AssistantMessage(stage.Output))
-
-		switch stage.Stage {
-		case valueobject.TaskStageApproval:
-			stage.SetStatus(prompt.VerifyApprovalResult(stage.Output))
-		case valueobject.TaskStageClassify:
-			stylePrompt = prompt.GetStylePrompt(stage.Output)
-			if stylePrompt == nil {
-				stage.Fail("failed to classify news")
-			} else {
-				stage.SetStatus(valueobject.StageStatusCompleted)
-			}
-		case valueobject.TaskStageScripted:
-			scripts := prompt.ExtractScripts(stage.Output)
-			if scripts == nil {
-				stage.Fail("failed to extract scripts")
-				stage.SetOutput(stage.Output)
-			} else {
-				stage.Audio.Scripts = scripts
-				stage.SetStatus(valueobject.StageStatusCompleted)
-			}
-		default:
-			stage.SetStatus(valueobject.StageStatusCompleted)
-		}
-
-		if stage.Status == valueobject.StageStatusFailed {
-			newTask.Result = valueobject.TaskResultFailed
-
-			return nil
 		}
 	}
 

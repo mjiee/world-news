@@ -11,7 +11,6 @@ import (
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
-	"github.com/mjiee/world-news/backend/pkg/openai"
 	"github.com/mjiee/world-news/backend/pkg/ttsai"
 	"github.com/mjiee/world-news/backend/service"
 )
@@ -53,7 +52,7 @@ func (c *MergeArticleCommand) Execute(ctx context.Context) (string, error) {
 	}
 
 	// config
-	textAi, ttsAi, prompt, err := getPodcastConfig(ctx, c.systemConfigSvc)
+	textAi, ttsAi, prompt, err := c.systemConfigSvc.GetPodcastConfig(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -127,19 +126,12 @@ func (c *MergeArticleCommand) Execute(ctx context.Context) (string, error) {
 	}
 
 	// execute task
-	go c.executeTaskState(task, textAi, prompt)
+	executeCmd := NewExecuteTaskCommand(c.ctx, task, c.systemConfigSvc, c.taskSvc)
+	go func() {
+		if err := executeCmd.Execute(executeCmd.ctx); err != nil {
+			logx.WithContext(executeCmd.ctx).Error("MergeArticleCommand", err)
+		}
+	}()
 
 	return task.BatchNo, nil
-}
-
-// executeTaskState execute task state
-func (c *MergeArticleCommand) executeTaskState(newTask *entity.PodcastTask, textAi *openai.Config,
-	prompt *valueobject.PodcastScriptPrompt) {
-	if err := executeTaskState(c.ctx, newTask, textAi, prompt); err != nil {
-		logx.WithContext(c.ctx).Error("MergeArticleCommand.executeTaskState", err)
-	}
-
-	if err := c.taskSvc.SaveTask(c.ctx, newTask); err != nil {
-		logx.WithContext(c.ctx).Error("MergeArticleCommand.SaveTask", err)
-	}
 }

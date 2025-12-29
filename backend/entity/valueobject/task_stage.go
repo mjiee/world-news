@@ -39,6 +39,10 @@ const (
 	StageStatusFailed     StageStatus = "failed"
 )
 
+func (s StageStatus) IsProcessing() bool {
+	return s == StageStatusProcessing
+}
+
 // TaskStageExtra represents extra information for the task stage.
 type TaskStageExtra struct {
 	NewsIds  []uint

@@ -1,22 +1,24 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useDisclosure } from "@mantine/hooks";
-import { useField } from "@mantine/form";
-import { ActionIcon, Badge, Button, Group, Modal, MultiSelect, Stack, Text } from "@mantine/core";
-import { IconTrash, IconLanguage, IconStar, IconStarFilled, IconBroadcast } from "@tabler/icons-react";
+import { SourceLabel } from "@/components";
 import {
-  deleteNews,
-  NewsDetail,
-  saveFavorite,
-  translateNews,
+  autoTask,
   createTask,
+  deleteNews,
   getNewsDetail,
   getSystemConfig,
-  TextToSpeechAIConfig,
+  NewsDetail,
+  saveFavorite,
   SystemConfigKey,
+  TextToSpeechAIConfig,
+  translateNews,
 } from "@/services";
-import { SourceLabel } from "@/components";
-import { GolbalLanguage } from "@/stores";
+import { GolbalLanguage, useTaskPollingStore } from "@/stores";
+import { isWeb } from "@/utils/platform";
+import { ActionIcon, Badge, Button, Group, Modal, MultiSelect, Stack, Text } from "@mantine/core";
+import { useField } from "@mantine/form";
+import { useDisclosure } from "@mantine/hooks";
+import { IconBroadcast, IconLanguage, IconStar, IconStarFilled, IconTrash } from "@tabler/icons-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface NewsCardFooterProps {
   news: NewsDetail;
@@ -28,7 +30,7 @@ interface NewsCardFooterProps {
 // news card footer
 export default function NewsCardFooter({ news, updatePage, updateTitle, showTask }: NewsCardFooterProps) {
   const [favorited, setFavorited] = useState<boolean>(news?.favorited ?? false);
-
+  const { addToQueue } = useTaskPollingStore();
   const translateTitle = async () => {
     const resp = await translateNews({ contents: [news.title], toLang: GolbalLanguage.getLanguage() });
 
@@ -39,6 +41,17 @@ export default function NewsCardFooter({ news, updatePage, updateTitle, showTask
   const saveNewsFavorite = async () => {
     await saveFavorite({ id: news.id, favorited: !favorited });
     setFavorited(!favorited);
+
+    if (favorited) return;
+
+    const resp = await getSystemConfig<TextToSpeechAIConfig>({ key: SystemConfigKey.TextToSpeechAi }, !isWeb());
+    if (!resp || !resp.value || !resp.value.autoTask) return;
+
+    const newsDetail = await getNewsDetail({ id: news.id });
+    if (!newsDetail) return;
+
+    const autoResp = await autoTask(GolbalLanguage.getLanguage(), newsDetail);
+    if (autoResp) addToQueue(autoResp.batchNo);
   };
 
   const newsCardfooter = (txt: string, color: string = "dimmed") => (

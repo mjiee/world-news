@@ -1,11 +1,22 @@
+import { getSystemConfig, saveSystemConfig, SystemConfigKey, TextToSpeechAIConfig } from "@/services";
+import { isWeb } from "@/utils/platform";
+import {
+  ActionIcon,
+  Autocomplete,
+  Box,
+  Button,
+  Group,
+  PasswordInput,
+  Stack,
+  Switch,
+  Text,
+  TextInput,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
-import { Button, Stack, TextInput, Autocomplete, PasswordInput, Box, Group, Text, ActionIcon } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { getSystemConfig, saveSystemConfig, SystemConfigKey, TextToSpeechAIConfig } from "@/services";
-import { isWeb } from "@/utils/platform";
 import styles from "../styles/settings.module.css";
 
 // Text to Speech AI Component
@@ -72,6 +83,7 @@ export default function TextToSpeechAi() {
           label={t("tts_ai.label.api_key", { ns: "settings" })}
           {...form.getInputProps("apiKey")}
         />
+        <Switch label={t("tts_ai.label.auto_task", { ns: "settings" })} {...form.getInputProps("autoTask")} />
 
         <Box>
           <Group justify="space-between" mb="xs">

@@ -40,7 +40,7 @@ func NewCreateAudioCommand(
 
 func (c *CreateAudioCommand) Execute(ctx context.Context) error {
 	// get config
-	_, ttsAi, _, err := getPodcastConfig(ctx, c.systemConfigSvc)
+	_, ttsAi, _, err := c.systemConfigSvc.GetPodcastConfig(ctx)
 	if err != nil {
 		return err
 	}

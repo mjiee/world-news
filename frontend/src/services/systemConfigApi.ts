@@ -59,6 +59,7 @@ export interface TextToSpeechAIConfig {
   apiKey: string;
   model: string;
   voices?: AudioVoice[];
+  autoTask?: boolean;
 }
 
 export interface AudioVoice {

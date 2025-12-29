@@ -95,7 +95,8 @@
       "voice_id": "voice ID",
       "voice_name": "voice",
       "voice_description": "voice description",
-      "voice_model": "voice model"
+      "voice_model": "voice model",
+      "auto_task": "Automatically create podcast tasks when collecting"
     },
     "validate": {
       "required": "Please enter {{ label }}."
