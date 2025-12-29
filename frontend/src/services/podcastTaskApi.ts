@@ -1,5 +1,6 @@
 import { call } from "@/utils/http";
 import {
+  AutoTask,
   CreateAudio,
   CreateScript,
   CreateTask,
@@ -109,6 +110,12 @@ export async function createTask(language: string, news: NewsDetail, voiceIds?: 
   return await call<CreateTaskResult>(CreateTask(request));
 }
 
+// autoTask to create podcast task
+export async function autoTask(language: string, news: NewsDetail) {
+  const request = new dto.CreateTaskRequest({ language, news });
+  return await call<CreateTaskResult>(AutoTask(request));
+}
+
 // deleteTask to delete podcast task
 export async function deleteTask(batchNo: string) {
   return await call(DeleteTask({ batchNo }));
@@ -121,8 +128,8 @@ export async function queryTask(data: QueryTaskRequest) {
 }
 
 // getTask to get podcast task
-export async function getTask(data: dto.GetTaskRequest) {
-  return await call<PodcastTask>(GetTask(data));
+export async function getTask(batchNo: string) {
+  return await call<PodcastTask>(GetTask({ batchNo }));
 }
 
 // restyleArticle to restyle podcast
@@ -141,6 +148,7 @@ export async function createScript(stageId: number, voiceIds: string[]) {
   return await call(CreateScript({ stageId, voiceIds }));
 }
 
+// editScript to edit podcast script
 export async function editScript(stageId: number, scripts: PodcastScript[]) {
   const request = new dto.EditScriptRequest({ stageId, scripts });
   return await call(EditScript(request));

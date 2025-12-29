@@ -16,7 +16,7 @@ export function TaskDetailPage() {
   const fetchTaskDetail = async () => {
     if (!batchNo) return;
 
-    const resp = await getTask({ batchNo });
+    const resp = await getTask(batchNo);
     if (resp) setTask(resp);
     setLoading(false);
   };

@@ -3,6 +3,8 @@
 import {dto} from '../models';
 import {httpx} from '../models';
 
+export function AutoTask(arg1:dto.CreateTaskRequest):Promise<httpx.Response>;
+
 export function CrawlingNews(arg1:dto.CrawlingNewsRequest):Promise<httpx.Response>;
 
 export function CrawlingWebsite():Promise<httpx.Response>;

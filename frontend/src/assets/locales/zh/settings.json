@@ -95,7 +95,8 @@
       "voice_id": "声音 ID",
       "voice_name": "声音名称",
       "voice_description": "声音描述",
-      "voice_model": "模型"
+      "voice_model": "模型",
+      "auto_task": "收藏时自动创建播客任务"
     },
     "validate": {
       "required": "请输入 {{ label }}。"

@@ -3,15 +3,12 @@ package command
 import (
 	"context"
 	"slices"
-	"strings"
 
 	"github.com/mjiee/gokit"
 
-	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
-	"github.com/mjiee/world-news/backend/pkg/openai"
 	"github.com/mjiee/world-news/backend/pkg/ttsai"
 	"github.com/mjiee/world-news/backend/service"
 )
@@ -44,7 +41,7 @@ func NewCreateScriptCommand(
 
 func (c *CreateScriptCommand) Execute(ctx context.Context) error {
 	// config
-	textAi, ttsAi, prompt, err := getPodcastConfig(ctx, c.systemConfigSvc)
+	textAi, ttsAi, _, err := c.systemConfigSvc.GetPodcastConfig(ctx)
 	if err != nil {
 		return err
 	}
@@ -84,46 +81,13 @@ func (c *CreateScriptCommand) Execute(ctx context.Context) error {
 		return err
 	}
 
-	// execute
-	go c.createScript(task, textAi, prompt)
+	// execute task
+	executeCmd := NewExecuteTaskCommand(c.ctx, task, c.systemConfigSvc, c.taskSvc)
+	go func() {
+		if err := executeCmd.Execute(executeCmd.ctx); err != nil {
+			logx.WithContext(executeCmd.ctx).Error("CreateScriptCommand", err)
+		}
+	}()
 
 	return nil
-}
-
-// createScript create script
-func (c *CreateScriptCommand) createScript(task *entity.PodcastTask, textAi *openai.Config,
-	prompt *valueobject.PodcastScriptPrompt) {
-	var (
-		stage    = task.GetStage(valueobject.TaskStageScripted)
-		messages = []*openai.Message{
-			openai.SystemMessage(prompt.BuildSystemPrompt(task.Language)),
-			openai.UserMessage(stage.BuildPrompt()),
-		}
-	)
-
-	data, err := openai.NewOpenaiClient(textAi).SetMessage(messages...).ChatCompletion(c.ctx)
-	if err != nil {
-		stage.Fail(err.Error())
-		task.Result = valueobject.TaskResultFailed
-	} else {
-		assistantMsg := gokit.SliceMap(data.Choices, func(item *openai.ChatCompletionChoice) string {
-			return item.Message.Content
-		})
-
-		stage.TaskAi.SessionId = data.ID
-		stage.SetOutput(strings.Join(assistantMsg, "\n"))
-
-		scripts := prompt.ExtractScripts(stage.Output)
-		if scripts == nil {
-			stage.Fail("failed to extract scripts")
-			stage.SetOutput(stage.Output)
-		} else {
-			stage.Audio.Scripts = scripts
-			stage.SetStatus(valueobject.StageStatusCompleted)
-		}
-	}
-
-	if err := c.taskSvc.SaveTask(c.ctx, task); err != nil {
-		logx.WithContext(c.ctx).Error("CreateScriptCommand.SaveTask", err)
-	}
 }

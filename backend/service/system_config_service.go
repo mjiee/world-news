@@ -11,6 +11,9 @@ import (
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
+	"github.com/mjiee/world-news/backend/pkg/errorx"
+	"github.com/mjiee/world-news/backend/pkg/openai"
+	"github.com/mjiee/world-news/backend/pkg/ttsai"
 	"github.com/mjiee/world-news/backend/pkg/urlx"
 	"github.com/mjiee/world-news/backend/repository"
 )
@@ -24,6 +27,7 @@ type SystemConfigService interface {
 	GetNewsWebsites(ctx context.Context) ([]*valueobject.NewsWebsite, error)
 	UpdateNewsWebsiteWeight(ctx context.Context, website string, step int) error
 	SaveNewsWebsites(ctx context.Context, newsWebsites []*valueobject.NewsWebsite) error
+	GetPodcastConfig(ctx context.Context) (*openai.Config, *ttsai.Config, *valueobject.PodcastScriptPrompt, error)
 }
 
 type systemConfigService struct {
@@ -177,4 +181,46 @@ func (s *systemConfigService) SaveNewsWebsites(ctx context.Context, newsWebsites
 	}
 
 	return errors.WithStack(s.SaveSystemConfig(ctx, config))
+}
+
+func (s *systemConfigService) GetPodcastConfig(ctx context.Context) (
+	textAi *openai.Config,
+	ttsAi *ttsai.Config,
+	prompt *valueobject.PodcastScriptPrompt,
+	err error,
+) {
+	// text ai config
+	config, err := s.GetSystemConfig(ctx, valueobject.TextAIKey.String())
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	textAi, err = entity.UnmarshalValue[openai.Config](config, errorx.OpenaiConfigNotFound)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	// tts ai config
+	ttsAiConfig, err := s.GetSystemConfig(ctx, valueobject.TextToSpeechAIKey.String())
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	ttsAi, err = entity.UnmarshalValue[ttsai.Config](ttsAiConfig, errorx.TtsAiConfigNotFound)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	// podcast script prompt
+	config, err = s.GetSystemConfig(ctx, valueobject.PodcastScriptPromptKey.String())
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	prompt, err = entity.UnmarshalValue[valueobject.PodcastScriptPrompt](config, errorx.PodcastPromptNotFound)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return textAi, ttsAi, prompt, nil
 }
