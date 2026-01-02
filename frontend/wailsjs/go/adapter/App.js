@@ -78,6 +78,10 @@ export function MergeArticle(arg1) {
   return window['go']['adapter']['App']['MergeArticle'](arg1);
 }
 
+export function NewsHasTask(arg1) {
+  return window['go']['adapter']['App']['NewsHasTask'](arg1);
+}
+
 export function QueryCrawlingRecords(arg1) {
   return window['go']['adapter']['App']['QueryCrawlingRecords'](arg1);
 }
@@ -116,4 +120,8 @@ export function TranslateNews(arg1) {
 
 export function UpdateCrawlingRecordStatus(arg1) {
   return window['go']['adapter']['App']['UpdateCrawlingRecordStatus'](arg1);
+}
+
+export function UpdateTaskOutput(arg1) {
+  return window['go']['adapter']['App']['UpdateTaskOutput'](arg1);
 }

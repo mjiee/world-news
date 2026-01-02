@@ -27,11 +27,13 @@ type PodcastTaskService interface {
 	SaveTask(ctx context.Context, task *entity.PodcastTask) error
 	DeleteTask(ctx context.Context, batchNo string) error
 	EditScript(ctx context.Context, stageId uint, scripts []*ttsai.TtsScript) error
+	UpdateTaskOutput(ctx context.Context, stageId uint, output string) error
 	GetTaskByBatchNo(ctx context.Context, batchNo string) (*entity.PodcastTask, error)
 	GetTaskByStageId(ctx context.Context, stageId uint) (*entity.PodcastTask, error)
 	QueryTasks(ctx context.Context, params *valueobject.QueryPodcastTaskParams) ([]*entity.PodcastTask, int64, error)
 	HasProcessingTasks(ctx context.Context, newsId uint) (bool, error)
-	DownloadAudio(ctx context.Context, stageId uint) error
+	NewsHasTask(ctx context.Context, newsId uint) (bool, error)
+	DownloadAudio(ctx context.Context, stageId uint, fileName string) error
 }
 
 type podcastTaskService struct {
@@ -84,11 +86,33 @@ func (s *podcastTaskService) EditScript(ctx context.Context, stageId uint, scrip
 	return s.SaveTask(ctx, task)
 }
 
+// UpdateTaskOutput update task output
+func (s *podcastTaskService) UpdateTaskOutput(ctx context.Context, stageId uint, output string) error {
+	task, err := s.GetTaskByStageId(ctx, stageId)
+	if err != nil {
+		return err
+	}
+
+	stage := task.GetStageById(stageId)
+	stage.SetOutput(output)
+
+	return s.SaveTask(ctx, task)
+}
+
 // HasProcessingTasks check whether there are processing tasks
 func (s *podcastTaskService) HasProcessingTasks(ctx context.Context, newsId uint) (bool, error) {
 	repo := repository.Q.PodcastTask
 
 	count, err := repo.WithContext(ctx).Where(repo.NewsId.Eq(newsId), repo.Result.Eq("")).Count()
+
+	return count > 0, errors.WithStack(err)
+}
+
+// NewsHasTask check whether the news has task
+func (s *podcastTaskService) NewsHasTask(ctx context.Context, newsId uint) (bool, error) {
+	repo := repository.Q.PodcastTask
+
+	count, err := repo.WithContext(ctx).Where(repo.NewsId.Eq(newsId)).Count()
 
 	return count > 0, errors.WithStack(err)
 }
@@ -207,7 +231,7 @@ func (s *podcastTaskService) QueryTasks(ctx context.Context, params *valueobject
 }
 
 // DownloadAudio download audio
-func (s *podcastTaskService) DownloadAudio(ctx context.Context, stageId uint) error {
+func (s *podcastTaskService) DownloadAudio(ctx context.Context, stageId uint, fileName string) error {
 	task, err := s.GetTaskByStageId(ctx, stageId)
 	if err != nil {
 		return err
@@ -219,7 +243,11 @@ func (s *podcastTaskService) DownloadAudio(ctx context.Context, stageId uint) er
 		return errorx.PodcastTaskNotFound
 	}
 
-	file := filepath.Join(pathx.GetDownloadPath(), fmt.Sprintf("%s_%d.%s", task.BatchNo, stage.Id, stage.Audio.Type))
+	if fileName == "" {
+		fileName = fmt.Sprintf("%s_%d", task.BatchNo, stage.Id)
+	}
+
+	file := filepath.Join(pathx.GetDownloadPath(), fmt.Sprintf("%s.%s", fileName, stage.Audio.Type))
 
 	data, err := base64.StdEncoding.DecodeString(stage.Audio.Data)
 	if err != nil {

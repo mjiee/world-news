@@ -6,6 +6,7 @@ import {
   getNewsDetail,
   getSystemConfig,
   NewsDetail,
+  newsHasTask,
   saveFavorite,
   SystemConfigKey,
   TextToSpeechAIConfig,
@@ -17,7 +18,7 @@ import { ActionIcon, Badge, Button, Group, Modal, MultiSelect, Stack, Text } fro
 import { useField } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { IconBroadcast, IconLanguage, IconStar, IconStarFilled, IconTrash } from "@tabler/icons-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 interface NewsCardFooterProps {
@@ -131,6 +132,7 @@ function CreateTaskButton({ newsId }: CreateTaskButtonProps) {
   const [opened, { open, close }] = useDisclosure(false);
   const [loading, setLoading] = useState(false);
   const voiceField = useField({ initialValue: [] });
+  const [hasTask, setHasTask] = useState<boolean>();
 
   const createPodcastcaTask = async () => {
     setLoading(true);
@@ -141,6 +143,7 @@ function CreateTaskButton({ newsId }: CreateTaskButtonProps) {
     await createTask(GolbalLanguage.getLanguage(), news, voiceField.getValue());
     setLoading(false);
     voiceField.setValue([]);
+    setHasTask(true);
     close();
   };
 
@@ -152,15 +155,35 @@ function CreateTaskButton({ newsId }: CreateTaskButtonProps) {
     setVoices(resp.value.voices.map((v) => ({ value: v.id, label: v.name })));
   };
 
+  const checkHasTask = async () => {
+    const resp = await newsHasTask(newsId);
+    setHasTask(resp);
+  };
+
+  useEffect(() => {
+    checkHasTask();
+  }, []);
+
   return (
     <>
-      <ActionIcon variant="subtle" color="gray" size="sm" onClick={open}>
+      <ActionIcon variant="subtle" color={hasTask ? "yellow" : "gray"} size="sm" onClick={open}>
         <IconBroadcast />
       </ActionIcon>
 
-      <Modal opened={opened} onClose={close} withCloseButton={false} title={"创建任务"} size="lg">
+      <Modal
+        opened={opened}
+        onClose={close}
+        withCloseButton={false}
+        title={t("podcast.create_task", { ns: "task" })}
+        size="lg"
+      >
         <Stack gap="md">
-          <MultiSelect data={voices} {...voiceField.getInputProps()} label="播音" onDropdownOpen={loadVoices} />
+          <MultiSelect
+            data={voices}
+            {...voiceField.getInputProps()}
+            label={t("podcast.voice", { ns: "task" })}
+            onDropdownOpen={loadVoices}
+          />
           <Button
             variant="gradient"
             gradient={{ from: "violet", to: "grape" }}

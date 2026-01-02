@@ -310,6 +310,13 @@ func (a *App) EditScript(req *dto.EditScriptRequest) *httpx.Response {
 	return httpx.AppResp(ctx, "EditScript", req, nil, a.taskSvc.EditScript(ctx, req.StageId, req.Scripts))
 }
 
+// UpdateTaskOutput handles the request to update podcast task output.
+func (a *App) UpdateTaskOutput(req *dto.UpdateTaskOutputRequest) *httpx.Response {
+	ctx := tracex.InjectTraceInContext(a.ctx)
+
+	return httpx.AppResp(ctx, "UpdateTaskOutput", req, nil, a.taskSvc.UpdateTaskOutput(ctx, req.StageId, req.Output))
+}
+
 // CreateAudio handles the request to generate podcast audio.
 func (a *App) CreateAudio(req *dto.CreateAudioRequest) *httpx.Response {
 	var (
@@ -324,7 +331,17 @@ func (a *App) CreateAudio(req *dto.CreateAudioRequest) *httpx.Response {
 func (a *App) DownloadAudio(req *dto.DownloadAudioRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
 
-	return httpx.AppResp(ctx, "DownloadAudio", req, nil, a.taskSvc.DownloadAudio(ctx, req.StageId))
+	return httpx.AppResp(ctx, "DownloadAudio", req, nil, a.taskSvc.DownloadAudio(ctx, req.StageId, req.FileName))
+}
+
+// NewsHasTask handles the request to check if a news has a podcast task.
+func (a *App) NewsHasTask(req *dto.NewsHasTaskRequest) *httpx.Response {
+	var (
+		ctx         = tracex.InjectTraceInContext(a.ctx)
+		result, err = a.taskSvc.HasProcessingTasks(ctx, req.NewsId)
+	)
+
+	return httpx.AppResp(ctx, "NewsHasTask", req, result, err)
 }
 
 // QueryPodcasts handles the request to retrieve podcast list.

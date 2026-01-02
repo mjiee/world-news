@@ -26,6 +26,7 @@
     "progress": "Task progress",
     "prompt": "Prompt",
     "voice": "Voice",
+    "create_task": "Create Task",
     "result": {
       "completed": "Completed",
       "failed": "Failed"
@@ -52,10 +53,14 @@
     "stylize": {
       "scripted": "Generate Script",
       "rewrite": "Rewrite Content",
-      "merge": "Merge Content"
+      "merge": "Merge Content",
+      "edit": "Edit Content"
     },
     "tts": {
-      "sub_title": "Podcast Audio"
+      "sub_title": "Podcast Audio",
+      "download": "Download",
+      "file_name": "File Name",
+      "download_desc": "Saved in the [Downloads] folder by default."
     },
     "scripted": {
       "content": "Content",

@@ -49,6 +49,12 @@ type EditScriptRequest struct {
 	Scripts []*ttsai.TtsScript `json:"scripts"`
 }
 
+// UpdateTaskOutputRequest is the request for updating a podcast task output
+type UpdateTaskOutputRequest struct {
+	StageId uint   `json:"stageId" binding:"required"`
+	Output  string `json:"output"`
+}
+
 // CreateAudioRequest is the request for generating a podcast audio
 type CreateAudioRequest struct {
 	StageId uint `json:"stageId" binding:"required"`
@@ -56,7 +62,8 @@ type CreateAudioRequest struct {
 
 // DownloadAudioRequest is the request for downloading a podcast audio
 type DownloadAudioRequest struct {
-	StageId uint `json:"stageId" binding:"required"`
+	StageId  uint   `json:"stageId" binding:"required"`
+	FileName string `json:"fileName,omitempty"`
 }
 
 // GetTaskRequest is the request for getting a podcast task
@@ -196,4 +203,9 @@ type MergeArticleRequest struct {
 	Title    string   `json:"title" binding:"required"`
 	StageIds []uint   `json:"stageIds" binding:"required"`
 	VoiceIds []string `json:"voiceIds,omitempty"`
+}
+
+// NewsHasTaskRequest is the request for checking if a news has a task
+type NewsHasTaskRequest struct {
+	NewsId uint `json:"newsId" binding:"required"`
 }

@@ -7,6 +7,7 @@ import {
   TaskStageName,
   TaskStageStatus,
   TextToSpeechAIConfig,
+  updateTaskOutput,
 } from "@/services";
 import { useMergeArticleStore } from "@/stores";
 import { md } from "@/utils/md";
@@ -21,6 +22,7 @@ enum ActionType {
   Default = 0,
   CreateScript = 1,
   RestyleArticle = 2,
+  EditOutput = 3,
 }
 
 export default function StylizeOrMergeCard({ stage, onRefresh }: { stage: TaskStage; onRefresh: () => void }) {
@@ -32,6 +34,7 @@ export default function StylizeOrMergeCard({ stage, onRefresh }: { stage: TaskSt
 
   const promptField = useField({ initialValue: stage.prompt });
   const voiceField = useField({ initialValue: [] });
+  const outputField = useField({ initialValue: stage.output || "" });
 
   const createPodcastScript = async () => {
     setLoading(true);
@@ -48,6 +51,27 @@ export default function StylizeOrMergeCard({ stage, onRefresh }: { stage: TaskSt
     setLoading(false);
     setEdit(ActionType.Default);
     onRefresh();
+  };
+
+  const saveOutputEdit = async () => {
+    setLoading(true);
+    await updateTaskOutput(stage.id, outputField.getValue());
+    setLoading(false);
+    setEdit(ActionType.Default);
+  };
+
+  const onActionSubmit = async () => {
+    switch (edit) {
+      case ActionType.RestyleArticle:
+        await restylePodcastArticle();
+        return;
+      case ActionType.CreateScript:
+        await createPodcastScript();
+        return;
+      case ActionType.EditOutput:
+        await saveOutputEdit();
+        return;
+    }
   };
 
   const loadVoices = async () => {
@@ -94,7 +118,7 @@ export default function StylizeOrMergeCard({ stage, onRefresh }: { stage: TaskSt
             <Box mb="md" className={classes.contentbox}>
               <div
                 dangerouslySetInnerHTML={{
-                  __html: md.render(stage.output),
+                  __html: md.render(outputField.getValue()),
                 }}
                 style={{ fontSize: "0.95rem", lineHeight: "1.6" }}
               />
@@ -102,20 +126,49 @@ export default function StylizeOrMergeCard({ stage, onRefresh }: { stage: TaskSt
             <Group justify="center" grow>
               {actionButton(t("podcast.stylize.scripted", { ns: "task" }), () => setEdit(ActionType.CreateScript))}
               {actionButton(t("podcast.stylize.rewrite", { ns: "task" }), () => setEdit(ActionType.RestyleArticle))}
+              {actionButton(t("podcast.stylize.edit", { ns: "task" }), () => setEdit(ActionType.EditOutput))}
               {TaskStageName.Merge != stage.stage &&
                 actionButton(t("podcast.stylize.merge", { ns: "task" }), () => addStage(stage))}
             </Group>
           </>
         )}
       </Card>
+
+      {/* <Modal
+        opened={edit === ActionType.EditOutput}
+        onClose={() => setEdit(ActionType.Default)}
+        title={t("podcast.edit_output", { ns: "task" }) || "编辑内容"}
+        size="xl"
+      >
+        <Stack gap="md">
+          <Textarea
+            {...outputField.getInputProps()}
+            label={t("podcast.output_content", { ns: "task" }) || "内容"}
+            placeholder="请输入内容..."
+            minRows={15}
+            maxRows={25}
+            autosize
+          />
+          <Group justify="flex-end" mt="md">
+            <Button variant="light" onClick={() => setEdit(ActionType.Default)}>
+              {t("button.cancel")}
+            </Button>
+            <Button
+              variant="gradient"
+              gradient={{ from: "violet", to: "grape" }}
+              loading={loading}
+              onClick={saveOutputEdit}
+            >
+              {t("button.save")}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal> */}
+
       <Modal
         opened={edit != ActionType.Default}
         onClose={() => setEdit(ActionType.Default)}
-        title={
-          edit == ActionType.RestyleArticle
-            ? t("podcast.stylize.rewrite", { ns: "task" })
-            : t("podcast.stylize.scripted", { ns: "task" })
-        }
+        title={t(getActionTitleKey(edit), { ns: "task" })}
         size="lg"
       >
         <Stack gap="md">
@@ -130,6 +183,15 @@ export default function StylizeOrMergeCard({ stage, onRefresh }: { stage: TaskSt
               onDropdownOpen={loadVoices}
             />
           )}
+          {edit == ActionType.EditOutput && (
+            <Textarea
+              {...outputField.getInputProps()}
+              label={t("podcast.stylize.edit", { ns: "task" })}
+              minRows={15}
+              maxRows={25}
+              autosize
+            />
+          )}
           <Group justify="flex-end" mt="md">
             <Button variant="light" onClick={() => setEdit(ActionType.Default)}>
               {t("button.cancel")}
@@ -138,7 +200,7 @@ export default function StylizeOrMergeCard({ stage, onRefresh }: { stage: TaskSt
               variant="gradient"
               gradient={{ from: "violet", to: "grape" }}
               loading={loading}
-              onClick={edit == ActionType.RestyleArticle ? restylePodcastArticle : createPodcastScript}
+              onClick={onActionSubmit}
             >
               {t("button.save")}
             </Button>
@@ -147,4 +209,17 @@ export default function StylizeOrMergeCard({ stage, onRefresh }: { stage: TaskSt
       </Modal>
     </>
   );
+}
+
+function getActionTitleKey(action: ActionType) {
+  switch (action) {
+    case ActionType.RestyleArticle:
+      return "podcast.stylize.rewrite";
+    case ActionType.CreateScript:
+      return "podcast.stylize.scripted";
+    case ActionType.EditOutput:
+      return "podcast.stylize.edit";
+    default:
+      return "";
+  }
 }
