@@ -44,7 +44,6 @@ func NewAutoPodcastTaskCommand(
 }
 
 func (c *AutoPodcastTaskCommand) Execute(ctx context.Context) (string, error) {
-	// 获取系统配置
 	textAiConfig, ttsAiConfig, prompt, err := c.systemConfigSvc.GetPodcastConfig(c.ctx)
 	if err != nil {
 		return "", err
@@ -59,7 +58,6 @@ func (c *AutoPodcastTaskCommand) Execute(ctx context.Context) (string, error) {
 		voiceIds = voiceIds[:2]
 	}
 
-	// 创建任务
 	createCmd := NewCreateTaskCommand(c.ctx, c.language, c.news, voiceIds, c.newsSvc, c.systemConfigSvc, c.taskSvc)
 
 	newTask, err := createCmd.createTask(ctx, textAiConfig, ttsAiConfig, prompt)

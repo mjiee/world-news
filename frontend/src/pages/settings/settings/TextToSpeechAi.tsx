@@ -83,7 +83,10 @@ export default function TextToSpeechAi() {
           label={t("tts_ai.label.api_key", { ns: "settings" })}
           {...form.getInputProps("apiKey")}
         />
-        <Switch label={t("tts_ai.label.auto_task", { ns: "settings" })} {...form.getInputProps("autoTask")} />
+        <Switch
+          label={t("tts_ai.label.auto_task", { ns: "settings" })}
+          {...form.getInputProps("autoTask", { type: "checkbox" })}
+        />
 
         <Box>
           <Group justify="space-between" mb="xs">

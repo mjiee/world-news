@@ -154,6 +154,7 @@ export namespace dto {
 	}
 	export class DownloadAudioRequest {
 	    stageId: number;
+	    fileName?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new DownloadAudioRequest(source);
@@ -162,6 +163,7 @@ export namespace dto {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.stageId = source["stageId"];
+	        this.fileName = source["fileName"];
 	    }
 	}
 	export class EditScriptRequest {
@@ -263,6 +265,18 @@ export namespace dto {
 	    }
 	}
 	
+	export class NewsHasTaskRequest {
+	    newsId: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new NewsHasTaskRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.newsId = source["newsId"];
+	    }
+	}
 	export class QueryCrawlingRecordsRequest {
 	    recordType?: string;
 	    status?: string;
@@ -453,6 +467,20 @@ export namespace dto {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.status = source["status"];
+	    }
+	}
+	export class UpdateTaskOutputRequest {
+	    stageId: number;
+	    output: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateTaskOutputRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.stageId = source["stageId"];
+	        this.output = source["output"];
 	    }
 	}
 

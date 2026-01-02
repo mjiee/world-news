@@ -5,11 +5,14 @@ import {
   CreateScript,
   CreateTask,
   DeleteTask,
+  DownloadAudio,
   EditScript,
   GetTask,
   MergeArticle,
+  NewsHasTask,
   QueryTasks,
   RestyleArticle,
+  UpdateTaskOutput,
 } from "wailsjs/go/adapter/App";
 import { dto, httpx } from "wailsjs/go/models";
 import { NewsDetail } from "./newsApi";
@@ -160,6 +163,16 @@ export async function createAudio(stageId: number) {
 }
 
 // downloadAudio to download podcast audio
-export async function downloadAudio(stageId: number) {
-  return await call(CreateAudio({ stageId }));
+export async function downloadAudio(stageId: number, fileName?: string) {
+  return await call(DownloadAudio({ stageId, fileName }));
+}
+
+// updateTaskOutput to update task output
+export async function updateTaskOutput(stageId: number, output: string) {
+  return await call(UpdateTaskOutput({ stageId, output }));
+}
+
+// newsHasTask to check if news has task
+export async function newsHasTask(newsId: number) {
+  return await call<boolean>(NewsHasTask({ newsId }));
 }

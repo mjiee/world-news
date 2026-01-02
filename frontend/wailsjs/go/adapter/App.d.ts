@@ -41,6 +41,8 @@ export function HasCrawlingTasks():Promise<httpx.Response>;
 
 export function MergeArticle(arg1:dto.MergeArticleRequest):Promise<httpx.Response>;
 
+export function NewsHasTask(arg1:dto.NewsHasTaskRequest):Promise<httpx.Response>;
+
 export function QueryCrawlingRecords(arg1:dto.QueryCrawlingRecordsRequest):Promise<httpx.Response>;
 
 export function QueryNews(arg1:dto.QueryNewsRequest):Promise<httpx.Response>;
@@ -60,3 +62,5 @@ export function SaveWebsiteWeight(arg1:dto.SaveWebsiteWeightRequest):Promise<htt
 export function TranslateNews(arg1:dto.TranslateNewsRequest):Promise<httpx.Response>;
 
 export function UpdateCrawlingRecordStatus(arg1:dto.UpdateCrawlingRecordStatusRequest):Promise<httpx.Response>;
+
+export function UpdateTaskOutput(arg1:dto.UpdateTaskOutputRequest):Promise<httpx.Response>;

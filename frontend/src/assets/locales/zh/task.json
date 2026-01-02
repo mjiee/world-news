@@ -26,6 +26,7 @@
     "progress": "任务进度",
     "prompt": "提示词",
     "voice": "播音",
+    "create_task": "创建任务",
     "result": {
       "completed": "完成",
       "failed": "失败"
@@ -52,10 +53,14 @@
     "stylize": {
       "scripted": "生成脚本",
       "rewrite": "重写内容",
-      "merge": "合并内容"
+      "merge": "合并内容",
+      "edit": "编辑输出"
     },
     "tts": {
-      "sub_title": "播客音频"
+      "sub_title": "播客音频",
+      "download": "下载",
+      "file_name": "文件名",
+      "download_desc": "默认保存在【下载】目录。"
     },
     "scripted": {
       "content": "内容",
