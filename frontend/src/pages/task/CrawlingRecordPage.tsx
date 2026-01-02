@@ -77,7 +77,7 @@ export function CrawlingRecordPage() {
         </Stack>
       )}
       <Space h="xl" />
-      <Pagination value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
+      <Pagination page={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
     </>
   );
 }
