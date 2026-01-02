@@ -117,7 +117,7 @@ export function TaskListPage() {
         ))}
       </Stack>
       <Space h="xl" />
-      <Pagination value={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
+      <Pagination page={pagination.page} total={getPageNumber(pagination)} onChange={updatePageHandler} />
       <FloatingToolbar onRefresh={() => setLoading(true)} />
     </>
   );

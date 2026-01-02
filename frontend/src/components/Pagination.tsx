@@ -1,16 +1,20 @@
-import { useState } from "react";
-import { Group, Text, ActionIcon } from "@mantine/core";
+import { ActionIcon, Group, Text } from "@mantine/core";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 
-export const Pagination = ({ value = 0, total = 0, onChange = (value: number) => {}, size = "md" }) => {
-  const [inputValue, setInputValue] = useState(value.toString());
+export const Pagination = ({ page = 0, total = 0, onChange = (newPage: number) => {}, size = "md" }) => {
+  const [inputValue, setInputValue] = useState(page.toString());
+
+  useEffect(() => {
+    setInputValue(page.toString());
+  }, [page]);
 
   const handlePrevPage = () => {
-    if (value > 1) onChange(value - 1);
+    if (page > 1) onChange(page - 1);
   };
 
   const handleNextPage = () => {
-    if (value < total) onChange(value + 1);
+    if (page < total) onChange(page + 1);
   };
 
   const handleInputChange = () => {
@@ -20,13 +24,13 @@ export const Pagination = ({ value = 0, total = 0, onChange = (value: number) =>
         onChange(newValue);
       }
     } catch (_) {
-      setInputValue(value.toString());
+      setInputValue(page.toString());
     }
   };
 
   return (
     <Group gap="xs" align="center">
-      <ActionIcon variant="light" size={size} disabled={value <= 1} onClick={handlePrevPage}>
+      <ActionIcon variant="light" size={size} disabled={page <= 1} onClick={handlePrevPage}>
         <IconChevronLeft />
       </ActionIcon>
       <input
@@ -46,7 +50,7 @@ export const Pagination = ({ value = 0, total = 0, onChange = (value: number) =>
       <Text size={size} c="dimmed">
         / {total}
       </Text>
-      <ActionIcon variant="light" size={size} disabled={value >= total} onClick={handleNextPage}>
+      <ActionIcon variant="light" size={size} disabled={page >= total} onClick={handleNextPage}>
         <IconChevronRight />
       </ActionIcon>
     </Group>
