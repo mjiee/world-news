@@ -2,9 +2,8 @@ package command
 
 import (
 	"context"
-	"strings"
 
-	"github.com/mjiee/gokit"
+	"github.com/cloudwego/eino/schema"
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
@@ -43,7 +42,7 @@ func (c *ExecuteTaskCommand) Execute(ctx context.Context) error {
 	}
 
 	// execute task
-	err = c.executeTaskState(textAi, prompt)
+	err = c.executeTaskState(ctx, textAi, prompt)
 	if err != nil {
 		logx.WithContext(c.ctx).Error("ExecuteTaskCommand.executeTaskState", err)
 	}
@@ -56,9 +55,11 @@ func (c *ExecuteTaskCommand) Execute(ctx context.Context) error {
 }
 
 // execute task state
-func (c *ExecuteTaskCommand) executeTaskState(textAi *openai.Config, prompt *valueobject.PodcastScriptPrompt) error {
+func (c *ExecuteTaskCommand) executeTaskState(ctx context.Context, textAi *openai.Config, prompt *valueobject.PodcastScriptPrompt) error {
 	var (
-		messages    = []*openai.Message{openai.SystemMessage(prompt.BuildSystemPrompt(c.task.Language))}
+		messages = []*schema.Message{
+			schema.SystemMessage(prompt.BuildSystemPrompt(c.task.Language)),
+		}
 		stylePrompt *valueobject.StylePrompt
 	)
 
@@ -81,9 +82,9 @@ func (c *ExecuteTaskCommand) executeTaskState(textAi *openai.Config, prompt *val
 			userMsg = stage.BuildPrompt()
 		}
 
-		messages = append(messages, openai.UserMessage(userMsg))
+		messages = append(messages, schema.UserMessage(userMsg))
 
-		data, err := openai.NewOpenaiClient(textAi).SetMessage(messages...).ChatCompletion(c.ctx)
+		data, err := openai.NewChatModel(ctx, textAi).Generate(ctx, messages)
 		if err != nil {
 			stage.Fail(err.Error())
 			c.task.Result = valueobject.TaskResultFailed
@@ -91,13 +92,8 @@ func (c *ExecuteTaskCommand) executeTaskState(textAi *openai.Config, prompt *val
 			return err
 		}
 
-		assistantMsg := gokit.SliceMap(data.Choices, func(item *openai.ChatCompletionChoice) string {
-			return item.Message.Content
-		})
-
-		stage.TaskAi.SessionId = data.ID
-		stage.SetOutput(strings.Join(assistantMsg, "\n"))
-		messages = append(messages, openai.AssistantMessage(stage.Output))
+		stage.SetOutput(data.Content)
+		messages = append(messages, schema.AssistantMessage(stage.Output, nil))
 
 		switch stage.Stage {
 		case valueobject.TaskStageApproval:
