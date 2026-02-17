@@ -4,6 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/cloudwego/eino/schema"
+	"github.com/pkg/errors"
+
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
@@ -60,18 +63,13 @@ func (c CritiqueNewsCommand) Execute(ctx context.Context) ([]string, error) {
 	}
 
 	// news critique
-	data, err := openai.NewOpenaiClient(textAiConfig).SetSystemPrompt(critiqueConfig.SystemPrompt).
-		SetUserPrompt(c.contents...).ChatCompletion(ctx)
+	data, err := openai.NewChatModel(ctx, textAiConfig).Generate(ctx, []*schema.Message{
+		schema.SystemMessage(critiqueConfig.SystemPrompt),
+		schema.UserMessage(strings.Join(c.contents, "\n")),
+	})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
-	result := make([]string, 0)
-	for _, choice := range data.Choices {
-		contents := strings.Split(choice.Message.Content, "\n")
-
-		result = append(result, contents...)
-	}
-
-	return result, nil
+	return strings.Split(data.Content, "\n"), nil
 }
