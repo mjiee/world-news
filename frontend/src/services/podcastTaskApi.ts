@@ -104,6 +104,7 @@ export interface PodcastScript {
   emotion: string;
   speechRate: number;
   volume: number;
+  silence: number;
 }
 
 // createTask to create podcast task

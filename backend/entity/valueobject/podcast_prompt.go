@@ -20,6 +20,7 @@ var (
 	emotionKey    = "emotion"
 	speechRateKey = "speechRate"
 	volumeKey     = "volume"
+	silenceKey    = "silence"
 	scriptJsonKey = "scriptJson"
 	mergeKey      = "merge"
 	approvalKey   = "approval"
@@ -46,6 +47,8 @@ var promptLocale = map[string]string{
 	buildKey(speechRateKey, locale.Zh): "语速: [0,2]",
 	buildKey(volumeKey, locale.En):     "Volume: [0,100]",
 	buildKey(volumeKey, locale.Zh):     "音量: [0,100]",
+	buildKey(silenceKey, locale.En):    "End pause duration (s): [0.0,5.0]",
+	buildKey(silenceKey, locale.Zh):    "句尾静音时长(s): [0.0,5.0]",
 	buildKey(scriptJsonKey, locale.En): "Only the standard json list is required to be output. Example: ",
 	buildKey(scriptJsonKey, locale.Zh): "要求只输出标准json列表，示例：",
 	buildKey(mergeKey, locale.En):      "Please merge the following podcast content into a single podcast script.",
@@ -233,8 +236,9 @@ func BuildScriptPrompt(language string, voices []*ttsai.Voice) string {
 			Speaker:    voice.Id,
 			Content:    fmt.Sprintf("This is the %d paragraph", idx),
 			Emotion:    "news",
-			SpeechRate: 1.0,
-			Volume:     50,
+			SpeechRate: 1.1,
+			Volume:     100,
+			Silence:    0.2,
 		})
 	}
 
@@ -242,6 +246,7 @@ func BuildScriptPrompt(language string, voices []*ttsai.Voice) string {
 	prompt = fmt.Sprintf("%s\n%s", prompt, getDefaultPrompt(emotionKey, language))
 	prompt = fmt.Sprintf("%s\n%s", prompt, getDefaultPrompt(speechRateKey, language))
 	prompt = fmt.Sprintf("%s\n%s", prompt, getDefaultPrompt(volumeKey, language))
+	prompt = fmt.Sprintf("%s\n%s", prompt, getDefaultPrompt(silenceKey, language))
 	prompt = fmt.Sprintf("%s\n%s%s", prompt, getDefaultPrompt(scriptJsonKey, language), gokit.MarshalSafe(scripts))
 
 	return prompt

@@ -125,6 +125,7 @@ func NewBaseNewsDetail(news *entity.NewsDetail) *NewsDetail {
 		Id:     news.Id,
 		Title:  news.Title,
 		Source: news.Source,
+		Link:   news.Link,
 	}
 }
 

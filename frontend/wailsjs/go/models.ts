@@ -533,6 +533,7 @@ export namespace ttsai {
 	    emotion: string;
 	    speechRate: number;
 	    volume: number;
+	    silence: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new TtsScript(source);
@@ -545,6 +546,7 @@ export namespace ttsai {
 	        this.emotion = source["emotion"];
 	        this.speechRate = source["speechRate"];
 	        this.volume = source["volume"];
+	        this.silence = source["silence"];
 	    }
 	}
 

@@ -1,15 +1,12 @@
-import { Loading, SourceLabel } from "@/components";
+import { LinkButton, Loading, SourceLabel } from "@/components";
 import { critiqueNews, getNewsDetail, NewsDetail, saveFavorite, translateNews } from "@/services";
 import { md } from "@/utils/md";
 import {
   ActionIcon,
   Affix,
-  Anchor,
   Badge,
   Box,
-  CopyButton,
   Divider,
-  Flex,
   Group,
   Image,
   Paper,
@@ -19,16 +16,7 @@ import {
   Title,
   Transition,
 } from "@mantine/core";
-import {
-  IconAi,
-  IconArrowLeft,
-  IconCheck,
-  IconCopy,
-  IconLanguage,
-  IconStar,
-  IconStarFilled,
-  IconX,
-} from "@tabler/icons-react";
+import { IconAi, IconArrowLeft, IconLanguage, IconStar, IconStarFilled, IconX } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -91,7 +79,7 @@ export function NewsDetailPage() {
         )}
       </Group>
 
-      <NewsLink link={newsDetail?.link} />
+      <LinkButton link={newsDetail?.link} label={t("news_detail.link", { ns: "news" })} />
       <Divider my="lg" />
       <Paper shadow="md" radius="md" withBorder p="lg">
         <NewsBody contents={newsDetail?.contents} images={newsDetail?.images} translations={translations} />
@@ -144,33 +132,6 @@ function NewsBody({ contents, images, translations }: NewsBodyProps) {
         </Box>
       ))}
     </Stack>
-  );
-}
-
-// news link
-interface NewsLinkProps {
-  link: string;
-}
-
-function NewsLink({ link }: NewsLinkProps) {
-  const { t } = useTranslation("news");
-
-  return (
-    <Flex>
-      <Text c="dimmed" size="sm">
-        {t("news_detail.link")}
-      </Text>
-      <Anchor href={link} target="_blank" rel="noopener noreferrer" size="sm" truncate style={{ maxWidth: "500px" }}>
-        {link}
-      </Anchor>
-      <CopyButton value={link} timeout={2000}>
-        {({ copied, copy }) => (
-          <ActionIcon p={3} color={copied ? "teal" : "gray"} variant="subtle" size="sm" onClick={copy}>
-            {copied ? <IconCheck /> : <IconCopy />}
-          </ActionIcon>
-        )}
-      </CopyButton>
-    </Flex>
   );
 }
 

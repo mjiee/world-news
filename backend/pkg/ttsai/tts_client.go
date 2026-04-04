@@ -39,11 +39,13 @@ type CreateTtsRequest struct {
 
 // TtsScript represents the tts script
 type TtsScript struct {
+	Id         string  `json:"-"`
 	Content    string  `json:"content"`
 	Speaker    string  `json:"speaker"`
 	Emotion    string  `json:"emotion"`
 	SpeechRate float32 `json:"speechRate"` // [0,2], default 1
 	Volume     int     `json:"volume"`     // [0,100], default 50
+	Silence    float32 `json:"silence"`    // [0.0, 5.0], default 0.2
 }
 
 // TtsTask represents the response from the tts service

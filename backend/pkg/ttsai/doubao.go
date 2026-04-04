@@ -84,11 +84,29 @@ func newDoubaoAudioParams(script *TtsScript) *doubaoAudioParams {
 	return data
 }
 
+// doubaoAdditions
+type doubaoAudioAdditions struct {
+	SilenceDuration int `json:"silence_duration"` // [0ms, 30000ms]
+}
+
+func newDoubaoAudioAdditions(script *TtsScript) string {
+	data := &doubaoAudioAdditions{
+		SilenceDuration: int(script.Silence * 1000),
+	}
+
+	if data.SilenceDuration == 0 {
+		data.SilenceDuration = 200
+	}
+
+	return gokit.MarshalSafe(data)
+}
+
 // doubaoAudioReqParams req params
 type doubaoAudioReqParams struct {
 	Text        string             `json:"text"`
 	Speaker     string             `json:"speaker"`
 	AudioParams *doubaoAudioParams `json:"audio_params"`
+	Additions   string             `json:"additions"`
 }
 
 // TextToSpeech synthesizes text into audio using the Doubao TTS API.
@@ -100,6 +118,7 @@ func (c *DoubaoTTSClient) TextToSpeech(ctx context.Context, script *TtsScript) (
 				Text:        script.Content,
 				Speaker:     script.Speaker,
 				AudioParams: newDoubaoAudioParams(script),
+				Additions:   newDoubaoAudioAdditions(script),
 			},
 		}
 		header = map[string]string{"X-Api-Resource-Id": c.model}

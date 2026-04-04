@@ -2,8 +2,11 @@ package command
 
 import (
 	"context"
+	"io"
+	"strings"
 
 	"github.com/cloudwego/eino/schema"
+	"github.com/pkg/errors"
 
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
@@ -84,15 +87,29 @@ func (c *ExecuteTaskCommand) executeTaskState(ctx context.Context, textAi *opena
 
 		messages = append(messages, schema.UserMessage(userMsg))
 
-		data, err := openai.NewChatModel(ctx, textAi).Generate(ctx, messages)
+		stream, err := openai.NewChatModel(ctx, textAi).Stream(ctx, messages)
 		if err != nil {
 			stage.Fail(err.Error())
 			c.task.Result = valueobject.TaskResultFailed
+			return errors.WithStack(err)
+		}
+		defer stream.Close()
 
-			return err
+		var fullContent strings.Builder
+		for {
+			chunk, err := stream.Recv()
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			if err != nil {
+				stage.Fail(err.Error())
+				c.task.Result = valueobject.TaskResultFailed
+				return errors.WithStack(err)
+			}
+			fullContent.WriteString(chunk.Content)
 		}
 
-		stage.SetOutput(data.Content)
+		stage.SetOutput(fullContent.String())
 		messages = append(messages, schema.AssistantMessage(stage.Output, nil))
 
 		switch stage.Stage {
@@ -106,6 +123,7 @@ func (c *ExecuteTaskCommand) executeTaskState(ctx context.Context, textAi *opena
 				stage.SetStatus(valueobject.StageStatusCompleted)
 			}
 		case valueobject.TaskStageScripted:
+			logx.WithContext(ctx).Info("TaskStageScripted", stage.Output)
 			scripts := prompt.ExtractScripts(stage.Output)
 			if scripts == nil {
 				stage.Fail("failed to extract scripts")
