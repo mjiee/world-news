@@ -75,7 +75,7 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
   const [voices, setVoices] = useState<{ value: string; label: string }[]>([]);
   const editForm = useForm({
     mode: "uncontrolled",
-    initialValues: { content: "", speaker: "", emotion: "", speechRate: 0, volume: 50 },
+    initialValues: { content: "", speaker: "", emotion: "", speechRate: 0, volume: 50, silence: 0.2 },
   });
 
   const createPodcastAudio = async () => {
@@ -172,6 +172,7 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
                 {scriptLabel(t("podcast.scripted.emotion", { ns: "task" }), "pink", script.emotion)}
                 {scriptLabel(t("podcast.scripted.speed", { ns: "task" }), "grape", script.speechRate)}
                 {scriptLabel(t("podcast.scripted.volume", { ns: "task" }), "indigo", script.volume)}
+                {scriptLabel(t("podcast.scripted.silence", { ns: "task" }), "cyan", script.silence)}
               </Group>
             </Stack>
           </Card>
@@ -217,6 +218,13 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
             min={0}
             max={100}
             {...editForm.getInputProps("volume")}
+          />
+          <NumberInput
+            label={t("podcast.scripted.silence", { ns: "task" })}
+            min={0}
+            max={4}
+            step={0.1}
+            {...editForm.getInputProps("silence")}
           />
 
           <Group justify="flex-end" mt="md">

@@ -1,3 +1,4 @@
+import { LinkButton } from "@/components";
 import { PodcastTask, PodcastTaskResult, TaskStageStatus } from "@/services";
 import { ActionIcon, Badge, Box, Flex, Group, Progress, Stack, Text, Title, Tooltip } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
@@ -54,6 +55,8 @@ export default function TaskHeader({ task, loading, onRefresh }: TaskHeaderProps
           </ActionIcon>
         </Tooltip>
       </Flex>
+
+      {task?.news && task.news.link && <LinkButton link={task.news.link} />}
 
       <Box>
         <Group justify="space-between" mb="xs">

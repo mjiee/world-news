@@ -68,6 +68,7 @@
       "emotion": "音调",
       "speed": "语速",
       "volume": "音量",
+      "silence": "静默",
       "generate": "生成音频"
     }
   },
