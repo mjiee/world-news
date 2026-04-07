@@ -39,7 +39,6 @@ type CreateTtsRequest struct {
 
 // TtsScript represents the tts script
 type TtsScript struct {
-	Id         string  `json:"-"`
 	Content    string  `json:"content"`
 	Speaker    string  `json:"speaker"`
 	Emotion    string  `json:"emotion"`
