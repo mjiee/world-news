@@ -1,5 +1,5 @@
 # build backend
-FROM golang:1.25.4-alpine3.22 as go-builder
+FROM golang:1.25.4-alpine3.23 as go-builder
 
 WORKDIR /build
 
@@ -11,7 +11,7 @@ RUN mkdir -p /build/frontend/dist && \
     go build -tags web -o world-news main.go
 
 # runtime stage
-FROM alpine:3.22
+FROM alpine:3.23
 
 WORKDIR /app
 COPY --from=go-builder /build/world-news /app/world-news
