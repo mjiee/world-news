@@ -60,6 +60,14 @@ type CreateAudioRequest struct {
 	StageId uint `json:"stageId" binding:"required"`
 }
 
+// TextToSpeechRequest is the request for text to speech
+type TextToSpeechRequest = ttsai.TtsScript
+
+// DeleteTaskStageRequest is the request for deleting a podcast task stage
+type DeleteTaskStageRequest struct {
+	StageId uint `json:"stageId" binding:"required"`
+}
+
 // DownloadAudioRequest is the request for downloading a podcast audio
 type DownloadAudioRequest struct {
 	StageId  uint   `json:"stageId" binding:"required"`

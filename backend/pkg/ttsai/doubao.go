@@ -14,6 +14,7 @@ import (
 
 	"github.com/mjiee/gokit"
 
+	"github.com/mjiee/world-news/backend/pkg/audio"
 	"github.com/mjiee/world-news/backend/pkg/logx"
 )
 
@@ -62,23 +63,19 @@ type doubaoAudioParams struct {
 }
 
 func newDoubaoAudioParams(script *TtsScript) *doubaoAudioParams {
-	data := &doubaoAudioParams{Format: "mp3", SampleRate: 16000}
+	data := &doubaoAudioParams{Format: script.Format, SampleRate: 16000}
+
+	if data.Format == "" {
+		data.Format = audio.MP3
+	}
 
 	if script.Emotion != "" {
 		data.Emotion = script.Emotion
 		data.EmotionScale = 5
 	}
 
-	if script.SpeechRate < 1 {
-		data.SpeechRate = int((script.SpeechRate - float32(1)) * 50)
-	} else if script.SpeechRate > 1 {
-		data.SpeechRate = int((script.SpeechRate - float32(1)) * 50)
-	}
-
-	if script.Volume < 50 {
-		data.LoudnessRate = script.Volume - 50
-	} else if script.Volume > 50 {
-		data.LoudnessRate = (100 - script.Volume) * 2
+	if script.Speed != 1 {
+		data.SpeechRate = int((script.Speed - float32(1)) * 50)
 	}
 
 	return data
@@ -115,7 +112,7 @@ func (c *DoubaoTTSClient) TextToSpeech(ctx context.Context, script *TtsScript) (
 		reqBody = map[string]interface{}{
 			"user": map[string]string{"uid": "world_news"},
 			"req_params": &doubaoAudioReqParams{
-				Text:        script.Content,
+				Text:        script.Text,
 				Speaker:     script.Speaker,
 				AudioParams: newDoubaoAudioParams(script),
 				Additions:   newDoubaoAudioAdditions(script),
@@ -142,7 +139,7 @@ func (c *DoubaoTTSClient) TextToSpeech(ctx context.Context, script *TtsScript) (
 	return &TtsTask{
 		AudioId:   data.Header.Get("X-Tt-Logid"),
 		AudioData: audioData,
-		Type:      "mp3",
+		Format:    script.Format,
 		Status:    ProcessStatusCompleted,
 	}, nil
 }

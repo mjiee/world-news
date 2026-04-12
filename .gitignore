@@ -10,3 +10,4 @@ frontend/package-lock.json
 __debug*
 
 *.wav
+tts/*

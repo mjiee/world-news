@@ -34,6 +34,8 @@ type PodcastTaskService interface {
 	HasProcessingTasks(ctx context.Context, newsId uint) (bool, error)
 	NewsHasTask(ctx context.Context, newsId uint) (bool, error)
 	DownloadAudio(ctx context.Context, stageId uint, fileName string) error
+	DeleteTaskStage(ctx context.Context, stageId uint) error
+	GetTaskStage(ctx context.Context, stageId uint) (*valueobject.TaskStage, error)
 }
 
 type podcastTaskService struct {
@@ -154,7 +156,42 @@ func (s *podcastTaskService) GetTaskByBatchNo(ctx context.Context, batchNo strin
 		}
 	}
 
-	return entity.NewPodcastTaskFromModel(news, data)
+	task, err := entity.NewPodcastTaskFromModel(news, data)
+	if err != nil {
+		return nil, err
+	}
+
+	err = task.MergeAudio()
+
+	return task, err
+}
+
+// GetTaskStage get task stage
+func (s *podcastTaskService) GetTaskStage(ctx context.Context, stageId uint) (*valueobject.TaskStage, error) {
+	repo := repository.Q.PodcastTask
+
+	stage, err := repo.WithContext(ctx).Where(repo.ID.Eq(stageId)).First()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return valueobject.NewTaskStageFromModel(stage)
+}
+
+// DeleteTaskStage delete task stage
+func (s *podcastTaskService) DeleteTaskStage(ctx context.Context, stageId uint) error {
+	task, err := s.GetTaskByStageId(ctx, stageId)
+	if err != nil {
+		return err
+	}
+
+	deleteIds := gokit.SliceFilterMap(task.Stages, func(s *valueobject.TaskStage) (bool, uint) {
+		return s.Id >= stageId, s.Id
+	})
+
+	_, err = repository.Q.PodcastTask.WithContext(ctx).Where(repository.Q.PodcastTask.ID.In(deleteIds...)).Delete()
+
+	return errors.WithStack(err)
 }
 
 // QueryTasks query tasks
@@ -247,7 +284,7 @@ func (s *podcastTaskService) DownloadAudio(ctx context.Context, stageId uint, fi
 		fileName = fmt.Sprintf("%s_%d", task.BatchNo, stage.Id)
 	}
 
-	file := filepath.Join(pathx.GetDownloadPath(), fmt.Sprintf("%s.%s", fileName, stage.Audio.Type))
+	file := filepath.Join(pathx.GetDownloadPath(), fmt.Sprintf("%s.%s", fileName, stage.Audio.Format))
 
 	data, err := base64.StdEncoding.DecodeString(stage.Audio.Data)
 	if err != nil {

@@ -1,7 +1,7 @@
-import { TaskStage, TaskStageName, TaskStageStatus } from "@/services";
+import { deleteTaskStage, TaskStage, TaskStageName, TaskStageStatus } from "@/services";
 import { md } from "@/utils/md";
-import { Accordion, Alert, Badge, Box, Card, Group, Text } from "@mantine/core";
-import { IconAlertCircle, IconCheck, IconClock, IconSparkles } from "@tabler/icons-react";
+import { Accordion, ActionIcon, Alert, Badge, Box, Card, Group, Text } from "@mantine/core";
+import { IconAlertCircle, IconCheck, IconClock, IconSparkles, IconTrash } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import classes from "../styles/taskDetail.module.css";
 import StageScriptedCard from "./StageScriptedCard";
@@ -18,6 +18,11 @@ export default function TaskStageList({ stages, onRefresh }: TaskStageListProps)
 
   const { t } = useTranslation();
 
+  const onDeleteStage = async (stageId: number) => {
+    await deleteTaskStage(stageId);
+    onRefresh();
+  };
+
   return (
     <Accordion variant="separated" radius="md" className={classes.accordion}>
       {stages.map((stage) => (
@@ -30,9 +35,22 @@ export default function TaskStageList({ stages, onRefresh }: TaskStageListProps)
                   {t("podcast.stage." + stage.stage, { ns: "task", defaultValue: stage.stage })}
                 </Text>
               </Group>
-              <Badge size="sm" variant="dot" color={getStatusColor(stage.status)} style={{ marginRight: "1rem" }}>
-                {t("podcast.status." + stage.status, { ns: "task", defaultValue: stage.status })}
-              </Badge>
+              <Group gap="xs" style={{ marginRight: "1rem" }}>
+                <ActionIcon
+                  variant="light"
+                  size="sm"
+                  color="red"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteStage(stage.id);
+                  }}
+                >
+                  <IconTrash size={14} />
+                </ActionIcon>
+                <Badge size="sm" variant="dot" color={getStatusColor(stage.status)}>
+                  {t("podcast.status." + stage.status, { ns: "task", defaultValue: stage.status })}
+                </Badge>
+              </Group>
             </Group>
           </Accordion.Control>
           <Accordion.Panel>

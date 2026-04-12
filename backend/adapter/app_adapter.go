@@ -327,11 +327,28 @@ func (a *App) CreateAudio(req *dto.CreateAudioRequest) *httpx.Response {
 	return httpx.AppResp(ctx, "CreateAudio", req, nil, cmd.Execute(ctx))
 }
 
+// TextToSpeech handles the request to convert text to speech.
+func (a *App) TextToSpeech(req *dto.TextToSpeechRequest) *httpx.Response {
+	var (
+		ctx       = tracex.InjectTraceInContext(a.ctx)
+		data, err = command.NewTextToSpeechCommand(req, a.systemConfigSvc).Execute(ctx)
+	)
+
+	return httpx.AppResp(ctx, "TextToSpeech", req, data, err)
+}
+
 // DownloadAudio handles the request to download podcast audio.
 func (a *App) DownloadAudio(req *dto.DownloadAudioRequest) *httpx.Response {
 	ctx := tracex.InjectTraceInContext(a.ctx)
 
 	return httpx.AppResp(ctx, "DownloadAudio", req, nil, a.taskSvc.DownloadAudio(ctx, req.StageId, req.FileName))
+}
+
+// DeleteTaskStage handles the request to delete a podcast task stage.
+func (a *App) DeleteTaskStage(req *dto.DeleteTaskStageRequest) *httpx.Response {
+	ctx := tracex.InjectTraceInContext(a.ctx)
+
+	return httpx.AppResp(ctx, "DeleteTaskStage", req, nil, a.taskSvc.DeleteTaskStage(ctx, req.StageId))
 }
 
 // NewsHasTask handles the request to check if a news has a podcast task.

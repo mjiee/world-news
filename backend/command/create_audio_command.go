@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"encoding/base64"
 	"slices"
 
 	"github.com/mjiee/gokit"
@@ -67,7 +68,7 @@ func (c *CreateAudioCommand) Execute(ctx context.Context) error {
 		return errorx.PodcastScriptNotFound
 	}
 
-	stage.Audio = &valueobject.PodcastAudio{Scripts: scripts, Voices: voices}
+	stage.Audio = &valueobject.PodcastAudio{Voices: voices}
 	task.AddNewStage(stage)
 
 	if err := c.taskSvc.SaveTask(c.ctx, task); err != nil {
@@ -79,64 +80,53 @@ func (c *CreateAudioCommand) Execute(ctx context.Context) error {
 	return nil
 }
 
-func (c *CreateAudioCommand) textToSpeech(task *entity.PodcastTask, ttsAi *ttsai.Config) {
-	stage := task.GetStage(valueobject.TaskStageTextToSpeech)
-
-	// create tts
-	if err := c.createTts(stage, ttsAi); err != nil {
-		stage.Fail(err.Error())
-		task.Result = valueobject.TaskResultFailed
-	} else {
-		stage.Status = valueobject.StageStatusCompleted
-		task.Result = valueobject.TaskResultCompleted
-	}
-
-	if err := c.taskSvc.SaveTask(c.ctx, task); err != nil {
-		logx.WithContext(c.ctx).Error("GeneratePodcastCommand.textToSpeech", err)
-	}
-}
-
-func (c *CreateAudioCommand) createTts(stage *valueobject.TaskStage, ttsAi *ttsai.Config) error {
+func (c *CreateAudioCommand) textToSpeech(task *entity.PodcastTask, ttsAi *ttsai.Config) error {
 	ttsClient, err := ttsai.NewDoubaoTTSClient(ttsAi)
 	if err != nil {
 		return err
 	}
 
 	var (
-		sessionId []string
-		audioData [][]byte
+		stage       = task.GetStage(valueobject.TaskStageTextToSpeech)
+		scriptState = task.GetStage(valueobject.TaskStageScripted)
 	)
 
-	for _, script := range stage.Audio.Scripts {
-		if script.Content == "" {
+	for _, script := range scriptState.Audio.Scripts {
+		if script.Text == "" {
 			continue
 		}
 
-		resp, err := ttsClient.TextToSpeech(c.ctx, script)
+		_, err = c.taskSvc.GetTaskStage(c.ctx, stage.Id)
 		if err != nil {
-			return err
+			stage.Fail(err.Error())
+			task.Result = valueobject.TaskResultFailed
+			logx.WithContext(c.ctx).Error("GeneratePodcastCommand.textToSpeech", err)
+			break
 		}
 
-		sessionId = append(sessionId, resp.AudioId)
-		stage.Audio.Type = resp.Type
+		script.Format = audio.MP3
+
+		resp, err := ttsClient.TextToSpeech(c.ctx, script)
+		if err != nil {
+			stage.Fail(err.Error())
+			task.Result = valueobject.TaskResultFailed
+			logx.WithContext(c.ctx).Error("GeneratePodcastCommand.textToSpeech", err)
+			break
+		}
+
+		stage.Audio.Format = resp.Format
 		if len(resp.AudioData) != 0 {
-			audioData = append(audioData, resp.AudioData)
+			script.Audio = base64.StdEncoding.EncodeToString(resp.AudioData)
 		}
 	}
 
-	if len(audioData) > 0 {
-		switch stage.Audio.Type {
-		case audio.MP3:
-			data, duration, err := audio.EncodeMp3s(audioData...)
-			if err != nil {
-				return err
-			}
+	if !task.Result.IsFailed() {
+		task.Result = valueobject.TaskResultCompleted
+		stage.SetStatus(valueobject.StageStatusCompleted)
+	}
 
-			stage.Audio.Data = data
-			stage.Audio.Duration = int(duration.Seconds())
-		case audio.WAV:
-			stage.Audio.Data, err = audio.EncodeWavs(audioData...)
-		}
+	if err := c.taskSvc.SaveTask(c.ctx, task); err != nil {
+		logx.WithContext(c.ctx).Error("GeneratePodcastCommand.textToSpeech", err)
 	}
 
 	return err

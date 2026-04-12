@@ -5,6 +5,7 @@ import {
   CreateScript,
   CreateTask,
   DeleteTask,
+  DeleteTaskStage,
   DownloadAudio,
   EditScript,
   GetTask,
@@ -12,6 +13,7 @@ import {
   NewsHasTask,
   QueryTasks,
   RestyleArticle,
+  TextToSpeech,
   UpdateTaskOutput,
 } from "wailsjs/go/adapter/App";
 import { dto, httpx } from "wailsjs/go/models";
@@ -86,7 +88,7 @@ export enum TaskStageName {
 
 export interface PodcastAudio {
   voices: AudioVoice[];
-  type: string;
+  format: string;
   url: string;
   data: string;
   duration: number;
@@ -99,12 +101,14 @@ export interface TaskAi {
 }
 
 export interface PodcastScript {
-  content: string;
+  text: string;
+  format: string;
   speaker: string;
   emotion: string;
-  speechRate: number;
+  speed: number;
   volume: number;
   silence: number;
+  audio?: string;
 }
 
 // createTask to create podcast task
@@ -176,4 +180,14 @@ export async function updateTaskOutput(stageId: number, output: string) {
 // newsHasTask to check if news has task
 export async function newsHasTask(newsId: number) {
   return await call<boolean>(NewsHasTask({ newsId }));
+}
+
+// textToSpeech to text to speech
+export async function textToSpeech(script: PodcastScript) {
+  return await call<string>(TextToSpeech(script));
+}
+
+// deleteTaskStage to delete task stage
+export async function deleteTaskStage(stageId: number) {
+  return await call(DeleteTaskStage({ stageId }));
 }
