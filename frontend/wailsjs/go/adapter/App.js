@@ -42,6 +42,10 @@ export function DeleteTask(arg1) {
   return window['go']['adapter']['App']['DeleteTask'](arg1);
 }
 
+export function DeleteTaskStage(arg1) {
+  return window['go']['adapter']['App']['DeleteTaskStage'](arg1);
+}
+
 export function DownloadAudio(arg1) {
   return window['go']['adapter']['App']['DownloadAudio'](arg1);
 }
@@ -112,6 +116,10 @@ export function SaveSystemConfig(arg1) {
 
 export function SaveWebsiteWeight(arg1) {
   return window['go']['adapter']['App']['SaveWebsiteWeight'](arg1);
+}
+
+export function TextToSpeech(arg1) {
+  return window['go']['adapter']['App']['TextToSpeech'](arg1);
 }
 
 export function TranslateNews(arg1) {

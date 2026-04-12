@@ -152,6 +152,18 @@ export namespace dto {
 	        this.batchNo = source["batchNo"];
 	    }
 	}
+	export class DeleteTaskStageRequest {
+	    stageId: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new DeleteTaskStageRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.stageId = source["stageId"];
+	    }
+	}
 	export class DownloadAudioRequest {
 	    stageId: number;
 	    fileName?: string;
@@ -528,12 +540,14 @@ export namespace httpx {
 export namespace ttsai {
 	
 	export class TtsScript {
-	    content: string;
+	    text: string;
+	    format: string;
 	    speaker: string;
 	    emotion: string;
-	    speechRate: number;
+	    speed: number;
 	    volume: number;
 	    silence: number;
+	    audio?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new TtsScript(source);
@@ -541,12 +555,14 @@ export namespace ttsai {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.content = source["content"];
+	        this.text = source["text"];
+	        this.format = source["format"];
 	        this.speaker = source["speaker"];
 	        this.emotion = source["emotion"];
-	        this.speechRate = source["speechRate"];
+	        this.speed = source["speed"];
 	        this.volume = source["volume"];
 	        this.silence = source["silence"];
+	        this.audio = source["audio"];
 	    }
 	}
 

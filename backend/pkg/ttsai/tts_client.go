@@ -39,18 +39,20 @@ type CreateTtsRequest struct {
 
 // TtsScript represents the tts script
 type TtsScript struct {
-	Content    string  `json:"content"`
-	Speaker    string  `json:"speaker"`
-	Emotion    string  `json:"emotion"`
-	SpeechRate float32 `json:"speechRate"` // [0,2], default 1
-	Volume     int     `json:"volume"`     // [0,100], default 50
-	Silence    float32 `json:"silence"`    // [0.0, 5.0], default 0.2
+	Text    string  `json:"text"`
+	Format  string  `json:"format"` // mp3, mav
+	Speaker string  `json:"speaker"`
+	Emotion string  `json:"emotion"`
+	Speed   float32 `json:"speed"`           // [0,2], default 1
+	Volume  int     `json:"volume"`          // [0,100], default 50
+	Silence float32 `json:"silence"`         // [0.0, 5.0], default 0.2
+	Audio   string  `json:"audio,omitempty"` // audio data
 }
 
 // TtsTask represents the response from the tts service
 type TtsTask struct {
 	AudioId     string
-	Type        string // mav, mp3, m3u8
+	Format      string // mav, mp3, m3u8
 	Url         string
 	AudioData   []byte
 	Script      string

@@ -18,7 +18,7 @@ var (
 	scriptKey     = "script"
 	announcerKey  = "announcer"
 	emotionKey    = "emotion"
-	speechRateKey = "speechRate"
+	speedKey      = "speed"
 	volumeKey     = "volume"
 	silenceKey    = "silence"
 	scriptJsonKey = "scriptJson"
@@ -41,14 +41,14 @@ var promptLocale = map[string]string{
 	buildKey(scriptKey, locale.Zh):     "将播客内容转换为tts脚本。",
 	buildKey(announcerKey, locale.En):  "Radio announcer: ",
 	buildKey(announcerKey, locale.Zh):  "播音员: ",
-	buildKey(emotionKey, locale.En):    `Emotion: ["happy", "sad", "angry", "surprised", "fear", "hate", "excited", "coldness", "neutral", "depressed", "lovey-dovey", "shy", "comfort", "tension", "tender", "storytelling", "radio", "magnetic", "advertising", "vocal - fry", "ASMR", "news", "entertainment"]`,
-	buildKey(emotionKey, locale.Zh):    `情绪: ["happy", "sad", "angry", "surprised", "fear", "hate", "excited", "coldness", "neutral", "depressed", "lovey-dovey", "shy", "comfort", "tension", "tender", "storytelling", "radio", "magnetic", "advertising", "vocal - fry", "ASMR", "news", "entertainment"]`,
-	buildKey(speechRateKey, locale.En): "Speech rate: [0,2]",
-	buildKey(speechRateKey, locale.Zh): "语速: [0,2]",
-	buildKey(volumeKey, locale.En):     "Volume: [0,100]",
-	buildKey(volumeKey, locale.Zh):     "音量: [0,100]",
-	buildKey(silenceKey, locale.En):    "End pause duration (s): [0.0,5.0]",
-	buildKey(silenceKey, locale.Zh):    "句尾静音时长(s): [0.0,5.0]",
+	buildKey(emotionKey, locale.En):    `Emotion: ["happy", "sad", "angry", "surprised", "fear", "hate", "excited", "coldness", "neutral", "depressed", "lovey-dovey", "shy", "comfort", "tension", "tender", "storytelling", "radio", "magnetic", "advertising", "news", "entertainment"]`,
+	buildKey(emotionKey, locale.Zh):    `情绪: ["happy", "sad", "angry", "surprised", "fear", "hate", "excited", "coldness", "neutral", "depressed", "lovey-dovey", "shy", "comfort", "tension", "tender", "storytelling", "radio", "magnetic", "advertising", "news", "entertainment"]`,
+	buildKey(speedKey, locale.En):      "Speed: [0.9,1.2]",
+	buildKey(speedKey, locale.Zh):      "语速: [0.9,1.2]",
+	buildKey(volumeKey, locale.En):     "Volume: [80,100]",
+	buildKey(volumeKey, locale.Zh):     "音量: [80,100]",
+	buildKey(silenceKey, locale.En):    "End pause duration (s): [0.1,0.3]",
+	buildKey(silenceKey, locale.Zh):    "句尾静音时长(s): [0.1,0.3]",
 	buildKey(scriptJsonKey, locale.En): "Only the standard json list is required to be output. Example: ",
 	buildKey(scriptJsonKey, locale.Zh): "要求只输出标准json列表，示例：",
 	buildKey(mergeKey, locale.En):      "Please merge the following podcast content into a single podcast script.",
@@ -233,18 +233,18 @@ func BuildScriptPrompt(language string, voices []*ttsai.Voice) string {
 			voice.Role = "Co-Host"
 		}
 		scripts = append(scripts, &ttsai.TtsScript{
-			Speaker:    voice.Id,
-			Content:    fmt.Sprintf("This is the %d paragraph", idx),
-			Emotion:    "news",
-			SpeechRate: 1.1,
-			Volume:     100,
-			Silence:    0.2,
+			Speaker: voice.Id,
+			Text:    fmt.Sprintf("This is the %d paragraph", idx),
+			Emotion: "news",
+			Speed:   1.1,
+			Volume:  100,
+			Silence: 0.2,
 		})
 	}
 
 	prompt = fmt.Sprintf("%s\n%s%s", prompt, getDefaultPrompt(announcerKey, language), gokit.MarshalSafe(voices))
 	prompt = fmt.Sprintf("%s\n%s", prompt, getDefaultPrompt(emotionKey, language))
-	prompt = fmt.Sprintf("%s\n%s", prompt, getDefaultPrompt(speechRateKey, language))
+	prompt = fmt.Sprintf("%s\n%s", prompt, getDefaultPrompt(speedKey, language))
 	prompt = fmt.Sprintf("%s\n%s", prompt, getDefaultPrompt(volumeKey, language))
 	prompt = fmt.Sprintf("%s\n%s", prompt, getDefaultPrompt(silenceKey, language))
 	prompt = fmt.Sprintf("%s\n%s%s", prompt, getDefaultPrompt(scriptJsonKey, language), gokit.MarshalSafe(scripts))

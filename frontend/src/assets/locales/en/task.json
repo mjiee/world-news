@@ -63,13 +63,15 @@
       "download_desc": "Saved in the [Downloads] folder by default."
     },
     "scripted": {
-      "content": "Content",
+      "text": "Text",
       "voice": "Voice",
       "emotion": "Emotion",
       "speed": "Speed",
       "volume": "Volume",
       "silence": "Silence Duration",
-      "generate": "Generate Audio"
+      "generate": "Generate Audio",
+      "edit": "Edit Script",
+      "add": "Add Script"
     }
   },
   "error_reason": "Failure reason"

@@ -30,12 +30,12 @@ func TestDoubaoTextToSpeech(t *testing.T) {
 	ctx := context.Background()
 
 	dataA, err := client.TextToSpeech(ctx, &TtsScript{
-		Content:    "It helps you understand large codebases, automate tedious work, and ship faster.",
-		Speaker:    "zh_male_xudong_conversation_wvae_bigtts",
-		Emotion:    "radio",
-		SpeechRate: 1.1,
-		Volume:     100,
-		Silence:    0.2,
+		Text:    "It helps you understand large codebases, automate tedious work, and ship faster.",
+		Speaker: "zh_male_xudong_conversation_wvae_bigtts",
+		Emotion: "radio",
+		Speed:   1.1,
+		Volume:  100,
+		Silence: 0.2,
 	})
 	if err != nil {
 		t.Error(err)
@@ -49,12 +49,12 @@ func TestDoubaoTextToSpeech(t *testing.T) {
 	}
 
 	dataB, err := client.TextToSpeech(ctx, &TtsScript{
-		Content:    "It helps you understand large codebases, automate tedious work, and ship faster.",
-		Speaker:    "zh_female_wanwanxiaohe_moon_bigtts",
-		Emotion:    "neutral",
-		SpeechRate: 1.1,
-		Volume:     100,
-		Silence:    0.2,
+		Text:    "It helps you understand large codebases, automate tedious work, and ship faster.",
+		Speaker: "zh_female_wanwanxiaohe_moon_bigtts",
+		Emotion: "neutral",
+		Speed:   1.1,
+		Volume:  100,
+		Silence: 0.2,
 	})
 	if err != nil {
 		t.Error(err)

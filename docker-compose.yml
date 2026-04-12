@@ -4,7 +4,7 @@ networks:
 
 services:
   world_news_db:
-    image: postgres:17-alpine3.21
+    image: postgres:17-alpine3.23
     container_name: world_news_db
     environment:
       POSTGRES_PASSWORD: world_news

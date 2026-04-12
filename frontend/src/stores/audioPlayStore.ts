@@ -106,20 +106,16 @@ export const useAudioPlayStore = create<AudioPlayStore>((set, get) => ({
   },
 }));
 
-export function buildAudioSrc(audio: PodcastAudio): string {
-  if (audio.url) {
-    return audio.url;
-  }
-
+export function buildAudioSrc(format: string, data: string): string {
   const mimeTypes: Record<string, string> = {
     mp3: "audio/mpeg",
     wav: "audio/wav",
   };
 
-  const mimeType = mimeTypes[audio.type];
+  const mimeType = mimeTypes[format];
 
-  if (mimeType && audio.data) {
-    return `data:${mimeType};base64,${audio.data}`;
+  if (mimeType && data) {
+    return `data:${mimeType};base64,${data}`;
   }
 
   return "";

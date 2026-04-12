@@ -63,13 +63,15 @@
       "download_desc": "默认保存在【下载】目录。"
     },
     "scripted": {
-      "content": "内容",
+      "text": "文本",
       "voice": "声音",
       "emotion": "音调",
       "speed": "语速",
       "volume": "音量",
       "silence": "静默",
-      "generate": "生成音频"
+      "generate": "生成音频",
+      "edit": "编辑片段",
+      "add": "添加片段"
     }
   },
   "error_reason": "失败原因"

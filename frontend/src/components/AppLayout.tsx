@@ -42,7 +42,12 @@ export function AppLayout() {
       )}
 
       {currentAudio && (
-        <audio ref={audioRef} src={buildAudioSrc(currentAudio.audio)} preload="auto" style={{ display: "none" }} />
+        <audio
+          ref={audioRef}
+          src={buildAudioSrc(currentAudio.audio.format, currentAudio.audio.data)}
+          preload="auto"
+          style={{ display: "none" }}
+        />
       )}
 
       <main className={`${styles.main} ${collapsed ? styles.expanded : ""} ${isMobile ? styles.mobile : ""}`}>
