@@ -71,7 +71,8 @@
       "silence": "Silence Duration",
       "generate": "Generate Audio",
       "edit": "Edit Script",
-      "add": "Add Script"
+      "add": "Add Script",
+      "view_json": "View JSON"
     }
   },
   "error_reason": "Failure reason"

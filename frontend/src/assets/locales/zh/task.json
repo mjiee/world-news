@@ -71,7 +71,8 @@
       "silence": "静默",
       "generate": "生成音频",
       "edit": "编辑片段",
-      "add": "添加片段"
+      "add": "添加片段",
+      "view_json": "查看 JSON"
     }
   },
   "error_reason": "失败原因"

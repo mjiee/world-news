@@ -134,37 +134,6 @@ export default function StylizeOrMergeCard({ stage, onRefresh }: { stage: TaskSt
         )}
       </Card>
 
-      {/* <Modal
-        opened={edit === ActionType.EditOutput}
-        onClose={() => setEdit(ActionType.Default)}
-        title={t("podcast.edit_output", { ns: "task" }) || "编辑内容"}
-        size="xl"
-      >
-        <Stack gap="md">
-          <Textarea
-            {...outputField.getInputProps()}
-            label={t("podcast.output_content", { ns: "task" }) || "内容"}
-            placeholder="请输入内容..."
-            minRows={15}
-            maxRows={25}
-            autosize
-          />
-          <Group justify="flex-end" mt="md">
-            <Button variant="light" onClick={() => setEdit(ActionType.Default)}>
-              {t("button.cancel")}
-            </Button>
-            <Button
-              variant="gradient"
-              gradient={{ from: "violet", to: "grape" }}
-              loading={loading}
-              onClick={saveOutputEdit}
-            >
-              {t("button.save")}
-            </Button>
-          </Group>
-        </Stack>
-      </Modal> */}
-
       <Modal
         opened={edit != ActionType.Default}
         onClose={() => setEdit(ActionType.Default)}
