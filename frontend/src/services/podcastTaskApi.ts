@@ -101,6 +101,7 @@ export interface TaskAi {
 }
 
 export interface PodcastScript {
+  id?: number;
   text: string;
   format: string;
   speaker: string;

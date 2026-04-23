@@ -202,9 +202,10 @@ func extractFromPosition(text string, start int, open, close byte) string {
 			continue
 		}
 
-		if c == open {
+		switch c {
+		case open:
 			depth++
-		} else if c == close {
+		case close:
 			depth--
 			if depth == 0 {
 				jsonStr := text[start : i+1]

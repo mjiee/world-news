@@ -17,17 +17,30 @@ import {
   Box,
   Button,
   Card,
+  Code,
+  CopyButton,
   Group,
   Modal,
   NumberInput,
+  ScrollArea,
   Select,
   Stack,
   Text,
   Textarea,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconAlertCircle, IconEdit, IconPlayerPlay, IconPlus, IconRefresh, IconTrash } from "@tabler/icons-react";
-import { useEffect, useRef, useState } from "react";
+import {
+  IconAlertCircle,
+  IconCheck,
+  IconCode,
+  IconCopy,
+  IconEdit,
+  IconPlayerPlay,
+  IconPlus,
+  IconRefresh,
+  IconTrash,
+} from "@tabler/icons-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import classes from "../styles/taskDetail.module.css";
 
@@ -83,6 +96,8 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
   const [loading, setLoading] = useState(false);
   const [modalState, setModalState] = useState<ModalState>(null);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+  const [jsonModalOpen, setJsonModalOpen] = useState(false);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [scripts, setScripts] = useState<PodcastScript[]>(stage?.audio?.scripts || []);
@@ -171,6 +186,16 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
   useEffect(() => {
     loadVoices();
   }, [stage]);
+
+  const jsonValue = useMemo(
+    () =>
+      JSON.stringify(
+        scripts.map((s, i) => ({ ...s, id: s.id ?? i + 1, audio: null })),
+        null,
+        2,
+      ),
+    [scripts],
+  );
 
   const scriptLabel = (label: string, color: string, value: string | number) => (
     <Box>
@@ -261,6 +286,15 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
           >
             {t("podcast.scripted.generate", { ns: "task" })}
           </Button>
+          <Button
+            size="lg"
+            variant="light"
+            color="violet"
+            leftSection={<IconCode size={18} />}
+            onClick={() => setJsonModalOpen(true)}
+          >
+            {t("podcast.scripted.view_json", { ns: "task" })}
+          </Button>
         </Group>
       )}
 
@@ -317,6 +351,30 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
             </Button>
           </Group>
         </Stack>
+      </Modal>
+
+      <Modal
+        opened={jsonModalOpen}
+        onClose={() => setJsonModalOpen(false)}
+        title={
+          <Group gap="xs">
+            <Text fw={500}>{t("podcast.scripted.view_json", { ns: "task" })}</Text>
+            <CopyButton value={jsonValue}>
+              {({ copied, copy }) => (
+                <ActionIcon variant="subtle" color={copied ? "teal" : "gray"} size="sm" onClick={copy}>
+                  {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
+                </ActionIcon>
+              )}
+            </CopyButton>
+          </Group>
+        }
+        size="xl"
+      >
+        <ScrollArea h={500}>
+          <Code block style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+            {jsonValue}
+          </Code>
+        </ScrollArea>
       </Modal>
     </>
   );
