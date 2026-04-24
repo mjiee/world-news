@@ -85,16 +85,9 @@ func (c *CreateAudioCommand) Execute(ctx context.Context) error {
 }
 
 func (c *CreateAudioCommand) textToSpeech(task *entity.PodcastTask, ttsAi *ttsai.Config) error {
-	ttsClient, err := ttsai.NewDoubaoTTSClient(ttsAi)
-	if err != nil {
-		return err
-	}
-
 	var (
 		stage       = task.GetStage(valueobject.TaskStageTextToSpeech)
 		scriptState = task.GetStage(valueobject.TaskStageScripted)
-		audioPaths  = make([]string, 0, len(scriptState.Audio.Scripts))
-		gloErr      error
 	)
 
 	audioPath, err := pathx.GetAppBasePath(config.AppName, pathx.AudioDir, task.BatchNo)
@@ -102,82 +95,12 @@ func (c *CreateAudioCommand) textToSpeech(task *entity.PodcastTask, ttsAi *ttsai
 		return err
 	}
 
-	tempPath, err := pathx.GetAppBasePath(config.AppName, pathx.TempDir, task.BatchNo)
+	err = c.generateAudio(audioPath, stage, scriptState, ttsAi)
+	if err == nil {
+		err = c.mergeAudio(audioPath, stage, scriptState)
+	}
+
 	if err != nil {
-		return err
-	}
-
-	leftSpeacker := scriptState.Audio.Scripts[0].Speaker
-
-	for _, script := range scriptState.Audio.Scripts {
-		if script.Text == "" {
-			continue
-		}
-
-		_, err = c.taskSvc.GetTaskStage(c.ctx, stage.Id)
-		if err != nil {
-			gloErr = err
-			break
-		}
-
-		if script.AudioUrl != "" {
-			audioPaths = append(audioPaths, script.AudioUrl)
-			continue
-		}
-
-		script.Format = audio.WAV
-
-		resp, err := ttsClient.TextToSpeech(c.ctx, script)
-		if err != nil {
-			gloErr = err
-			break
-		}
-
-		stage.Audio.Format = resp.Format
-		if len(resp.AudioData) == 0 {
-			continue
-		}
-
-		var (
-			fileName  = resp.AudioId + "." + script.Format
-			audioFile = filepath.Join(audioPath, fileName)
-			tempFile  = filepath.Join(tempPath, fileName)
-			panning   = audio.LeftPanning
-		)
-
-		if script.Speaker != leftSpeacker {
-			panning = audio.RightPanning
-		}
-
-		if err := audio.Transcode(resp.AudioData, audioFile); err != nil {
-			gloErr = err
-			break
-		}
-
-		if err := audio.RenderFile(audioFile, tempFile, audio.RenderOption{Pan: panning}); err != nil {
-			gloErr = err
-			break
-		}
-
-		script.AudioUrl = audioFile
-		audioPaths = append(audioPaths, tempFile)
-	}
-
-	if gloErr == nil {
-		audioFile := filepath.Join(audioPath, fmt.Sprintf("%s_%d.wav", task.BatchNo, stage.Id))
-		if err := audio.MergeFiles(audioPaths, audioFile); err != nil {
-			gloErr = err
-		} else {
-			stage.Audio.Url = audioFile
-			stage.Audio.Format = audio.WAV
-		}
-	}
-
-	if err := os.RemoveAll(tempPath); err != nil {
-		logx.WithContext(c.ctx).Error("GeneratePodcastCommand.RemoveAll", err)
-	}
-
-	if gloErr != nil {
 		stage.Fail(err.Error())
 		task.Result = valueobject.TaskResultFailed
 		logx.WithContext(c.ctx).Error("GeneratePodcastCommand", err)
@@ -193,4 +116,94 @@ func (c *CreateAudioCommand) textToSpeech(task *entity.PodcastTask, ttsAi *ttsai
 	}
 
 	return err
+}
+
+func (c *CreateAudioCommand) generateAudio(audioPath string, ttsStage *valueobject.TaskStage,
+	scriptState *valueobject.TaskStage, ttsAi *ttsai.Config) error {
+	ttsClient, err := ttsai.NewDoubaoTTSClient(ttsAi)
+	if err != nil {
+		return err
+	}
+
+	for _, script := range scriptState.Audio.Scripts {
+		if script.Text == "" {
+			continue
+		}
+
+		_, err := c.taskSvc.GetTaskStage(c.ctx, ttsStage.Id)
+		if err != nil {
+			return err
+		}
+
+		if script.AudioUrl != "" {
+			continue
+		}
+
+		script.Format = audio.WAV
+
+		resp, err := ttsClient.TextToSpeech(c.ctx, script)
+		if err != nil {
+			return err
+		}
+
+		ttsStage.Audio.Format = resp.Format
+		if len(resp.AudioData) == 0 {
+			continue
+		}
+
+		audioFile := filepath.Join(audioPath, resp.AudioId+"."+script.Format)
+
+		if err := audio.Transcode(resp.AudioData, audioFile); err != nil {
+			return err
+		}
+
+		script.AudioUrl = audioFile
+	}
+
+	return nil
+}
+
+func (c *CreateAudioCommand) mergeAudio(audioPath string, ttsStage *valueobject.TaskStage,
+	scriptState *valueobject.TaskStage) error {
+	var (
+		tempAudios   = make([]string, 0, len(scriptState.Audio.Scripts))
+		leftSpeacker = scriptState.Audio.Scripts[0].Speaker
+		audioFile    = filepath.Join(audioPath, fmt.Sprintf("%s_%d.wav", ttsStage.BatchNo, ttsStage.Id))
+	)
+
+	tempPath, err := pathx.GetAppBasePath(config.AppName, pathx.TempDir, ttsStage.BatchNo)
+	if err != nil {
+		return err
+	}
+
+	for _, script := range scriptState.Audio.Scripts {
+		if script.AudioUrl == "" {
+			continue
+		}
+
+		panning := audio.LeftPanning
+		if script.Speaker != leftSpeacker {
+			panning = audio.RightPanning
+		}
+
+		tempFile := filepath.Join(tempPath, filepath.Base(script.AudioUrl))
+
+		if err := audio.RenderFile(script.AudioUrl, tempFile, audio.RenderOption{Pan: panning}); err != nil {
+			return err
+		}
+
+		tempAudios = append(tempAudios, tempFile)
+	}
+
+	if err := audio.MergeFiles(tempAudios, audioFile); err != nil {
+		return err
+	}
+
+	ttsStage.Audio.Url = audioFile
+
+	if err := os.RemoveAll(tempPath); err != nil {
+		logx.WithContext(c.ctx).Error("GeneratePodcastCommand.RemoveAll", err)
+	}
+
+	return nil
 }

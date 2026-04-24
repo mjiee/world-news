@@ -50,7 +50,7 @@ func (c *TextToSpeechCommand) Execute(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	audioFile, err := pathx.GetFilePath(resp.AudioId+"."+c.script.Format, pathx.AudioDir, c.batchNo)
+	audioFile, err := pathx.GetFilePath(resp.AudioId+"."+resp.Format, pathx.AudioDir, c.batchNo)
 	if err != nil {
 		return "", err
 	}
