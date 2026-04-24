@@ -5,18 +5,20 @@ package cmd
 import (
 	"embed"
 
-	"github.com/mjiee/world-news/backend/adapter"
-	"github.com/mjiee/world-news/backend/pkg/logx"
-	"github.com/mjiee/world-news/backend/pkg/tracex"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+
+	"github.com/mjiee/world-news/backend/adapter"
+	"github.com/mjiee/world-news/backend/pkg/config"
+	"github.com/mjiee/world-news/backend/pkg/logx"
+	"github.com/mjiee/world-news/backend/pkg/tracex"
 )
 
 // Run creates an instance of the desktop application structure and runs it.
 func Run(assets embed.FS) {
 	// init trace
-	tracex.InitTracer(adapter.AppName)
+	tracex.InitTracer(config.AppName)
 
 	// Create an instance of the app structure
 	app := adapter.NewApp()
@@ -35,7 +37,7 @@ func Run(assets embed.FS) {
 		Bind: []interface{}{
 			app,
 		},
-		Logger: logx.NewAppLog(adapter.AppName),
+		Logger: logx.NewAppLog(config.AppName),
 	})
 
 	if err != nil {

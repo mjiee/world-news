@@ -125,9 +125,9 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
 
   const reGenerateScriptAudio = async (script: PodcastScript, index: number) => {
     setLoading(true);
-    const resp = await textToSpeech(script);
+    const resp = await textToSpeech(stage.batchNo, script);
     if (resp) {
-      script.audio = resp;
+      script.audioUrl = resp;
       await editScript(
         stage.id,
         scripts.map((s, i) => (i === index ? { ...script } : s)),
@@ -136,16 +136,21 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
     setLoading(false);
   };
 
-  const togglePlayAudio = (index: number, format: string, audioData: string) => {
+  const togglePlayAudio = async (index: number, format: string, audioUrl?: string) => {
     if (playingIndex === index) {
       audioRef.current?.pause();
       setPlayingIndex(null);
       return;
     }
     audioRef.current?.pause();
-    const audio = new Audio(buildAudioSrc(format, audioData));
+
+    const audioData = await buildAudioSrc(format, audioUrl);
+    if (!audioData) return;
+
+    const audio = new Audio(audioData);
     audioRef.current = audio;
     audio.play();
+
     setPlayingIndex(index);
     audio.onended = () => setPlayingIndex(null);
   };
@@ -165,11 +170,12 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
     const values = form.getValues();
 
     if (modalState.mode === "edit") {
-      await saveScripts(scripts.map((s, i) => (i === modalState.index ? { ...s, ...values } : s)));
+      await saveScripts(scripts.map((s, i) => (i === modalState.index ? { ...s, ...values, audioUrl: "" } : s)));
     } else {
       const newScript: PodcastScript = {
-        format: scripts[modalState.index]?.format ?? "",
         ...values,
+        format: scripts[modalState.index]?.format ?? "wav",
+        audioUrl: "",
       };
       await saveScripts([...scripts.slice(0, modalState.index + 1), newScript, ...scripts.slice(modalState.index + 1)]);
     }
@@ -220,12 +226,12 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
                 </Badge>
 
                 <Group gap="xs">
-                  {script.audio && (
+                  {script.audioUrl && (
                     <ActionIcon
                       variant="light"
                       color={loading ? "gray" : playingIndex === index ? "orange" : "green"}
                       disabled={loading}
-                      onClick={() => togglePlayAudio(index, script.format, script.audio!)}
+                      onClick={() => togglePlayAudio(index, script.format, script.audioUrl)}
                     >
                       <IconPlayerPlay size={16} />
                     </ActionIcon>

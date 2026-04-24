@@ -8,6 +8,7 @@ import {
   DeleteTaskStage,
   DownloadAudio,
   EditScript,
+  GetAudioData,
   GetTask,
   MergeArticle,
   NewsHasTask,
@@ -89,8 +90,8 @@ export enum TaskStageName {
 export interface PodcastAudio {
   voices: AudioVoice[];
   format: string;
-  url: string;
-  data: string;
+  url?: string;
+  data?: string;
   duration: number;
   scripts?: PodcastScript[];
 }
@@ -109,7 +110,7 @@ export interface PodcastScript {
   speed: number;
   volume: number;
   silence: number;
-  audio?: string;
+  audioUrl?: string;
 }
 
 // createTask to create podcast task
@@ -184,11 +185,17 @@ export async function newsHasTask(newsId: number) {
 }
 
 // textToSpeech to text to speech
-export async function textToSpeech(script: PodcastScript) {
-  return await call<string>(TextToSpeech(script));
+export async function textToSpeech(batchNo: string, script: PodcastScript) {
+  const request = new dto.TextToSpeechRequest({ batchNo, script });
+  return await call<string>(TextToSpeech(request));
 }
 
 // deleteTaskStage to delete task stage
 export async function deleteTaskStage(stageId: number) {
   return await call(DeleteTaskStage({ stageId }));
+}
+
+// getAudioData to get audio data
+export async function getAudioData(fileName: string) {
+  return await call<string>(GetAudioData(fileName));
 }

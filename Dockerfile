@@ -8,8 +8,9 @@ COPY . .
 # RUN go env -w GOPROXY=https://goproxy.io,direct
 RUN mkdir -p /build/frontend/dist && \
     touch /build/frontend/dist/index.html && \
+    curl -L -o /build/backend/pkg/audio/miniaudio.h https://raw.githubusercontent.com/mackron/miniaudio/master/miniaudio.h && \
     go mod tidy && \
-    go build -tags web -o world-news main.go
+    CGO_ENABLED=1 go build -tags web -o world-news main.go
 
 # runtime stage
 FROM alpine:3.23

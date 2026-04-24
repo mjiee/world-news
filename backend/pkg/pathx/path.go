@@ -6,19 +6,27 @@ import (
 	"runtime"
 
 	"github.com/pkg/errors"
+
+	"github.com/mjiee/world-news/backend/pkg/config"
+)
+
+const (
+	LogsDir  = "logs"
+	AudioDir = "audio"
+	TempDir  = "temp"
 )
 
 // GetAppBasePath returns the base path for the application based on the operating system
-func GetAppBasePath(appName string, subdirectories ...string) (string, error) {
+func GetAppBasePath(appName string, subDirs ...string) (string, error) {
 	var basePath string
 
 	switch runtime.GOOS {
 	case "darwin": // macOS
-		basePath = filepath.Join(os.Getenv("HOME"), "Library", "Application Support", appName, filepath.Join(subdirectories...))
+		basePath = filepath.Join(os.Getenv("HOME"), "Library", "Application Support", appName, filepath.Join(subDirs...))
 	case "linux": // Linux
-		basePath = filepath.Join(os.Getenv("HOME"), ".local", "share", appName, filepath.Join(subdirectories...))
+		basePath = filepath.Join(os.Getenv("HOME"), ".local", "share", appName, filepath.Join(subDirs...))
 	case "windows": // Windows
-		basePath = filepath.Join(os.Getenv("APPDATA"), appName, filepath.Join(subdirectories...))
+		basePath = filepath.Join(os.Getenv("APPDATA"), appName, filepath.Join(subDirs...))
 	default:
 		return "", errors.Errorf("unsupported platform: %s", runtime.GOOS)
 	}
@@ -51,4 +59,14 @@ func GetDownloadPath() string {
 	}
 
 	return download
+}
+
+// GetFilePath get file path
+func GetFilePath(fileName string, subDirs ...string) (string, error) {
+	basePath, err := GetAppBasePath(config.AppName, subDirs...)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(basePath, fileName), nil
 }

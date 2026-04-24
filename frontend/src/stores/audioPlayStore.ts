@@ -1,4 +1,4 @@
-import { PodcastAudio } from "@/services";
+import { getAudioData, PodcastAudio } from "@/services";
 import { create } from "zustand";
 
 interface AudioItem {
@@ -106,14 +106,22 @@ export const useAudioPlayStore = create<AudioPlayStore>((set, get) => ({
   },
 }));
 
-export function buildAudioSrc(format: string, data: string): string {
-  const mimeTypes: Record<string, string> = {
-    mp3: "audio/mpeg",
-    wav: "audio/wav",
-  };
+const mimeTypes: Record<string, string> = {
+  mp3: "audio/mpeg",
+  wav: "audio/wav",
+};
+
+export async function buildAudioSrc(format: string, audioUrl?: string): Promise<string> {
+  if (!audioUrl) return "";
+
+  if (!format && audioUrl.endsWith(".wav")) {
+    format = "wav";
+  }
+
+  const data = await getAudioData(audioUrl);
+  if (!data) return "";
 
   const mimeType = mimeTypes[format];
-
   if (mimeType && data) {
     return `data:${mimeType};base64,${data}`;
   }

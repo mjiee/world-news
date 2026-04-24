@@ -54,6 +54,10 @@ export function EditScript(arg1) {
   return window['go']['adapter']['App']['EditScript'](arg1);
 }
 
+export function GetAudioData(arg1) {
+  return window['go']['adapter']['App']['GetAudioData'](arg1);
+}
+
 export function GetCrawlingRecord(arg1) {
   return window['go']['adapter']['App']['GetCrawlingRecord'](arg1);
 }

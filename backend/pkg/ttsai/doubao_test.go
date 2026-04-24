@@ -42,8 +42,7 @@ func TestDoubaoTextToSpeech(t *testing.T) {
 		return
 	}
 
-	_, err = audio.WriteMp3sToFile("./axu_reference.mp3", dataA.AudioData)
-	if err != nil {
+	if err = audio.Transcode(dataA.AudioData, "./axu_reference.wav"); err != nil {
 		t.Error(err)
 		return
 	}
@@ -61,8 +60,7 @@ func TestDoubaoTextToSpeech(t *testing.T) {
 		return
 	}
 
-	_, err = audio.WriteMp3sToFile("./yuyuan_reference.mp3", dataB.AudioData)
-	if err != nil {
+	if err = audio.Transcode(dataB.AudioData, "./yuyuan_reference.wav"); err != nil {
 		t.Error(err)
 		return
 	}
