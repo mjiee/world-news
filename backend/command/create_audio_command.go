@@ -2,7 +2,9 @@ package command
 
 import (
 	"context"
-	"encoding/base64"
+	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 
 	"github.com/mjiee/gokit"
@@ -10,8 +12,10 @@ import (
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/audio"
+	"github.com/mjiee/world-news/backend/pkg/config"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
+	"github.com/mjiee/world-news/backend/pkg/pathx"
 	"github.com/mjiee/world-news/backend/pkg/ttsai"
 	"github.com/mjiee/world-news/backend/service"
 )
@@ -89,7 +93,21 @@ func (c *CreateAudioCommand) textToSpeech(task *entity.PodcastTask, ttsAi *ttsai
 	var (
 		stage       = task.GetStage(valueobject.TaskStageTextToSpeech)
 		scriptState = task.GetStage(valueobject.TaskStageScripted)
+		audioPaths  = make([]string, 0, len(scriptState.Audio.Scripts))
+		gloErr      error
 	)
+
+	audioPath, err := pathx.GetAppBasePath(config.AppName, pathx.AudioDir, task.BatchNo)
+	if err != nil {
+		return err
+	}
+
+	tempPath, err := pathx.GetAppBasePath(config.AppName, pathx.TempDir, task.BatchNo)
+	if err != nil {
+		return err
+	}
+
+	leftSpeacker := scriptState.Audio.Scripts[0].Speaker
 
 	for _, script := range scriptState.Audio.Scripts {
 		if script.Text == "" {
@@ -98,26 +116,71 @@ func (c *CreateAudioCommand) textToSpeech(task *entity.PodcastTask, ttsAi *ttsai
 
 		_, err = c.taskSvc.GetTaskStage(c.ctx, stage.Id)
 		if err != nil {
-			stage.Fail(err.Error())
-			task.Result = valueobject.TaskResultFailed
-			logx.WithContext(c.ctx).Error("GeneratePodcastCommand.textToSpeech", err)
+			gloErr = err
 			break
 		}
 
-		script.Format = audio.MP3
+		if script.AudioUrl != "" {
+			audioPaths = append(audioPaths, script.AudioUrl)
+			continue
+		}
+
+		script.Format = audio.WAV
 
 		resp, err := ttsClient.TextToSpeech(c.ctx, script)
 		if err != nil {
-			stage.Fail(err.Error())
-			task.Result = valueobject.TaskResultFailed
-			logx.WithContext(c.ctx).Error("GeneratePodcastCommand.textToSpeech", err)
+			gloErr = err
 			break
 		}
 
 		stage.Audio.Format = resp.Format
-		if len(resp.AudioData) != 0 {
-			script.Audio = base64.StdEncoding.EncodeToString(resp.AudioData)
+		if len(resp.AudioData) == 0 {
+			continue
 		}
+
+		var (
+			fileName  = resp.AudioId + "." + script.Format
+			audioFile = filepath.Join(audioPath, fileName)
+			tempFile  = filepath.Join(tempPath, fileName)
+			panning   = audio.LeftPanning
+		)
+
+		if script.Speaker != leftSpeacker {
+			panning = audio.RightPanning
+		}
+
+		if err := audio.Transcode(resp.AudioData, audioFile); err != nil {
+			gloErr = err
+			break
+		}
+
+		if err := audio.RenderFile(audioFile, tempFile, audio.RenderOption{Pan: panning}); err != nil {
+			gloErr = err
+			break
+		}
+
+		script.AudioUrl = audioFile
+		audioPaths = append(audioPaths, tempFile)
+	}
+
+	if gloErr == nil {
+		audioFile := filepath.Join(audioPath, fmt.Sprintf("%s_%d.wav", task.BatchNo, stage.Id))
+		if err := audio.MergeFiles(audioPaths, audioFile); err != nil {
+			gloErr = err
+		} else {
+			stage.Audio.Url = audioFile
+			stage.Audio.Format = audio.WAV
+		}
+	}
+
+	if err := os.RemoveAll(tempPath); err != nil {
+		logx.WithContext(c.ctx).Error("GeneratePodcastCommand.RemoveAll", err)
+	}
+
+	if gloErr != nil {
+		stage.Fail(err.Error())
+		task.Result = valueobject.TaskResultFailed
+		logx.WithContext(c.ctx).Error("GeneratePodcastCommand", err)
 	}
 
 	if !task.Result.IsFailed() {
@@ -126,7 +189,7 @@ func (c *CreateAudioCommand) textToSpeech(task *entity.PodcastTask, ttsAi *ttsai
 	}
 
 	if err := c.taskSvc.SaveTask(c.ctx, task); err != nil {
-		logx.WithContext(c.ctx).Error("GeneratePodcastCommand.textToSpeech", err)
+		logx.WithContext(c.ctx).Error("GeneratePodcastCommand.saveTask", err)
 	}
 
 	return err

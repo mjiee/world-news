@@ -17,6 +17,7 @@ import appicon from "@/assets/images/appicon.png";
 import styles from "@/assets/styles/appLayout.module.css";
 import { LanguageSwitcher } from "@/components";
 import { buildAudioSrc } from "@/stores";
+import { useEffect, useState } from "react";
 import { HeaderAudioPlayer, SidebarAudioPlayer, useAudioPlayer } from "./AudioPlayer";
 
 export function AppLayout() {
@@ -25,6 +26,16 @@ export function AppLayout() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const audioData = useAudioPlayer();
   const { audioRef, currentAudio } = audioData;
+  const [audioSrc, setAudioSrc] = useState<string>("");
+
+  useEffect(() => {
+    if (!currentAudio) return;
+
+    (async () => {
+      const src = await buildAudioSrc(currentAudio.audio.format, currentAudio.audio.url);
+      setAudioSrc(src);
+    })();
+  }, [currentAudio]);
 
   return (
     <div className={styles.layout}>
@@ -41,14 +52,7 @@ export function AppLayout() {
         </aside>
       )}
 
-      {currentAudio && (
-        <audio
-          ref={audioRef}
-          src={buildAudioSrc(currentAudio.audio.format, currentAudio.audio.data)}
-          preload="auto"
-          style={{ display: "none" }}
-        />
-      )}
+      {currentAudio && <audio ref={audioRef} src={audioSrc} preload="auto" style={{ display: "none" }} />}
 
       <main className={`${styles.main} ${collapsed ? styles.expanded : ""} ${isMobile ? styles.mobile : ""}`}>
         <Outlet />

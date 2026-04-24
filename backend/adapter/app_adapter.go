@@ -4,11 +4,14 @@ package adapter
 
 import (
 	"context"
+	"encoding/base64"
+	"os"
 
 	"github.com/mjiee/world-news/backend/adapter/dto"
 	"github.com/mjiee/world-news/backend/command"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/collector"
+	"github.com/mjiee/world-news/backend/pkg/config"
 	"github.com/mjiee/world-news/backend/pkg/databasex"
 	"github.com/mjiee/world-news/backend/pkg/httpx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
@@ -17,8 +20,6 @@ import (
 	"github.com/mjiee/world-news/backend/repository/model"
 	"github.com/mjiee/world-news/backend/service"
 )
-
-const AppName = "world-news"
 
 // App struct
 type App struct {
@@ -36,7 +37,7 @@ func NewApp() *App {
 	app := &App{}
 
 	// init database
-	db, err := databasex.NewAppDB(AppName)
+	db, err := databasex.NewAppDB(config.AppName)
 	if err != nil {
 		logx.Fatal("NewAppDB", err)
 
@@ -331,7 +332,7 @@ func (a *App) CreateAudio(req *dto.CreateAudioRequest) *httpx.Response {
 func (a *App) TextToSpeech(req *dto.TextToSpeechRequest) *httpx.Response {
 	var (
 		ctx       = tracex.InjectTraceInContext(a.ctx)
-		data, err = command.NewTextToSpeechCommand(req, a.systemConfigSvc).Execute(ctx)
+		data, err = command.NewTextToSpeechCommand(req.BatchNo, req.Script, a.systemConfigSvc).Execute(ctx)
 	)
 
 	return httpx.AppResp(ctx, "TextToSpeech", req, data, err)
@@ -359,6 +360,21 @@ func (a *App) NewsHasTask(req *dto.NewsHasTaskRequest) *httpx.Response {
 	)
 
 	return httpx.AppResp(ctx, "NewsHasTask", req, result, err)
+}
+
+// GetAudioData handles the request to retrieve audio data.
+func (a *App) GetAudioData(req string) *httpx.Response {
+	var (
+		ctx       = tracex.InjectTraceInContext(a.ctx)
+		data, err = os.ReadFile(req)
+		audioData string
+	)
+
+	if len(data) > 0 {
+		audioData = base64.StdEncoding.EncodeToString(data)
+	}
+
+	return httpx.AppResp(ctx, "GetAudioData", req, audioData, err)
 }
 
 // QueryPodcasts handles the request to retrieve podcast list.

@@ -63,11 +63,7 @@ type doubaoAudioParams struct {
 }
 
 func newDoubaoAudioParams(script *TtsScript) *doubaoAudioParams {
-	data := &doubaoAudioParams{Format: script.Format, SampleRate: 16000}
-
-	if data.Format == "" {
-		data.Format = audio.MP3
-	}
+	data := &doubaoAudioParams{Format: audio.MP3, SampleRate: 16000}
 
 	if script.Emotion != "" {
 		data.Emotion = script.Emotion

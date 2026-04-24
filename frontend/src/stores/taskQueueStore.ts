@@ -114,7 +114,7 @@ export const useTaskPollingStore = create<TaskPollingStore>((set, get) => ({
         return;
       }
 
-      if (stage.audio && stage.audio.data) {
+      if (stage.audio && stage.audio.url) {
         useAudioPlayStore.getState().addAudio(stage.id, stage.audio);
         removeFromQueue(item.batchNo);
       }

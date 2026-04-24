@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
+	"os"
 	"path/filepath"
 	"slices"
 
@@ -14,6 +14,7 @@ import (
 	"github.com/mjiee/world-news/backend/entity"
 	"github.com/mjiee/world-news/backend/entity/valueobject"
 	"github.com/mjiee/world-news/backend/pkg/audio"
+	"github.com/mjiee/world-news/backend/pkg/config"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/logx"
 	"github.com/mjiee/world-news/backend/pkg/pathx"
@@ -70,7 +71,12 @@ func (s *podcastTaskService) SaveTask(ctx context.Context, task *entity.PodcastT
 
 // DeleteTask delete task
 func (s *podcastTaskService) DeleteTask(ctx context.Context, batchNo string) error {
+	audioPath, _ := pathx.GetAppBasePath(config.AppName, pathx.AudioDir, batchNo)
+
 	_, err := repository.Q.PodcastTask.WithContext(ctx).Where(repository.Q.PodcastTask.BatchNo.Eq(batchNo)).Delete()
+	if err == nil {
+		_ = os.RemoveAll(audioPath)
+	}
 
 	return errors.WithStack(err)
 }
@@ -156,14 +162,7 @@ func (s *podcastTaskService) GetTaskByBatchNo(ctx context.Context, batchNo strin
 		}
 	}
 
-	task, err := entity.NewPodcastTaskFromModel(news, data)
-	if err != nil {
-		return nil, err
-	}
-
-	err = task.MergeAudio()
-
-	return task, err
+	return entity.NewPodcastTaskFromModel(news, data)
 }
 
 // GetTaskStage get task stage
@@ -276,7 +275,7 @@ func (s *podcastTaskService) DownloadAudio(ctx context.Context, stageId uint, fi
 
 	stage := task.GetStageById(stageId)
 
-	if stage.Audio == nil || stage.Audio.Data == "" {
+	if stage.Audio == nil || stage.Audio.Url == "" {
 		return errorx.PodcastTaskNotFound
 	}
 
@@ -286,12 +285,10 @@ func (s *podcastTaskService) DownloadAudio(ctx context.Context, stageId uint, fi
 
 	file := filepath.Join(pathx.GetDownloadPath(), fmt.Sprintf("%s.%s", fileName, stage.Audio.Format))
 
-	data, err := base64.StdEncoding.DecodeString(stage.Audio.Data)
+	in, err := os.ReadFile(stage.Audio.Url)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
-	_, err = audio.WriteMp3sToFile(file, data)
-
-	return errors.WithStack(err)
+	return audio.SaveAudio(in, file)
 }

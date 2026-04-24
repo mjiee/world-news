@@ -61,7 +61,10 @@ type CreateAudioRequest struct {
 }
 
 // TextToSpeechRequest is the request for text to speech
-type TextToSpeechRequest = ttsai.TtsScript
+type TextToSpeechRequest struct {
+	BatchNo string           `json:"batchNo" binding:"required"`
+	Script  *ttsai.TtsScript `json:"script" binding:"required"`
+}
 
 // DeleteTaskStageRequest is the request for deleting a podcast task stage
 type DeleteTaskStageRequest struct {

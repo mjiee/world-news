@@ -8,8 +8,8 @@ import (
 type PodcastAudio struct {
 	Voices   []*ttsai.Voice     `json:"voices"`
 	Format   string             `json:"format"` // mp3, wav, m3u8
-	Url      string             `json:"url"`
-	Data     string             `json:"data"`
+	Url      string             `json:"url,omitempty"`
+	Data     string             `json:"data,omitempty"`
 	Duration int                `json:"duration"` // s
-	Scripts  []*ttsai.TtsScript `json:"scripts"`
+	Scripts  []*ttsai.TtsScript `json:"scripts,omitempty"`
 }

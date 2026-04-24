@@ -1,14 +1,12 @@
 package entity
 
 import (
-	"encoding/base64"
 	"slices"
 	"time"
 
 	"github.com/mjiee/gokit"
 
 	"github.com/mjiee/world-news/backend/entity/valueobject"
-	"github.com/mjiee/world-news/backend/pkg/audio"
 	"github.com/mjiee/world-news/backend/pkg/errorx"
 	"github.com/mjiee/world-news/backend/pkg/ttsai"
 	"github.com/mjiee/world-news/backend/repository/model"
@@ -169,43 +167,6 @@ func (t *PodcastTask) VerifyTask() error {
 	})
 	if stage != nil {
 		return errorx.HasProcessingTasks
-	}
-
-	return nil
-}
-
-// MergeAudio merge audio
-func (t *PodcastTask) MergeAudio() error {
-	if !t.Result.IsCompleted() {
-		return nil
-	}
-
-	var (
-		scriptState = t.GetStage(valueobject.TaskStageScripted)
-		ttsState    = t.GetStage(valueobject.TaskStageTextToSpeech)
-		audios      [][]byte
-	)
-
-	for _, script := range scriptState.Audio.Scripts {
-		if script.Audio != "" {
-			audio, err := base64.StdEncoding.DecodeString(script.Audio)
-			if err != nil {
-				return err
-			}
-
-			audios = append(audios, audio)
-		}
-	}
-
-	switch ttsState.Audio.Format {
-	case audio.MP3:
-		audioData, duration, err := audio.EncodeMp3s(audios...)
-		if err != nil {
-			return err
-		}
-
-		ttsState.Audio.Data = audioData
-		ttsState.Audio.Duration = int(duration.Seconds())
 	}
 
 	return nil

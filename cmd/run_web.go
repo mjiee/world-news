@@ -22,7 +22,7 @@ import (
 // Run creates an instance of the web application structure and runs it.
 func Run(assets embed.FS) {
 	// init trace
-	tracex.InitTracer(adapter.AppName)
+	tracex.InitTracer(config.AppName)
 
 	// init config
 	config := config.NewWebConfig()
