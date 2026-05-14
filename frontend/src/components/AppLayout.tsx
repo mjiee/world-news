@@ -16,8 +16,6 @@ import { Outlet, useLocation, useNavigate } from "react-router";
 import appicon from "@/assets/images/appicon.png";
 import styles from "@/assets/styles/appLayout.module.css";
 import { LanguageSwitcher } from "@/components";
-import { buildAudioSrc } from "@/stores";
-import { useEffect, useState } from "react";
 import { HeaderAudioPlayer, SidebarAudioPlayer, useAudioPlayer } from "./AudioPlayer";
 
 export function AppLayout() {
@@ -25,17 +23,7 @@ export function AppLayout() {
   const [collapsed, { toggle: toggleCollapsed }] = useDisclosure(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const audioData = useAudioPlayer();
-  const { audioRef, currentAudio } = audioData;
-  const [audioSrc, setAudioSrc] = useState<string>("");
-
-  useEffect(() => {
-    if (!currentAudio) return;
-
-    (async () => {
-      const src = await buildAudioSrc(currentAudio.audio.format, currentAudio.audio.url);
-      setAudioSrc(src);
-    })();
-  }, [currentAudio]);
+  const { audioRef, currentAudio, audioSrc } = audioData;
 
   return (
     <div className={styles.layout}>

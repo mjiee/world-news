@@ -21,8 +21,8 @@ const (
 	MP3 = "mp3"
 	WAV = "wav"
 
-	LeftPanning  float32 = -0.05
-	RightPanning float32 = 0.05
+	LeftPanning  float32 = -0.1
+	RightPanning float32 = 0.1
 )
 
 // RenderOption defines the configuration for audio rendering.
@@ -46,7 +46,7 @@ func SaveAudio(rawAudio []byte, audioPath string) error {
 	return errors.WithStack(err)
 }
 
-// TranscodeToWav transcodes it directly to a WAV file.
+// Transcode transcodes it directly to a WAV file.
 func Transcode(rawAudio []byte, outputPath string) error {
 	if len(rawAudio) == 0 {
 		return errors.New("audio engine: decoded data is empty")
@@ -64,12 +64,25 @@ func Transcode(rawAudio []byte, outputPath string) error {
 	return parseResult(res)
 }
 
-// RenderFile applies panning effects to an audio file and saves the result.
-func RenderFile(inputPath, outputPath string, opt RenderOption) error {
+// SetStereo converts the audio to stereo.
+func SetStereo(inputPath, outputPath string, panning float32) error {
 	cIn, cOut := C.CString(inputPath), C.CString(outputPath)
 	defer C.free(unsafe.Pointer(cIn))
 	defer C.free(unsafe.Pointer(cOut))
-	return parseResult(C.audio_render(cIn, cOut, C.float(opt.Pan)))
+	return parseResult(C.set_stereo(cIn, cOut, C.float(panning)))
+}
+
+// GetDuration returns the duration of an audio file in seconds.
+func GetDuration(inputPath string) (int, error) {
+	cIn := C.CString(inputPath)
+	defer C.free(unsafe.Pointer(cIn))
+
+	result := int(C.audio_duration(cIn))
+	if result < 0 {
+		return 0, parseResult(C.int(result))
+	}
+
+	return result, nil
 }
 
 // MergeFiles joins multiple audio files into a single WAV file.

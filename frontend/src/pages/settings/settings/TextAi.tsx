@@ -12,24 +12,24 @@ export default function TextAi() {
   const { t } = useTranslation();
 
   const defaultConfigs: TextAIConfig[] = [
-    { platform: "ChatGPT-GPT-4o", model: "gpt-4o", apiKey: "", apiUrl: "https://api.openai.com/v1/chat/completions" },
+    { platform: "ChatGPT-GPT-4o", model: "gpt-4o", apiKey: "", apiUrl: "https://api.openai.com/v1" },
     {
       platform: "DeepSeek-chat",
       model: "deepseek-chat",
       apiKey: "",
-      apiUrl: "https://api.deepseek.com/chat/completions",
+      apiUrl: "https://api.deepseek.com",
     },
     {
       platform: "Aliyun-DeepSeek-R1",
       model: "deepseek-r1",
       apiKey: "",
-      apiUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+      apiUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     },
     {
       platform: "Aliyun-Qwen-Plus",
       model: "qwen-plus",
       apiKey: "",
-      apiUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+      apiUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     },
   ];
 
