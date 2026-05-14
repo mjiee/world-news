@@ -1,21 +1,25 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-
 /**
  * audio_transcode - Converts input audio to standard WAV format.
  */
 int audio_transcode(const unsigned char* pData, size_t dataSize, const char* outputPath);
 
 /**
- * audio_render - Processes audio with stereo panning and exports to WAV.
+ * set_stereo - converts the audio to stereo.
  */
-int audio_render(const char* inputPath, const char* outputPath, float pan);
+int set_stereo(const char* inputPath, const char* outputPath, float pan);
 
 /**
  * audio_merge - Concatenates multiple audio files into a single WAV file.
  */
 int audio_merge(char** inputPaths, int count, const char* outputPath);
+
+/**
+ * audio_duration - Returns the duration of an audio file in seconds.
+ */
+double audio_duration(const char* inputPath);
 
 /**
  * audio_error_description - Maps miniaudio error codes to readable strings.

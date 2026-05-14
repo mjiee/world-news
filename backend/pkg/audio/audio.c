@@ -6,19 +6,23 @@
 #define TARGET_FORMAT      ma_format_s16
 #define TARGET_CHANNELS    2
 #define TARGET_SAMPLE_RATE 44100
+#define FRAME_COUNT        1024
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 /**
  * internal_stream_copy - Core loop to move PCM frames from decoder to encoder.
  * Handles MA_AT_END as a valid termination state during playback.
  */
 static ma_result internal_stream_copy(ma_decoder* pDecoder, ma_encoder* pEncoder, ma_uint64* pFramesOut) {
-    ma_int16 buffer[2048]; 
+    ma_int16 buffer[FRAME_COUNT * TARGET_CHANNELS];
     ma_uint64 framesRead;
     ma_result result;
     *pFramesOut = 0;
 
     while (1) {
-        result = ma_decoder_read_pcm_frames(pDecoder, buffer, 1024, &framesRead);
+        result = ma_decoder_read_pcm_frames(pDecoder, buffer, FRAME_COUNT, &framesRead);
         if (result != MA_SUCCESS && result != MA_AT_END) return result;
         if (framesRead == 0) break;
         
@@ -36,7 +40,6 @@ int audio_transcode(const unsigned char* pData, size_t dataSize, const char* out
     ma_decoder decoder;
     ma_decoder_config dCfg = ma_decoder_config_init(TARGET_FORMAT, TARGET_CHANNELS, TARGET_SAMPLE_RATE);
     
-    /* Initialize decoder directly from memory buffer */
     ma_result res = ma_decoder_init_memory(pData, dataSize, &dCfg, &decoder);
     if (res != MA_SUCCESS) return res;
 
@@ -53,10 +56,13 @@ int audio_transcode(const unsigned char* pData, size_t dataSize, const char* out
     
     ma_encoder_uninit(&encoder);
     ma_decoder_uninit(&decoder);
-    return (res == MA_SUCCESS && total == 0) ? MA_NO_DATA_AVAILABLE : res;
+    return res;
 }
 
-int audio_render(const char* inputPath, const char* outputPath, float pan) {
+int set_stereo(const char* inputPath, const char* outputPath, float pan) {
+    if (inputPath == NULL || outputPath == NULL) return MA_INVALID_ARGS;
+    if (pan < -1.0f || pan > 1.0f) return MA_INVALID_ARGS;
+
     ma_decoder decoder;
     ma_decoder_config dCfg = ma_decoder_config_init(TARGET_FORMAT, TARGET_CHANNELS, TARGET_SAMPLE_RATE);
     ma_result res = ma_decoder_init_file(inputPath, &dCfg, &decoder);
@@ -70,29 +76,41 @@ int audio_render(const char* inputPath, const char* outputPath, float pan) {
         return res;
     }
 
-    float lG = (pan <= 0) ? 1.0f : (1.0f - pan);
-    float rG = (pan >= 0) ? 1.0f : (1.0f + pan);
-    ma_int16 buf[2048];
+    float angle = (pan + 1.0f) * ((float)M_PI / 4.0f);
+    float lG = cosf(angle);
+    float rG = sinf(angle);
+
+    ma_int16 buf[FRAME_COUNT * TARGET_CHANNELS];
     ma_uint64 fRead, total = 0;
 
     while (1) {
-        res = ma_decoder_read_pcm_frames(&decoder, buf, 1024, &fRead);
+        res = ma_decoder_read_pcm_frames(&decoder, buf, FRAME_COUNT, &fRead);
         if (res != MA_SUCCESS && res != MA_AT_END) break;
         if (fRead == 0) { res = MA_SUCCESS; break; }
 
         total += fRead;
-        /* Perform manual panning in s16 space */
+
         for (ma_uint64 i = 0; i < fRead; i++) {
-            buf[i*2] = (ma_int16)((float)buf[i*2] * lG);
-            buf[i*2+1] = (ma_int16)((float)buf[i*2+1] * rG);
+            float mono = ((float)buf[i*2] + (float)buf[i*2+1]) * 0.5f;
+            float l = mono * lG;
+            float r = mono * rG;
+
+            if (l >  32767.0f) l =  32767.0f;
+            if (l < -32768.0f) l = -32768.0f;
+            if (r >  32767.0f) r =  32767.0f;
+            if (r < -32768.0f) r = -32768.0f;
+
+            buf[i*2]   = (ma_int16)(l >= 0.0f ? l + 0.5f : l - 0.5f);
+            buf[i*2+1] = (ma_int16)(r >= 0.0f ? r + 0.5f : r - 0.5f);
         }
+
         res = ma_encoder_write_pcm_frames(&encoder, buf, fRead, NULL);
         if (res != MA_SUCCESS) break;
     }
 
     ma_encoder_uninit(&encoder);
     ma_decoder_uninit(&decoder);
-    return (total == 0) ? MA_NO_DATA_AVAILABLE : res;
+    return res;
 }
 
 int audio_merge(char** inputPaths, int count, const char* outputPath) {
@@ -123,6 +141,23 @@ int audio_merge(char** inputPaths, int count, const char* outputPath) {
 
     ma_encoder_uninit(&encoder);
     return MA_SUCCESS;
+}
+
+double audio_duration(const char* inputPath) {
+    if (inputPath == NULL) return -1.0;
+
+    ma_decoder decoder;
+    ma_decoder_config dCfg = ma_decoder_config_init(TARGET_FORMAT, TARGET_CHANNELS, TARGET_SAMPLE_RATE);
+    ma_result res = ma_decoder_init_file(inputPath, &dCfg, &decoder);
+    if (res != MA_SUCCESS) return -1.0;
+
+    ma_uint64 totalFrames = 0;
+    res = ma_decoder_get_length_in_pcm_frames(&decoder, &totalFrames);
+    
+    ma_decoder_uninit(&decoder);
+
+    if (res != MA_SUCCESS || totalFrames == 0) return -1.0;
+    return (double)totalFrames / (double)TARGET_SAMPLE_RATE;
 }
 
 const char* audio_error_description(int res) {

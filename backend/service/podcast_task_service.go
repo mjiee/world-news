@@ -283,7 +283,7 @@ func (s *podcastTaskService) DownloadAudio(ctx context.Context, stageId uint, fi
 		fileName = fmt.Sprintf("%s_%d", task.BatchNo, stage.Id)
 	}
 
-	file := filepath.Join(pathx.GetDownloadPath(), fmt.Sprintf("%s.%s", fileName, stage.Audio.Format))
+	file := filepath.Join(pathx.GetDownloadPath(), fmt.Sprintf("%s.%s", fileName, audio.WAV))
 
 	in, err := os.ReadFile(stage.Audio.Url)
 	if err != nil {

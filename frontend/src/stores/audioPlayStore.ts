@@ -122,9 +122,14 @@ export async function buildAudioSrc(format: string, audioUrl?: string): Promise<
   if (!data) return "";
 
   const mimeType = mimeTypes[format];
-  if (mimeType && data) {
-    return `data:${mimeType};base64,${data}`;
-  }
+  if (!mimeType) return "";
 
-  return "";
+  const cleanBase64 = data.replace(/\s/g, "");
+  const binary = atob(cleanBase64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  const blob = new Blob([bytes], { type: mimeType });
+  return URL.createObjectURL(blob);
 }

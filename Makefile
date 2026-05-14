@@ -1,5 +1,5 @@
 APP_NAME=world-news
-MINIAUDIO_FILE="backend/pkg/audio/miniaudio.h"
+MINIAUDIO_LIB="backend/pkg/audio/miniaudio.h"
 
 export CGO_ENABLED=1
 
@@ -10,9 +10,9 @@ init:
 		echo "Error: wails is not installed. Installing..."; \
 		go install github.com/wailsapp/wails/v2/cmd/wails@latest; \
 	}
-	@if [ ! -f $(MINIAUDIO_FILE) ]; then \
-		echo "miniaudio.h not found, downloading to $(MINIAUDIO_FILE)..."; \
-		curl -L -o $(MINIAUDIO_FILE) https://raw.githubusercontent.com/mackron/miniaudio/master/miniaudio.h; \
+	@if [ ! -f $(MINIAUDIO_LIB) ]; then \
+		echo "miniaudio.h not found, downloading to $(MINIAUDIO_LIB)..."; \
+		curl -L -o $(MINIAUDIO_LIB) https://raw.githubusercontent.com/mackron/miniaudio/master/miniaudio.h; \
 	fi
 
 # generate db

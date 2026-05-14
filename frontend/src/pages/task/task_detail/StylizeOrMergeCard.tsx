@@ -137,7 +137,7 @@ export default function StylizeOrMergeCard({ stage, onRefresh }: { stage: TaskSt
       <Modal
         opened={edit != ActionType.Default}
         onClose={() => setEdit(ActionType.Default)}
-        title={t(getActionTitleKey(edit), { ns: "task" })}
+        title={getActionTitleKey(edit) && t(getActionTitleKey(edit), { ns: "task" })}
         size="lg"
       >
         <Stack gap="md">

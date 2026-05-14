@@ -151,7 +151,7 @@ func (c *CreateAudioCommand) generateAudio(audioPath string, ttsStage *valueobje
 			continue
 		}
 
-		audioFile := filepath.Join(audioPath, resp.AudioId+"."+script.Format)
+		audioFile := filepath.Join(audioPath, resp.AudioId+"."+audio.WAV)
 
 		if err := audio.Transcode(resp.AudioData, audioFile); err != nil {
 			return err
@@ -168,7 +168,7 @@ func (c *CreateAudioCommand) mergeAudio(audioPath string, ttsStage *valueobject.
 	var (
 		tempAudios   = make([]string, 0, len(scriptState.Audio.Scripts))
 		leftSpeacker = scriptState.Audio.Scripts[0].Speaker
-		audioFile    = filepath.Join(audioPath, fmt.Sprintf("%s_%d.wav", ttsStage.BatchNo, ttsStage.Id))
+		audioFile    = filepath.Join(audioPath, fmt.Sprintf("%s_%d.%s", ttsStage.BatchNo, ttsStage.Id, audio.WAV))
 	)
 
 	tempPath, err := pathx.GetAppBasePath(config.AppName, pathx.TempDir, ttsStage.BatchNo)
@@ -181,6 +181,11 @@ func (c *CreateAudioCommand) mergeAudio(audioPath string, ttsStage *valueobject.
 			continue
 		}
 
+		if len(ttsStage.Audio.Voices) == 1 {
+			tempAudios = append(tempAudios, script.AudioUrl)
+			continue
+		}
+
 		panning := audio.LeftPanning
 		if script.Speaker != leftSpeacker {
 			panning = audio.RightPanning
@@ -188,7 +193,7 @@ func (c *CreateAudioCommand) mergeAudio(audioPath string, ttsStage *valueobject.
 
 		tempFile := filepath.Join(tempPath, filepath.Base(script.AudioUrl))
 
-		if err := audio.RenderFile(script.AudioUrl, tempFile, audio.RenderOption{Pan: panning}); err != nil {
+		if err := audio.SetStereo(script.AudioUrl, tempFile, panning); err != nil {
 			return err
 		}
 
@@ -199,7 +204,13 @@ func (c *CreateAudioCommand) mergeAudio(audioPath string, ttsStage *valueobject.
 		return err
 	}
 
+	duration, err := audio.GetDuration(audioFile)
+	if err != nil {
+		return err
+	}
+
 	ttsStage.Audio.Url = audioFile
+	ttsStage.Audio.Duration = duration
 
 	if err := os.RemoveAll(tempPath); err != nil {
 		logx.WithContext(c.ctx).Error("GeneratePodcastCommand.RemoveAll", err)

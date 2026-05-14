@@ -99,6 +99,7 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
   const [jsonModalOpen, setJsonModalOpen] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioBlobUrlRef = useRef<string>("");
 
   const [scripts, setScripts] = useState<PodcastScript[]>(stage?.audio?.scripts || []);
   const [voices, setVoices] = useState<{ value: string; label: string }[]>([]);
@@ -142,17 +143,29 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
       setPlayingIndex(null);
       return;
     }
+
     audioRef.current?.pause();
+    if (audioBlobUrlRef.current.startsWith("blob:")) {
+      URL.revokeObjectURL(audioBlobUrlRef.current);
+      audioBlobUrlRef.current = "";
+    }
 
-    const audioData = await buildAudioSrc(format, audioUrl);
-    if (!audioData) return;
+    const src = await buildAudioSrc(format, audioUrl);
+    if (!src) return;
 
-    const audio = new Audio(audioData);
+    audioBlobUrlRef.current = src;
+    const audio = new Audio(src);
     audioRef.current = audio;
     audio.play();
 
     setPlayingIndex(index);
-    audio.onended = () => setPlayingIndex(null);
+    audio.onended = () => {
+      setPlayingIndex(null);
+      if (audioBlobUrlRef.current.startsWith("blob:")) {
+        URL.revokeObjectURL(audioBlobUrlRef.current);
+        audioBlobUrlRef.current = "";
+      }
+    };
   };
 
   const saveScripts = async (updated: PodcastScript[]) => {
@@ -192,6 +205,15 @@ export default function StageScriptedCard({ stage, onRefresh }: { stage: TaskSta
   useEffect(() => {
     loadVoices();
   }, [stage]);
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      if (audioBlobUrlRef.current.startsWith("blob:")) {
+        URL.revokeObjectURL(audioBlobUrlRef.current);
+      }
+    };
+  }, []);
 
   const jsonValue = useMemo(
     () =>
